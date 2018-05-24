@@ -4,7 +4,7 @@ layout: default
 
 Text can be **bold**, _italic_, ~~strikethrough~~ or `keyword`.
 
-[Post Page](./posts/).
+[Post Page](./_posts/).
 
 # This Test Blog
 
