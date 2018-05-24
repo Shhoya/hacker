@@ -11,9 +11,9 @@ baseurl:
                   # the optional subpath of your site, e.g. "/my-jekyll-site/"
                   # This will apply to all pages in your Jekyll site.
 
-author:           Shhoya
-  name:           "Shhoya"
-  url:            
+author:           
+  name:           Shhoya
+  url:            https://github.com/Shhoya/Shhoya.github.io
 
 paginate:         5
 # paginate_path:    '/page:num'
