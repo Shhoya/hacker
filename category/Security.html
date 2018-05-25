@@ -12,9 +12,9 @@ title: Security
 	    <span class="post-date">{{ post.date | date_to_string }}</span>
     {{ post.content }}
   </div>
-  
+  {% endfor %}
 </div>
-{% endfor %}
+
 
 <div class="pagination">
   {% if paginator.next_page %}
