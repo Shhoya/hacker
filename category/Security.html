@@ -2,20 +2,14 @@
 layout: default
 ---
 
-<div class="posts">
-  {% for post in paginator.posts %}
-  <div class="post">
-    <h1 class="post-title">
+
 	{% for post in site.categories.Security %}
-      <a href="https://shhoya.github.io/{{ post.url | remove_first: '/'}}">
-        {{ post.title }}
-      </a>
-    </h1>
-
-    <span class="post-date">{{ post.date | date_to_string }}</span>
-
+	<div class="post">
+    <h1 class="post-title">
+	<li><a href="{{ post.url }}">{{ post.title }}</a></li>
+	</h1>
+	    <span class="post-date">{{ post.date | date_to_string }}</span>
     {{ post.content }}
-	{% endfor %}
   </div>
   {% endfor %}
 </div>
