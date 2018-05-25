@@ -16,8 +16,8 @@ author:
   url:            https://github.com/Shhoya/Shhoya.github.io
 
 navigation:
-- title: [+]Security
-  url: /[+]Security
+    title: [+]Security
+    url: /[+]Security
 paginate:         5
 # paginate_path:    '/page:num'
                     # Or '/my-jekyll-site/page:num' if you want to move your index pages
