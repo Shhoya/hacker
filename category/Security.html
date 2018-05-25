@@ -4,8 +4,7 @@ title: Security
 ---
 
 <div class="posts">
-{% for categories.Security in paginator.posts %}
-	{% for post in site.categories.Security %}
+{% for post in paginator.site.categories.Security %}
 	
 	<div class="post">
     <h1 class="post-title">
@@ -16,7 +15,7 @@ title: Security
   </div>
 
   {% endfor %}
-{% endfor %}
+
 </div>
 
 
