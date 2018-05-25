@@ -1,41 +1,48 @@
 ---
 layout: default
-title: Security
+title: [+]Security
 ---
-<!--{% for post in site.categories.Security %}-->
 
- <div class="posts">
-{% for post in paginator.posts %}	
-	{% if site.categories.Security %}
-		{% for post in site.categories.Security %}
-		<div class="post">	
-		<h1 class="post-title">
-		<a href="{{ post.url }}">{{ post.title }}</a>
-		</h1>
-			<span class="post-date">{{ post.date | date_to_string }}</span>
-		{{ post.content }}
-		
-	  </div>
-		{% endfor %}
-	{% endif %}
-	{% else %}
-	 <h1> 포스트가 존재하지 않습니다.</h1>
-	{% endif %}
-{% endfor %}
-</div> 
+<!--
+	{% for post in site.categories.Security %}
+	<div class="post">
+    <h1 class="post-title">
+	<a href="{{ post.url }}">{{ post.title }}</a>
+	</h1>
+	    <span class="post-date">{{ post.date | date_to_string }}</span>
+    {{ post.content }}
+  </div>
+  {% endfor %}
+</div>
+-->
 
+<div class="posts">
+  {% for post in paginator.posts %}
+  <div class="post">
+    <h1 class="post-title">
+      <a href="https://shhoya.github.io/{{ post.url | remove_first: '/'}}">
+        {{ post.title }}
+      </a>
+    </h1>
+
+    <span class="post-date">{{ post.date | date_to_string }}</span>
+
+    {{ post.content }}
+  </div>
+  {% endfor %}
+</div>
 
 <div class="pagination">
   {% if paginator.next_page %}
-    <a class="pagination-item older" href="https://shhoya.github.io/Security/page{{paginator.next_page}}">이전(Previous)</a>
+    <a class="pagination-item older" href="https://shhoya.github.io/page{{paginator.next_page}}">이전(Previous)</a>
   {% else %}
     <span class="pagination-item older">이전(Previous)</span>
   {% endif %}
   {% if paginator.previous_page %}
     {% if paginator.page == 2 %}
-      <a class="pagination-item newer" href="https://shhoya.github.io/category/Security.html">다음(Next)</a>
+      <a class="pagination-item newer" href="https://shhoya.github.io">다음(Next)</a>
     {% else %}
-      <a class="pagination-item newer" href="https://shhoya.github.io/Security/page{{paginator.previous_page}}">다음(Next)</a>
+      <a class="pagination-item newer" href="https://shhoya.github.io/page{{paginator.previous_page}}">다음(Next)</a>
     {% endif %}
   {% else %}
     <span class="pagination-item newer">다음(Next)</span>
