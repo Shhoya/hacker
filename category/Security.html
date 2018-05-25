@@ -2,11 +2,10 @@
 layout: default
 ---
 
-{% for post in site.categories.Security %}
-		
 
 <div class="posts">
-  {% for post in paginator.posts %}
+  <!--{% for post in paginator.posts %}-->
+  {% for post in site.categories.Security %}
   <div class="post">
     <h1 class="post-title">
       <a href="https://shhoya.github.io/{{ post.url | remove_first: '/'}}">
@@ -37,4 +36,3 @@ layout: default
     <span class="pagination-item newer">다음(Next)</span>
   {% endif %}
 </div>
-{% endfor %}
