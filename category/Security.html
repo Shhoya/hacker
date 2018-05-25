@@ -4,7 +4,7 @@ layout: default
 
 
 <div class="posts">
-  <!--{% for post in paginator.posts %}-->
+  {% for post in paginator.posts %}
   {% for post in site.categories.Security %}
   <div class="post">
     <h1 class="post-title">
@@ -17,6 +17,7 @@ layout: default
 
     {{ post.content }}
   </div>
+  {% endfor %}
   {% endfor %}
 </div>
 
