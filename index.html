@@ -5,6 +5,7 @@ title: Shhoya' Blog
 
 <div class="posts">
   {% for post in paginator.posts %}
+  {% for post in site.categories.Security %}
   <div class="post">
     <h1 class="post-title">
       <a href="https://shhoya.github.io/{{ post.url | remove_first: '/'}}">
@@ -16,6 +17,7 @@ title: Shhoya' Blog
 
     {{ post.content }}
   </div>
+  {% endfor %}
   {% endfor %}
 </div>
 
