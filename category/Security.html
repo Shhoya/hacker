@@ -4,7 +4,8 @@ title: Security
 ---
 
 <div class="posts">
-{% for post in site.categories.Security %}
+{% for post in paginator.posts %}	
+	{% for post in site.categories.Security %}
 	<div class="post">
     	
 	<h1 class="post-title">
@@ -14,11 +15,10 @@ title: Security
     {{ post.content }}
 	
   </div>
+	{% endfor %}
 {% endfor %}
-</div>
- {% for post in paginator.posts %}
- {% endfor %}
-
+</div> 
+ 
 
 <div class="pagination">
   {% if paginator.next_page %}
