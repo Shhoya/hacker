@@ -6,7 +6,7 @@ highlighter:      rouge
 title:            Shhoya' Blog
 tagline:          Shhoya' Blog
 description:      "Information Security.. and Malware Analyze... CTF, Writeup, my study space~"
-url:              
+url:              "https://Shhoya.github.io"
 baseurl:          "/"
                   # the optional subpath of your site, e.g. "/my-jekyll-site/"
                   # This will apply to all pages in your Jekyll site.
