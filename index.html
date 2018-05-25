@@ -21,15 +21,15 @@ title: Shhoya' Blog
 
 <div class="pagination">
   {% if paginator.next_page %}
-    <a class="pagination-item older" href="https://shhoya.github.io/page{{paginator.next_page}}">Older</a>
+    <a class="pagination-item older" href="https://shhoya.github.io/page{{paginator.next_page}}">이전(Previous)</a>
   {% else %}
-    <span class="pagination-item older">Older</span>
+    <span class="pagination-item older">이전(Previous)</span>
   {% endif %}
   {% if paginator.previous_page %}
     {% if paginator.page == 2 %}
-      <a class="pagination-item newer" href="https://shhoya.github.io">Newer</a>
+      <a class="pagination-item newer" href="https://shhoya.github.io">다음(Next)</a>
     {% else %}
-      <a class="pagination-item newer" href="https://shhoya.github.io/page{{paginator.previous_page}}">Newer</a>
+      <a class="pagination-item newer" href="https://shhoya.github.io/page{{paginator.previous_page}}">다음(Next)</a>
     {% endif %}
   {% else %}
     <span class="pagination-item newer">Newer</span>
