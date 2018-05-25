@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://Shhoya.github.io/sitemap.xml
