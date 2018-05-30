@@ -11,10 +11,6 @@ key: page-about
 ![Cong](https://raw.githubusercontent.com/Shhoya/Shhoya.github.io/master/assets/images/logo/Cong.png "Cong"){:.circle.border.shadow}
 
 Welcome Shhoya blog!😃
-
-{:.info}
-
-Info Text.
 {:.info}
 
 {% highlight Shhoya%}
