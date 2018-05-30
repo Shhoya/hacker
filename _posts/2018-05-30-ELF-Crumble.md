@@ -1,7 +1,7 @@
 ---
 layout: article
 title: "[WriteUp]ELF Crubmle(DEFCON_2018)"
-key: 20180530
+key: 20180531
 tags:
   - CTF
   - WriteUp
@@ -61,9 +61,13 @@ Main 함수에서 'func1'이라는 함수를 호출하게 되면 Callee는 main�
 
 정리하면, CALL 명령(EIP 백업, return address), PUSH  EBP(현재 stack frame 백업), MOV EBP, ESP(새로운 stack frame 할당) 이 되겠다.
 
+------
+
+--------
 
 
-###Flag
+
+### Flag
 
 결론적으로 가장 처음 오는 조각 파일의 첫 값은 'PUSH EBP'의 OPCODE인 0x55, 0x89, 0xE5 일 것이다.
 이런 식으로 함수 프롤로그와 에필로그를 이용하고 IDA를 이용해 쭉쭉 짜 맞힌 결과, 8 - 7 - 1 - 5 - 6 - 2 - 3 - 4 순서의 조합임을 알 수 있다.
