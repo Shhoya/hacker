@@ -14,7 +14,7 @@ Welcome to my blog! :earth_asia: :earth_africa: :earth_americas:
 (() => console.log('hello, world!'))();
 {% endhighlight %}
 
-![Cong](https://github.com/shhoya.github.io/assets/images/logo/Cong.png "Cong_circle+border+shadow"){:.circle.border.shadow}
+![Cong](https://raw.githubusercontent.com/Shhoya/Shhoya.github.io/master/assets/images/logo/Cong.png "Cong_circle+border+shadow"){:.circle.border.shadow}
 
 ## About Me
 
