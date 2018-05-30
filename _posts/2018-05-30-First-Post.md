@@ -1,6 +1,6 @@
 ---
 layout: article
-title: [ML]Perceptron
+title: "[ML]Perceptron"
 key: 20180530
 tags:
   - ML
