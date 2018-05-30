@@ -15,7 +15,7 @@ Welcome Shhoya blog!😃
 
 {% highlight Shhoya%}
 Puppy name is Cong🐶
-My Angel is Yellow rose💕
+My Angel is Yellow rose💕 and.... Angry Bird🐦!!
 {% endhighlight %}
 
 
