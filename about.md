@@ -14,6 +14,9 @@ Welcome Shhoya blog!😃
 
 {:.info}
 
+Info Text.
+{:.info}
+
 {% highlight Shhoya%}
 Puppy name is Cong🐶
 {% endhighlight %}
