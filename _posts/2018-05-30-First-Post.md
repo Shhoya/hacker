@@ -1,5 +1,5 @@
 ---
-layout: article
+  layout: article
 title: "[ML]Perceptron"
 key: 20180530
 tags:
@@ -111,4 +111,10 @@ def OR(x1,x2):
 자 여기서 문제는, 이러한 퍼셉트론을 이용하여 XOR 게이트를 어찌 구현할것인가이다.
 
 테스트 포스팅이므로 여기까지.
+
+
+
+## [+]Reference
+
+1. <a href="http://www.hanbit.co.kr/store/books/look.php?p_code=B8475831198">밑바닥부터 시작하는 딥러닝</a>
 
