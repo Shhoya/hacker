@@ -8,8 +8,6 @@ tags:
   - Reversing
   - Binary
 toc: true
-mathjax: true
-mathjax_autoNumber: true
 ---
 
 # [+]ELF Crumble(Defcon CTF 2018)
@@ -21,7 +19,7 @@ mathjax_autoNumber: true
 총 9개의 파일이 주어지며, 파일이름은 각 'broken', 'fragment1 ~ 8' 까지 존재한다.
 파일 이름만으로도 일단 파일이 깨졌으니 갖다 붙혀라 이런 의미의 문제인 것 같다.
 
-![ELF-File](https://raw.githubusercontent.com/shhoya/shhoya.github.io/master/assets/images/Task/elf_1.png "ELF_1"){:.border}
+![ELF-File](https://raw.githubusercontent.com/shhoya/shhoya.github.io/master/assets/images/task/elf_1.png "ELF_1"){:.border}
 
 그림을 보면 ELF 파일로 되어 있으며 Offset 0x5AD + 0x327 만큼 0x58 로 채워진 것을 확인할 수 있다. 그리고 조각난 8개의 파일을 모두 합치면 0x327만큼의 크기가 나오는 것을 알 수 있다.
 
@@ -64,7 +62,7 @@ Main 함수에서 'func1'이라는 함수를 호출하게 되면 Callee는 main�
 결론적으로 가장 처음 오는 조각 파일의 첫 값은 'PUSH EBP'의 OPCODE인 0x55, 0x89, 0xE5 일 것이다.
 이런 식으로 함수 프롤로그와 에필로그를 이용하고 IDA를 이용해 쭉쭉 짜 맞힌 결과, 8 - 7 - 1 - 5 - 6 - 2 - 3 - 4 순서의 조합임을 알 수 있다.
 
-![ELF-File2](https://raw.githubusercontent.com/shhoya/shhoya.github.io/master/assets/images/Task/elf_2.png "ELF_2"){:.border}
+![ELF-File2](https://raw.githubusercontent.com/shhoya/shhoya.github.io/master/assets/images/task/elf_2.png "ELF_2"){:.border}
 
 
 
