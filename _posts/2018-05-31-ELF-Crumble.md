@@ -27,9 +27,7 @@ toc: true
 
 CTF의 가장 큰 문제는 사람의 머리를 꼬아놓는다는 것이다..
 
----
-
-
+---------------------------------------
 
 ### Join Fragment
 
@@ -61,7 +59,7 @@ Main 함수에서 'func1'이라는 함수를 호출하게 되면 Callee는 main�
 
 정리하면, CALL 명령(EIP 백업, return address), PUSH  EBP(현재 stack frame 백업), MOV EBP, ESP(새로운 stack frame 할당) 이 되겠다.
 
----
+---------------------------------------
 
 ### Flag
 
