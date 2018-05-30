@@ -1,0 +1,32 @@
+/**
+ * Site Info
+ */
+
+.footer {
+  @include flexbox;
+  @include align-items(center);
+  @include split-line(top);
+  height: map-get($layout, footer-height);
+  .follow-me {
+    padding-top: 1rem;
+  }
+  p {
+    color: $text-color-3;
+  }
+  a {
+    @include link-colors ($text-color-3, $main-color-1, $main-color-1);
+  }
+  .site-info {
+    text-align: center;
+    font-size: map-get($base, font-size-xs);
+    margin: 1rem auto 0 auto;
+  }
+  .site-info__copyright {
+    @include split-line(right, default, $text-color-l);
+    padding-right: .3rem;
+    margin-right: .1rem;
+  }
+  .site-info__copyright, .site-info__rss {
+    line-height: map-get($base, line-height-xs);
+  }
+}

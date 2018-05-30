@@ -1,0 +1,165 @@
+# Welcome to Jekyll!
+#
+# This config file is meant for settings that affect your whole blog, values
+# which you are expected to set up once and rarely need to edit after that.
+# For technical reasons, this file is *NOT* reloaded automatically when you use
+# 'jekyll serve'. If you change this file, please restart the server process.
+#
+# ,--------.      ,--.   ,--. ,--.
+# '--.  .--',---.  \  `.'  /,-'  '-.
+#    |  |  | .-. :  .'    \ '-.  .-'
+#    |  |  \   --. /  .'.  \  |  |
+#    `--'   `----''--'   '--' `--'
+
+# config file for demo site, DELETE IT IF YOU WANT.
+
+
+## => Site Settings
+##############################
+text_color_theme: default # "default" (default), "dark", "forest", "ocean", "chocolate", "orange"
+url: https://tianqi.name # the base hostname & protocol for your site e.g. https://www.someone.com
+baseurl: /jekyll-TeXt-theme # does not include hostname
+title: TeXt Theme
+description: > # this means to ignore newlines until "Language & timezone"
+  A customizable Jekyll theme for your blog or site
+
+
+# => Language and Timezone
+##############################
+lang: en # the language of your site, "en" (default, English), "zh"(简体中文), "zh-Hans"(简体中文), "zh-Hant"(繁體中文)
+timezone: Asia/Shanghai # see https://en.wikipedia.org/wiki/List_of_tz_database_time_zones for the available values
+
+
+## => Author and Social
+##############################
+author:
+  name: Tian Qi
+  email: kitian616@outlook.com # your Email address e.g. someone@site.com
+  twitter: kitian616 # your Twitter username
+  github: kitian616/jekyll-TeXt-theme # your GitHub username
+  googleplus: 101827554735084402671 # your Google+ username
+  weibo: 234695683
+
+
+## => GitHub Repository (if the site is hosted by GitHub)
+##############################
+repository: kitian616/jekyll-TeXt-theme
+repository_tree: master
+
+
+## => Paths
+##############################
+paths:
+  base: /
+
+## => Post
+##############################
+## excerpt
+excerpt_separator: <!--more-->
+excerpt_type: html # text (default), html
+
+## TOC
+toc:
+  selectors: # "h1,h2,h3" (default)
+
+## Markdown Enhancements
+
+# Mathjax
+mathjax: true # false (default), true
+mathjax_autoNumber: true # false (default), true
+
+# Mermaid
+mermaid: true # false (default), true
+
+# Chart
+chart: true # false (default), true
+
+
+## => Paginate
+##############################
+paginate: 8
+paginate_path: /page:num
+
+
+## => Sources
+##############################
+sources: # bootcdn (default), unpkg
+
+
+## => Comments
+##############################
+## Disqus
+disqus:
+  shortname: # the Disqus shortname for the site
+
+## Gitalk
+# please refer to https://github.com/gitalk/gitalk for more info.
+gitalk:
+  clientID: 143666b578a416f82175 # Github Application Client ID
+  clientSecret: 1d1c0604a1a4bff9b59ab7f56724dc0e8b837775 # Github Application Client Secret
+  repository: gitalk-demo # Github repo
+  owner: kitian616 # Github repo owner
+  admin: # Github repo owner and collaborators, only these guys can initialize github issues, IT IS A LIST.
+    - kitian616
+
+
+## => Pageview
+##############################
+## Leancloud
+leancloud:
+  app_id: uAG3OhdcH8H4fxSqXLyBljA7-gzGzoHsz
+  app_key: Mzf5m9skSwYVWVXhGiYMNyXs
+  app_class: TeXtDemo
+
+
+## => Analytics
+##############################
+## Google Analytics
+ga_tracking_id: UA-71907556-1 #Google analytics id for the site
+ga_anonymize_ip: false # Anonymize IP tracking for Analytics
+
+
+## => Build
+##############################
+markdown: kramdown
+highlighter: rouge
+permalink: date
+
+exclude:
+  - CHANGELOG.md
+  - CHECKLIST.md
+  - Gemfile
+  - Gemfile.lock
+  - LICENSE
+  - README-*.md
+  - README.md
+  - gulpfile.js
+  - jekyll-text-theme.gemspec
+  - package-lock.json
+  - package.json
+  # - /docs
+  - /node_modules
+  - /screenshots
+  # - /test
+  - /vendor
+
+defaults:
+  - scope:
+      path: ""
+      type: "posts"
+    values:
+      license: true
+      aside:
+        toc: true
+      pageview: true
+
+
+## => Plugins
+##############################
+plugins:
+  - jekyll-feed
+  - jekyll-paginate
+  - jekyll-sitemap
+  - jemoji
+
+data_dir: /docs/_data

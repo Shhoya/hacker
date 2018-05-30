@@ -1,0 +1,34 @@
+@mixin link-colors($clr, $hover-clr: default, $active-clr: default, $focus-clr: null) {
+  @if $hover-clr == default {
+    $hover-clr: $clr;
+  }
+  @if $active-clr == default {
+    $active-clr: $clr;
+  }
+  @include plain {
+    color: $clr;
+    svg path {
+      fill: $clr;
+    }
+  }
+  @include hover {
+    color: $hover-clr;
+    svg path {
+      fill: $hover-clr;
+    }
+  }
+  @include active {
+    color: $active-clr;
+    svg path {
+      fill: $active-clr;
+    }
+  }
+  @if $focus-clr {
+    @include focus {
+      color: $focus-clr;
+      svg path {
+        fill: $focus-clr;
+      }
+    }
+  }
+}

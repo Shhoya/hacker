@@ -1,0 +1,151 @@
+@mixin button-colors($clr, $bg-clr, $hover-clr: default, $hover-bg-clr: default, $active-clr: default, $active-bg-clr: default, $focus-clr: default, $focus-bg-clr: default) {
+  @if $hover-clr == default {
+    $hover-clr: $clr
+  }
+  @if $hover-bg-clr == default {
+    $hover-bg-clr: darken($bg-clr, 10%);
+  }
+
+  @if $active-clr == default {
+    $active-clr: $clr
+  }
+  @if $active-bg-clr == default {
+    $active-bg-clr: darken($bg-clr, 10%);
+  }
+
+  @if $focus-clr == default {
+    $focus-clr: $clr
+  }
+  @if $focus-bg-clr == default {
+    $focus-bg-clr: darken($bg-clr, 10%);
+  }
+  @include plain {
+    color: $clr;
+    background-color: $bg-clr;
+    svg path {
+      fill: $clr;
+    }
+  }
+  @include hover {
+    color: $hover-clr;
+    background-color: $hover-bg-clr;
+    svg path {
+      fill: $hover-clr;
+    }
+  }
+  @include active {
+    color: $active-clr;
+    background-color: $active-bg-clr;
+    svg path {
+      fill: $active-clr;
+    }
+  }
+  @include focus {
+    color: $focus-clr;
+    @include box-shadow(2, $focus-bg-clr);
+    background-color: $focus-bg-clr;
+    svg path {
+      fill: $focus-clr;
+    }
+  }
+}
+
+@mixin button() {
+  font-weight: map-get($button, font-weight);
+  box-sizing: border-box;
+  line-height: map-get($base, line-height);
+  outline: none;
+  display: inline-block;
+  cursor: pointer;
+  text-decoration: none !important;
+  @include transition(map-get($button, transition));
+  svg {
+    width: 1rem;
+    height: 1rem;
+    path {
+      @include transition(map-get($button, transition));
+    }
+  }
+  &.disabled,
+  &:disabled {
+    cursor: not-allowed;
+    color: rgba($text-color-3, .2) !important;
+    background-color: $main-color-3 !important;
+    svg path {
+      fill: rgba($text-color-3, .2) !important;
+    }
+  }
+}
+
+.button {
+  @include button();
+}
+
+.button--primary {
+  @include button-colors($text-color-1, $main-color-1);
+}
+
+.button--secondary {
+  @include button-colors($text-color-3, $main-color-3);
+}
+
+.button--success {
+  @include button-colors($text-color-1, $green);
+}
+
+.button--info {
+  @include button-colors($text-color-1, $blue);
+}
+
+.button--warning {
+  @include button-colors($text-color-1, $yellow);
+}
+
+.button--error {
+  @include button-colors($text-color-1, $red);
+}
+
+.button--pill {
+  border-radius: 2rem;
+  @extend .button--md;
+}
+
+.button--rounded {
+  border-radius: map-get($base, border-radius);
+  @extend .button--md;
+}
+
+.button--circle {
+  @include flexbox();
+  @include justify-content(center);
+  @include align-items(center);
+  border-radius: 50%;
+  @extend .button--md;
+}
+
+.button--md {
+  font-size: map-get($base, font-size);
+  padding: map-get($button, padding-y) map-get($button, padding-x);
+  &.button--circle {
+    width: map-get($button, circle-diameter);
+    height: map-get($button, circle-diameter);
+  }
+}
+
+.button--sm {
+  font-size: map-get($base, font-size-sm);
+  padding: map-get($button, padding-y-sm) map-get($button, padding-x-sm);
+  &.button--circle {
+    width: map-get($button, circle-diameter-sm);
+    height: map-get($button, circle-diameter-sm);
+  }
+}
+
+.button--lg {
+  font-size: map-get($base, font-size-lg);
+  padding: map-get($button, padding-y-lg) map-get($button, padding-x-lg);
+  &.button--circle {
+    width: map-get($button, circle-diameter-lg);
+    height: map-get($button, circle-diameter-lg);
+  }
+}

@@ -1,126 +1,75 @@
-# BlackDoc
+# [TeXt Theme](https://github.com/kitian616/jekyll-TeXt-theme)
 
-![Jekyll version](https://img.shields.io/badge/Jekyll-3.x-brightgreen.svg?style=flat-square)
+[![Gem Version](https://img.shields.io/gem/v/jekyll-text-theme.svg)](https://github.com/kitian616/jekyll-TeXt-theme/releases)
+[![license](https://img.shields.io/github/license/kitian616/jekyll-TeXt-theme.svg)](https://github.com/kitian616/jekyll-TeXt-theme/blob/master/LICENSE)
+[![Travis](https://img.shields.io/travis/kitian616/jekyll-TeXt-theme.svg)](https://travis-ci.org/kitian616/jekyll-TeXt-theme)
 
-BlackDoc is a two-column [Jekyll](http://jekyllrb.com) theme that's ideal for websites that require a master-detail layout for viewing of content. It's based on [Poole](http://getpoole.com), the Jekyll butler, and the [Hyde](http://hyde.getpoole.com) theme.
+![TeXt Theme](https://raw.githubusercontent.com/kitian616/jekyll-TeXt-theme/master/screenshots/TeXt-home.png)
 
-![BlackDoc screenshot](https://raw.githubusercontent.com/karloespiritu/blackdoc/master/public/images/blackdoc-screenshot.jpg)
+![TeXt Theme Details](https://raw.githubusercontent.com/kitian616/jekyll-TeXt-theme/master/screenshots/TeXt-details.png)
 
-## Contents
+TeXt is a succinct theme for blogging. Similar to iOS 11 style, it has large and prominent titles, round buttons and cards.
 
-- [Features](#features)
-- [Quick Start](#quick-start)
-- [Usage](#usage)
-- [Options](#options)
-  - [Sidebar menu](#sidebar-menu)
-  - [Scrolling sidebar content](#scrolling-sidebar-content)
-  - [Themes](#themes)
-  - [Reverse layout](#reverse-layout)
-- [Development](#development)
-- [Author](#author)
-- [License](#license)
-- [Thanks](#thanks)
+[中文文档](https://github.com/kitian616/jekyll-TeXt-theme/blob/master/README-zh.md)
 
 ## Features
 
-* Now compatible with Jekyll 3.x
-* Two-column layout with scrolling sidebar content
-* Ideal for websites that require  master-detail view of content
+- Responsive
+- Paginate ([jekyll-paginate](https://github.com/jekyll/jekyll-paginate))
+- Table of contents
+- Tag
+- Search
+- Page views ([LeanCloud](https://leancloud.cn/))
+- Emoji ([Jemoji](https://github.com/jekyll/jemoji))
+- Comment ([Disqus](https://disqus.com/))
+- Google Analytics
+- Contact information (Email, Facebook, Twitter, Linkedin, Weibo, Zhihu, etc)
+- Semantic HTML
+- Icon automation tool ([gulp-svg2png](https://www.npmjs.com/package/gulp-svg2png), [gulp-to-ico](https://www.npmjs.com/package/gulp-to-ico))
+- Color Theme
+- Mathematical formula ([MathJax](https://www.mathjax.org/))
+- Flowchart, Sequence diagram, Gantt diagram ([mermaid](https://mermaidjs.github.io/))
+- Line Chart, Bar Chart, Radar Chart, Pie Chart ([chartjs](http://www.chartjs.org/))
+- RSS（[jekyll-feed](https://github.com/jekyll/jekyll-feed))
+- Multi-language support(English | Simplified Chinese | Traditional Chinese)
 
-## Quick Start
+## Color Themes
 
-Download the zip file or clone the BlackDoc repo.
+You can choose these 6 built-in color themes below:
 
-```bash
-$ git clone git@github.com:karloespiritu/BlackDoc.git mysite
-$ cd mysite
-```
-Make sure you have Ruby 2.2.5 or higher installed.
+| `default` | `dark` | `forest` |
+| --- |  --- | --- |
+| ![default](https://raw.githubusercontent.com/kitian616/jekyll-TeXt-theme/master/screenshots/colors_default.png) | ![dark](https://raw.githubusercontent.com/kitian616/jekyll-TeXt-theme/master/screenshots/colors_dark.png) | ![forest](https://raw.githubusercontent.com/kitian616/jekyll-TeXt-theme/master/screenshots/colors_forest.png) |
 
-```bash
-$ ruby --version
-ruby 2.2.5
-```
+| `ocean` | `chocolate` | `orange` |
+| --- |  --- | --- |
+| ![ocean](https://raw.githubusercontent.com/kitian616/jekyll-TeXt-theme/master/screenshots/colors_ocean.png) | ![chocolate](https://raw.githubusercontent.com/kitian616/jekyll-TeXt-theme/master/screenshots/colors_chocolate.png) | ![orange](https://raw.githubusercontent.com/kitian616/jekyll-TeXt-theme/master/screenshots/colors_orange.png) |
 
-Install bundler and install dependencies.
+## Documentation
 
-```bash
-$ gem install bundler
-$ bundle install
-```
+### Start
 
-Build and run your BlackDoc site.
+- [Quick Start](https://tianqi.name/jekyll-TeXt-theme/docs/en/quick-start)
 
-```bash
-$ jekyll serve
-```
+### Customization
 
-## Usage
+- [Configuration](https://tianqi.name/jekyll-TeXt-theme/docs/en/configuration)
+- [Navigation](https://tianqi.name/jekyll-TeXt-theme/docs/en/navigation)
+- [Layouts](https://tianqi.name/jekyll-TeXt-theme/docs/en/layouts)
 
-BlackDoc is a theme built on top of [Poole](https://github.com/poole/poole), which provides a fully furnished Jekyll setup—just download and start the Jekyll server. See [the Poole usage guidelines](https://github.com/poole/poole#usage) for how to install and use Jekyll.
+### Content
 
+- [Writing Posts](https://tianqi.name/jekyll-TeXt-theme/docs/en/writing-posts)
+- [Markdown Enhancements](https://tianqi.name/jekyll-TeXt-theme/docs/en/markdown-enhancements)
+- [Additional styles](https://tianqi.name/jekyll-TeXt-theme/docs/en/additional-styles)
 
-## Options
+## Demo Pages
 
-BlackDoc includes some customizable options, typically applied via classes on the `<body>` element.
-
-
-### Sidebar menu
-
-Create a list of nav links in the sidebar by assigning each Jekyll page the correct layout in the page's [front-matter](http://jekyllrb.com/docs/frontmatter/).
-
-```
----
-layout: page
-title: About
----
-```
-
-**Why require a specific layout?** Jekyll will return *all* pages, including the `atom.xml`, and with an alphabetical sort order. To ensure the first link is *Home*, we exclude the `index.html` page from this list by specifying the `page` layout.
-
-
-### Scrolling sidebar content
-
-By default, BlackDoc includes a scrolling sidebar that will display your markdown files in alphabetical order.
-
-### Themes
-
-BlackDoc ships with eight optional themes based on the [base16 color scheme](https://github.com/chriskempson/base16). Apply a theme to change the color scheme (mostly applies to sidebar and links).
-
-To use a theme, add anyone of the available theme classes to the `<body>` element in the `default.html` layout, like so:
-
-```html
-<body class="theme-base-08">
-  ...
-</body>
-```
-
-To create your own theme, look to the Themes section of [included CSS file](https://github.com/karloespiritu/blackdoc/blob/master/public/css/blackdoc.css). Copy any existing theme (they're only a few lines of CSS), rename it, and change the provided colors.
-
-### Reverse layout
-
-![BlackDoc reverse screenshot](https://raw.githubusercontent.com/karloespiritu/BlackDoc/master/public/images/reverse-screenshot.png)
-
-BlackDoc's page orientation can be reversed with a single class.
-
-```html
-<body class="layout-reverse">
-  ...
-</body>
-```
-
-## Author
-
-**Karlo Espiritu**
-- <https://github.com/karloespiritu>
-- <https://twitter.com/karloespiritu>
+| Name | Description |
+| --- | --- |
+| [Home](https://tianqi.name/jekyll-TeXt-theme/) | Home page with posts list |
+| [Archive](https://tianqi.name/jekyll-TeXt-theme/archive.html) | You can filter tags and search here |
 
 ## License
 
-Open sourced under the [MIT license](LICENSE.md).
-
-\m/
-
-## Thanks
-
-Thanks to [@mdo](https://twitter.com/mdo) for creating the awesome [Poole](http://getpoole.com) project.
+TeXt Theme is [MIT licensed](https://github.com/kitian616/jekyll-TeXt-theme/blob/master/LICENSE).

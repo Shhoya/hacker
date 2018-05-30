@@ -1,0 +1,67 @@
+<div class="follow-me">
+  <ul class="menu menu--nowrap menu--center" itemscope itemtype="http://schema.org/Person">
+    <meta itemprop="name" content="{{ site.author.name }}">
+    {%- assign __path = '/'-%}
+    {%- include snippets/prepend-baseurl.html -%}
+    <link itemprop="url" href="{{ __return | prepend: site.url }}">
+    {%- assign __locale = site.data.locale.EMAIL_ME -%}
+    {%- include snippets/locale-to-string.html -%}
+    {%- if site.author.email -%}
+      <li title="{{ __return }}">
+      <a class="button button--circle mail-button" itemprop="sameAs" href="mailto:{{ site.author.email }}" target="_blank">
+        <i class="fas fa-envelope"></i>
+      </a>
+    {%- endif -%}
+    {%- assign __locale = site.data.locale.FOLLOW_ME -%}
+    {%- include snippets/locale-to-string.html -%}
+    {%- if site.author.weibo -%}
+      <li title="{{ __return | replace: '[NAME]', 'Weibo' }}">
+        <a class="button button--circle weibo-button" itemprop="sameAs" href="https://weibo.com/{{ site.author.weibo }}" target="_blank">
+          <div class="icon">{%- include svg/icon/social/weibo.svg -%}</div>
+        </a>
+      </li>
+    {%- endif -%}
+    {%- if site.author.facebook -%}
+      <li title="{{ __return | replace: '[NAME]', 'Facebook' }}">
+        <a class="button button--circle facebook-button" itemprop="sameAs" href="https://www.facebook.com/{{ site.author.facebook }}" target="_blank">
+          <div class="icon">{%- include svg/icon/social/facebook.svg -%}</div>
+        </a>
+      </li>
+    {%- endif -%}
+    {%- if site.author.twitter -%}
+      <li title="{{ __return | replace: '[NAME]', 'Twitter' }}">
+        <a class="button button--circle twitter-button" itemprop="sameAs" href="https://twitter.com/{{ site.author.twitter }}" target="_blank">
+          <div class="icon">{%- include svg/icon/social/twitter.svg -%}</div>
+        </a>
+      </li>
+    {%- endif -%}
+    {%- if site.author.googleplus -%}
+      <li title="{{ __return | replace: '[NAME]', 'Google+' }}">
+        <a class="button button--circle googlepluse-button" itemprop="sameAs" href="https://plus.google.com/u/0/{{ site.author.googleplus }}" target="_blank">
+          <div class="icon">{%- include svg/icon/social/googleplus.svg -%}</div>
+        </a>
+      </li>
+    {%- endif -%}
+    {%- if site.author.github -%}
+      <li title="{{ __return | replace: '[NAME]', 'Github' }}">
+        <a class="button button--circle github-button" itemprop="sameAs" href="https://github.com/{{ site.author.github }}" target="_blank">
+          <div class="icon">{%- include svg/icon/social/github.svg -%}</div>
+        </a>
+      </li>
+    {%- endif -%}
+    {%- if site.author.linkedin -%}
+      <li title="{{ __return | replace: '[NAME]', 'Linkedin' }}">
+        <a class="button button--circle linkedin-button" itemprop="sameAs" href="https://www.linkedin.com/in/{{ site.author.linkedin }}" target="_blank">
+          <div class="icon">{%- include svg/icon/social/linkedin.svg -%}</div>
+        </a>
+      </li>
+    {%- endif -%}
+    {%- if site.author.douban -%}
+      <li title="{{ __return | replace: '[NAME]', 'Douban' }}">
+        <a class="button button--circle douban-button" itemprop="sameAs" href="https://www.douban.com/people/{{ site.author.douban }}" target="_blank">
+          <div class="icon">{%- include svg/icon/social/douban.svg -%}</div>
+        </a>
+      </li>
+    {%- endif -%}
+  </ul>
+</div>

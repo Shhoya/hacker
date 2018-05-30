@@ -1,0 +1,64 @@
+{%- if post -%}
+  {%- assign cur_page = post -%}
+{%- elsif page -%}
+  {%- assign cur_page = page -%}
+{%- endif -%}
+
+{%- assign __source = page.pageview -%}
+{%- assign __target = site.data.variables.default.pageview -%}
+{%- include snippets/assign.html -%}
+{%- assign _pageview = __return -%}
+
+<div class="article-info clearfix">
+	{%- if page -%}
+    <meta itemprop="author" itemscope itemtype="https://schema.org/Person">
+      {%- if page.author -%}
+        <meta itemprop="name" content="{{ page.author }}"/>
+      {%- elsif site.author.name -%}
+        <meta itemprop="name" content="{{ site.author.name }}"/>
+      {%- endif -%}
+    </meta>
+	{%- endif -%}
+    {%- if cur_page.tags[0] -%}
+      <ul class="article-info__left-col menu">
+        {%- if site.paths.all -%}
+          {%- assign all_path = site.paths.all -%}
+        {%- else -%}
+          {%- assign all_path = site.data.variables.default.paths.all -%}
+        {%- endif -%}
+        {%- for tag in cur_page.tags -%}
+          {%- assign _tag = tag | strip | url_encode } -%}
+          {%- assign __path = all_path | append: '?tag=' -%}
+          {%- include snippets/prepend-baseurl.html -%}
+          <li>
+            <a class="button button--secondary button--pill button--sm" href="{{ __return | append: _tag | replace: '//', '/' }}">{{ tag }}</a>
+          </li>
+        {%- endfor -%}
+      </ul>
+    {%- endif -%}
+
+    {%- if (_pageview or post) and cur_page.date -%}
+      <ul class="article-info__right-col menu">
+        {%- if _pageview or post -%}
+          {%- if site.leancloud.app_id and site.leancloud.app_key and site.leancloud.app_class -%}
+            {%- assign __locale = site.data.locale.VIEWS } -%}
+            {%- include snippets/locale-to-string.html -%}
+            <li class="pageview">
+              <span class="js-pageview" data-page-key="{{ cur_page.key }}">0</span> {{ __return }}
+            </li>
+          {%- endif -%}
+        {%- endif -%}
+        <li class="publish-date">
+          {%- assign __locale = site.data.locale.ARTICLE_DATE_FORMAT } -%}
+          {%- include snippets/locale-to-string.html -%}
+          {%- if post -%}
+            <span>{{ cur_page.date | date: __return }}</span>
+          {%- elsif page -%}
+            <time datetime="{{ page.date | date_to_xmlschema }}"
+              itemprop="datePublished">{{ cur_page.date | date: __return }}
+            </time>
+          {%- endif -%}
+        </li>
+      </ul>
+    {%- endif -%}
+</div>
