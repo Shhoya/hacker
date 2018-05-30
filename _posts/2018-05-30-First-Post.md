@@ -1,5 +1,5 @@
 ---
-  layout: article
+layout: article
 title: "[ML]Perceptron"
 key: 20180530
 tags:
