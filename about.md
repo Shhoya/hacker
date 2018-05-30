@@ -8,13 +8,15 @@ titles:
 key: page-about
 ---
 
-Welcome to my blog! :earth_asia: :earth_africa: :earth_americas:
+![Cong](https://raw.githubusercontent.com/Shhoya/Shhoya.github.io/master/assets/images/logo/Cong.png "Cong"){:.circle.border.shadow}
 
-{% highlight javascript %}
-(() => console.log('hello, world!'))();
+Welcome Shhoya blog!😃{:.info}
+
+{% highlight Shhoya%}
+Puppy name is Cong🐶
 {% endhighlight %}
 
-![Cong](https://raw.githubusercontent.com/Shhoya/Shhoya.github.io/master/assets/images/logo/Cong.png "Cong_circle+border+shadow"){:.circle.border.shadow}
+
 
 ## About Me
 
