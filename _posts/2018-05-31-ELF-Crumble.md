@@ -12,14 +12,14 @@ toc: true
 
 # [+]ELF Crumble(Defcon CTF 2018)
 
+<!--more-->
+
 ## [+]Fragment File
 
 ### FILE Analyze
 
 총 9개의 파일이 주어지며, 파일이름은 각 'broken', 'fragment1 ~ 8' 까지 존재한다.
 파일 이름만으로도 일단 파일이 깨졌으니 갖다 붙혀라 이런 의미의 문제인 것 같다.
-
-<!--more-->
 
 ![ELF-File](https://raw.githubusercontent.com/shhoya/shhoya.github.io/master/assets/images/task/elf_1.png "ELF_1"){:.border}
 

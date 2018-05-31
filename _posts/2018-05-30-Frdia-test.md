@@ -14,6 +14,8 @@ mathjax_autoNumber: true
 
 # [+]Frida Hooking Test
 
+<!--more-->
+
 ## [+]Hooking Test
 
 ### 1.Ready
@@ -22,7 +24,7 @@ Frida 툴에 제대로 입문하고자 <a href="https://www.frida.re/docs/home/"
 
 진행은 C를 이용한 간단한 프로그램 제작과 python 을 이용해 해당 프로그램을 후킹하여 값을 읽거나 변조한다.
 
-<!--more-->
+
 
 ```c
 #include <stdio.h>
