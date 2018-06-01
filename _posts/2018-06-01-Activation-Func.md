@@ -11,6 +11,8 @@ toc: true
 
 # [+]Activation Function
 
+<!--more-->
+
 ## [+]Concept
 
 ### Activation Function ?
