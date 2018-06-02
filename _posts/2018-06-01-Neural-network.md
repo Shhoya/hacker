@@ -82,7 +82,11 @@ $$y = h(a)$$
 
 
 
-###So what?
+
+
+### So What ?
+
+
 
 단층 퍼셉트론(Simple layer Perceptron)과 다층 퍼셉트론(Multi layer Perceptron)을 구분 짓는다고 한다. 
 이게 왜 중요하냐... 활성화 함수가 뭐고 퍼셉트론이 그래서 뭔가 라는 생각을 했다. 
