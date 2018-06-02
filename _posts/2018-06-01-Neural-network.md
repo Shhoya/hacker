@@ -27,7 +27,7 @@ toc: true
 
 
 
-![Neural](https://shhoya.github.io/assets/images/task/neural_network.png"Neural"){:.border}
+![NeuralNet](https://raw.githubusercontent.com/Shhoya/Shhoya.github.io/master/assets/images/task/neural_network.png "Neuralnet"){:.border}
 
 위의 그림에서 입력, 은닉, 출력 순서로 뉴런이 구성되어 있는 것을 볼 수 있다. 
 (출처: https://en.wikipedia.org/wiki/Artificial_neural_network)
@@ -40,7 +40,7 @@ toc: true
 
 기존에 너무 대충 설명해서 다시 한번 짚고 넘어간다. 위에서 그린 그림으로 퍼셉트론을 표현해보면 다음과 같다.
 
-![Neural](https://shhoya.github.io/assets/images/task/perceptron.png"Neural"){:.border}
+![Perceptron](https://raw.githubusercontent.com/Shhoya/Shhoya.github.io/master/assets/images/task/perceptron.png "Perceptron"){:.border}
 
 아름답다. output of function 부분을 보면 이전에 설명한 공식이다. 자, 입력이 총 3개가 들어온다(그림에서는 $$1$$를 입력으로 안쳤지만 난 다 친다.)
 
@@ -68,7 +68,7 @@ $$f(x) = 1(x > 0)$$
 
 말 그대로 활성화를 일으키는가, 일으키지 않는가를 결정하는 일을 한다.
 
-![Neural](https://raw.githubusercontent.com/Shhoya/Shhoya.github.io/master/assets/images/task/active.png"Neural"){:.border}
+![Neural](https://raw.githubusercontent.com/Shhoya/Shhoya.github.io/master/assets/images/task/active.png "Neural"){:.border}
 
 위의 그림을 식으로 표현하면 아래와 같다.
 
