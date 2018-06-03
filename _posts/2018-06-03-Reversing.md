@@ -11,6 +11,8 @@ toc: true
 
 # [+]Abex' Crack Me
 
+<!--more-->
+
 ## [+]Crack Me #1
 
 ### Problem
