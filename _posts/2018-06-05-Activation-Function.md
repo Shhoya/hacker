@@ -8,6 +8,8 @@ tags:
   - Neural
   - Python
 toc: true
+mathjax: true
+mathjax_autoNumber: true
 ---
 
 # [+] Activation Function(Not Finish..)
