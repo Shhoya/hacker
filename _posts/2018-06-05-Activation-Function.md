@@ -12,9 +12,11 @@ toc: true
 
 # [+] Activation Function(Not Finish..)
 
+<!--more-->
+
 ## [+] Sigmoid Function
 
-<!--more-->
+
 
 ### Concept
 
