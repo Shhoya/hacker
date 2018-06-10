@@ -7,6 +7,8 @@ tags:
   - ML
   - Neural
 toc: true
+mathjax: true
+mathjax_autoNumber: true
 ---
 
 # [+]Neural Network
