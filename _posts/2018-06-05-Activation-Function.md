@@ -12,7 +12,7 @@ mathjax: true
 mathjax_autoNumber: true
 ---
 
-# [+] Activation Function(Not Finish..)
+# [+] Activation Function
 
 <!--more-->
 
@@ -50,7 +50,39 @@ $$h(2.0) = 0.880...$$
 
 ### Concept
 
+쉽게 생각하여 입력의 결과가 0을 넘으면 1을 출력하고 그 외에는 0을 출력하는 함수다.
+실제 구글링을하여 Wiki를 찾아보면 엄청 복잡하게 설명되어 있지만 사실 위의 말이 모든걸 의미한다.
 
+### implementation
 
-**To be Continue...**
+python 의 numpy 모듈과 matplotlib 를 이용하여 계단함수를 구현할 수 있다. 그렇다면 어떻게 그래프가 나타나는지 확인해본다.
 
+```python
+import numpy as np
+import matplotlib.pylab as plt
+
+def step_function(x):
+    return np.array(x >0, dtype=np.int)
+
+x = np.arange(-5.0,5.0,0.1)
+y = step_function(x)
+plt.plot(x,y)
+plt.ylim(-0.1,1.1)
+plt.show()
+
+```
+
+실제 실행하면 다음과 같은 그래프를 확인할 수 있다.
+
+![stepf](https://github.com/Shhoya/Shhoya.github.io/blob/master/assets/images/task/step1.png?raw=true "StepFunc"){:.border}
+
+정말 계단 같다. 0을 경계로 1 또는 0만을 출력하는 것을 볼 수 있다. 이러한 계단과 같은 형태 때문에 계단함수라고 불린다.
+이상으로 개념을 마치고 다음 부턴 실제 활성화 함수들의 진지한(?) 구현을 해보겠다..;
+
+# [+] Reference
+
+1. <a href="http://www.hanbit.co.kr/store/books/look.php?p_code=B8475831198">*"밑바닥부터 시작하는 딥러닝"*</a>
+
+2. <a href="https://en.wikipedia.org/wiki/Step_function">*"Wiki Step Function"*</a>
+
+   
