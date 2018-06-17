@@ -1,5 +1,5 @@
 ---
-dlayout: article
+layout: article
 title: "[WriteUp]Jailbreak(Viettel Mates CTF 2018)"
 key: 20180617
 tags:
