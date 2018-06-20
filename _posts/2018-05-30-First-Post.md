@@ -114,9 +114,7 @@ def OR(x1,x2):
 
 테스트 포스팅이므로 여기까지.
 
-
-
-## [+]Reference
+## [+] Reference
 
 1. <a href="http://www.hanbit.co.kr/store/books/look.php?p_code=B8475831198">밑바닥부터 시작하는 딥러닝</a>
 

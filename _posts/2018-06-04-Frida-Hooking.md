@@ -137,8 +137,6 @@ setImmediate(function() {
 
 위와 같이 js를 이용하면 간단하게 플래그를 얻을 수 있다.
 
-
-
-# [+] Reference
+## [+] Reference
 
 1. <a href="https://www.frida.re/docs/examples/android/">*"Frida Android Example"*</a>
