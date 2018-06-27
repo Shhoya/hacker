@@ -1,7 +1,7 @@
 ---
 layout: article
 title: "[ML]3Layer Neural Network"
-key: 20180626
+key: 20180628
 tags:
   - Dev
   - ML
@@ -139,7 +139,50 @@ Console
 
 요즘 관심을 갖고 공부를 하니 좀 더 뭔가 보이는게 많아진다. 좋다.
 
-이 정도 깨달음이면 오늘은 여기까지.
+자 여기서 이제 2층으로 가는 과정을 보자..
+
+![3layer](https://github.com/Shhoya/Shhoya.github.io/blob/master/assets/images/task/3layer4.png?raw=true "3layer"){:.border}
+
+```python
+#-*-coding:utf-8-*-
+import numpy as np
+
+def step_func(x):
+    return np.array(x >0,dtype=np.int)
+
+
+def sigmoid(x):
+    return 1 / (1+np.exp(-x))
+
+X = np.array([1.0, 0.5]) #입력 신호
+W1 = np.array([[0.1, 0.3, 0.5],[0.2, 0.4, 0.6]]) #가중치
+B1 = np.array([0.1, 0.2, 0.3]) #편향
+
+print(W1.shape)
+print(X.shape)
+print(B1.shape)
+
+A1 = np.dot(X,W1)+B1 #행렬의 내적 + 편향
+print(A1)
+Z1 = sigmoid(A1) #활성화 함수를 이용해 신호 변환
+print(Z1)
+
+#2 Layer
+W2 = np.array([[0.1,0.4],[0.2,0.5],[0.3,0.6]])
+B2 = np.array([0.1,0.2])
+
+print(Z1.shape)
+print(W2.shape)
+print(B2.shape)
+
+A2 =np.dot(Z1,W2) + B2
+Z2 = sigmoid(A2)
+print(Z2)
+```
+
+별로 다를 바 없는 것을 느낄 수 있다. 이처럼 쉽게 구현이 가능하다. 오..........
+
+**작성 중**
 
 ## [+] Reference
 
