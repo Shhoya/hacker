@@ -15,9 +15,9 @@ mathjax_autoNumber: true
 
 # [+] Concept
 
-## [+] Mobile PT
-
 <!--more-->
+
+## [+] Mobile PT
 
 ### Download
 
