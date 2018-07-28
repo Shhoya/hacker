@@ -26,6 +26,18 @@ mathjax_autoNumber: true
 - Version 1.0 beta release
 
 
+### Requirement
+
+Local
+
+- Frida 11.0.6 (12.x 의 경우 메모리덤프 에러)
+- python 2.7
+- adb
+
+Android
+
+- frida-server 11.0.6
+
 
 ### Using C++
 
