@@ -1,7 +1,7 @@
 ---
 layout: article
-title: "[Mobile]Shhoya_Autoready 1.0 beta release"
-key: 20180728
+title: "[Mobile]Shhoya_Autoready 1.2 beta release"
+key: 20180731
 tags:
   - iOS
   - Android
@@ -24,6 +24,8 @@ mathjax_autoNumber: true
 <a href="https://github.com/Shhoya/Shhoya_autoready/raw/master/Releases/shhoya_autoready_v1.0.zip">Autoready Download</a>
 
 - Version 1.0 beta release
+- Version 1.1 beta release
+- Version 1.2 beta releae
 
 
 ### Requirement
@@ -76,7 +78,7 @@ iOS의 경우 문제가 많다. 10.x 이하 버전과  11.x 이상 버전의 동
 
 ### Usage
 
-실행파일 : Shhoya_autoready_v1.0.exe
+실행파일 : autoready_v1.2 beta.exe
 사용도구 : apktool, signapk, frida, fridump
 
 데이터 추출의 경우 `/data/data` 를 통째로 복사한 후 작업이 끝나면 복사된 파일들은 다시 삭제한다. 너무 대량인 경우 긴 작업 시간이 필요하므로 앱들은 정리해놓고 진단 대상 앱만 설치해둘 것을 권장한다.
@@ -88,5 +90,11 @@ iOS의 경우 문제가 많다. 10.x 이하 버전과  11.x 이상 버전의 동
 
 점점 업데이트를 해보겠드아ㅏ!
 
+# [+] Update
 
+## [+] Version 1.2 release
+
+- 루팅 탐지 문자열 찾기 추가
+- 최근 설치한 앱 목록 추가
+- 그 외 잡다한 버그 수정
 
