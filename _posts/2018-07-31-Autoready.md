@@ -21,7 +21,7 @@ mathjax_autoNumber: true
 
 ### Download
 
-<a href="https://github.com/Shhoya/Shhoya_autoready/raw/master/Releases/shhoya_autoready_v1.0.zip">Autoready Download</a>
+<a href="https://github.com/Shhoya/Shhoya_autoready/raw/master/Releases/v1.2/autoready_v1.2 beta.zip">Autoready Download</a>
 
 - Version 1.0 beta release
 - Version 1.1 beta release
