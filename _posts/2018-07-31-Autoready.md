@@ -1,6 +1,6 @@
 ---
 layout: article
-title: "[Mobile]Shhoya_Autoready 1.2 beta release"
+title: "[Mobile]Shhoya_Autoready 1.2 beta release(New)"
 key: 20180731
 tags:
   - iOS
@@ -23,9 +23,12 @@ mathjax_autoNumber: true
 
 <a href="https://github.com/Shhoya/Shhoya_autoready/raw/master/Releases/v1.2/autoready_v1.2 beta.zip">Autoready Download</a>
 
+<a href="https://github.com/Shhoya/Shhoya_autoready/raw/master/python/shh0ya_autoready1.2.zip">Autoready python Download</a>
+
 - Version 1.0 beta release
 - Version 1.1 beta release
 - Version 1.2 beta releae
+- Vesion 1.2 beta Python release (New)
 
 
 ### Requirement
@@ -98,3 +101,8 @@ iOS의 경우 문제가 많다. 10.x 이하 버전과  11.x 이상 버전의 동
 - 최근 설치한 앱 목록 추가
 - 그 외 잡다한 버그 수정
 
+## [+] Python version release (New)
+
+- 문자열의 향연
+- 최근 설치 및 수정된 앱, 데이터 목록 추가
+- 작업 디렉토리 정리 추가
