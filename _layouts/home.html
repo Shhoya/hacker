@@ -7,12 +7,6 @@ titles:
   zh-Hant: 博客
 show_title: false
 ---
-<script>
-  var disqus_config = function () {
-    this.callbacks.onNewComment = [function() { DISQUSWIDGETS.getCount({reset: true}); }];
-  };
-</script>
-
 <div class="layout--home">
   <div class="post-list">
     {%- for post in paginator.posts -%}
