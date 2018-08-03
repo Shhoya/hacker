@@ -14,7 +14,11 @@ show_title: false
         {%- assign __path = post.url -%}
         {%- include snippets/prepend-baseurl.html -%}
         {%- assign href = __return -%}
-        <h1><a href="{{ href }}">{{ post.title }}</a></h1> <a href="{{ site.url}}{{post.url}}#disqus_thread" data-disqus-identifier="{{ post.id }}">Comments</a>
+        <h1><a href="{{ href }}">{{ post.title }}</a></h1>
+		 {% if site.disqus_short_name and page.comments != false and site.disqus_show_comment_count == true %}
+         <a href="{% if index %}{{ site_url }}{{ post.url }}{% endif %}#disqus_thread"
+         data-disqus-identifier="{% if post.meta.disqus_id %}{{ post.meta.disqus_id }}{% else %}{{ site.url }}{{ post.url }}{% endif %}">Comments</a>
+        {% endif %}
         <div class="article-content">
           {%- assign _excerpt_type = site.excerpt_type | default: site.data.variables.default.excerpt_type  -%}
           {%- if _excerpt_type == 'html' -%}
