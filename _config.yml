@@ -13,7 +13,7 @@
 
 
 #disque comments
-disqus_url:
+disqus: True
 disqus_id: shh0ya
 
 ## => Site Settings
