@@ -1,6 +1,6 @@
 ---
 layout: article
-title: "[Mobile]Shhoya_Autoready 1.2 beta release(New)"
+title: "[Mobile]Shhoya_Autoready release(New)"
 key: 20180731
 tags:
   - iOS
@@ -17,21 +17,63 @@ mathjax_autoNumber: true
 
 <!--more-->
 
-## [+] Mobile PT
+## [+] Autoready python
+
+C++로 공부용이었으나 실제 사용결과 나름 진단에 도움이되어 파이썬으로 이식하였다.
 
 ### Download
 
-<a href="https://github.com/Shhoya/Shhoya_autoready/raw/master/Releases/v1.2/autoready_v1.2 beta.zip">Autoready Download</a>
-
-<a href="https://github.com/Shhoya/Shhoya_autoready/raw/master/python/shh0ya_autoready1.2.zip">Autoready python Download</a>
+<a href="https://github.com/Shhoya/Shhoya_autoready/raw/master/python/autoready.zip">Autoready python Download</a>
 
 - Version 1.0 beta release
 - Version 1.1 beta release
 - Version 1.2 beta releae
 - Vesion 1.2 beta Python release (New)
 
+## [+] Usage
+
+- Frida 11.0.6 (12.x 의 경우 메모리덤프 에러)
+- python 2.7
+- adb
+
+Android
+
+- frida-server 11.0.6
+
+`python autoready.py --help` 도움말
+
+`python autoready.py -a` 
+최근 설치한 앱 리스트에서 선택할 것인지에 선택지 존재. (y 또는 n 입력) , y 입력 시 최근 설치한 앱 목록이 출력되며 선택하여 apk 다운로드 및 디컴파일 진행
+
+`python autoready.py -d` 
+디컴파일만 진행함. apk 파일이 `base.apk`로 떨어지지 않는 경우 해당 ~.apk 를 `base.apk`로 변경하여 해당 옵션 사용 시 디컴파일
+
+`python autoready.py -D`
+-a 옵션과 마찬가지로 최근 설치된 앱 리스트 선택지 존재. 해당 앱의 데이터 다운로드
+
+`python autoready.py -m`
+사용하기 전 안드로이드 단말기에서 `frida-server` 실행 필수. `fridump`를 이용해 메모리 덤프 가능. PID를 입력하여 덤프
+
+`python autoready.py -b`
+`base.apk` 를 디컴파일하여 작업한 후 디컴파일된 `base` 디렉토리를 다시 빌드하여 사인 과정까지 진행
+
+`python autoready.py -r`
+문자열을 기준으로 `./base/smali` 디렉토리에서 루팅탐지에 사용되는 문자열들을 검색해 해당 문자열이 발견된 small 파일 목록을 `check_root.txt` 로 저장
+
+`python autoready.py -R`
+작업을 모두 끝낸 후 해당 옵션 사용 시 `autoready` 를 제외한 모든 것을 삭제
+
+
+
+
+
+
+
+
 
 ### Requirement
+
+<a href="https://github.com/Shhoya/Shhoya_autoready/raw/master/Releases/v1.2/autoready_v1.2 beta.zip">Autoready Download</a>
 
 Local
 
