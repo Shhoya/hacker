@@ -28,7 +28,8 @@ C++로 공부용이었으나 실제 사용결과 나름 진단에 도움이되�
 - Version 1.0 beta release
 - Version 1.1 beta release
 - Version 1.2 beta releae
-- Vesion 1.2 beta Python release (New)
+- Vesion 1.2 beta Python release
+- Version 1.0 Release (Python) (New)
 
 ## [+] Usage
 
@@ -40,13 +41,15 @@ Android
 
 - frida-server 11.0.6
 
+여러가지 안드로이드 버전에서 실행 가능하도록 수정 중. 일단 지금은 만족스러움
+
 `python autoready.py --help` 도움말
 
 `python autoready.py -a` 
 최근 설치한 앱 리스트에서 선택할 것인지에 선택지 존재. (y 또는 n 입력) , y 입력 시 최근 설치한 앱 목록이 출력되며 선택하여 apk 다운로드 및 디컴파일 진행
 
 `python autoready.py -d` 
-디컴파일만 진행함. apk 파일이 `base.apk`로 떨어지지 않는 경우 해당 ~.apk 를 `base.apk`로 변경하여 해당 옵션 사용 시 디컴파일
+디컴파일만 진행
 
 `python autoready.py -D`
 -a 옵션과 마찬가지로 최근 설치된 앱 리스트 선택지 존재. 해당 앱의 데이터 다운로드
