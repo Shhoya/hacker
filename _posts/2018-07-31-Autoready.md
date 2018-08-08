@@ -25,10 +25,10 @@ C++로 공부용이었으나 실제 사용결과 나름 진단에 도움이되�
 
 <a href="https://github.com/Shhoya/Shhoya_autoready/raw/master/python/autoready.zip">Autoready python Download</a>
 
-- Version 1.0 beta release
-- Version 1.1 beta release
-- Version 1.2 beta releae
-- Vesion 1.2 beta Python release
+- Version 1.0 beta release (C++)
+- Version 1.1 beta release (C++)
+- Version 1.2 beta releae (C++)
+- Vesion 1.2 beta Python release (Python)
 - Version 1.0 Release (Python) (New)
 
 ## [+] Usage
@@ -70,9 +70,7 @@ Android
 
 
 
-
-
-
+## [+] old
 
 ### Requirement
 
@@ -151,3 +149,4 @@ iOS의 경우 문제가 많다. 10.x 이하 버전과  11.x 이상 버전의 동
 - 문자열의 향연
 - 최근 설치 및 수정된 앱, 데이터 목록 추가
 - 작업 디렉토리 정리 추가
+- 그 외 각종 버그 수정
