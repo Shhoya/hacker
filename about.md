@@ -10,7 +10,7 @@ key: page-about
 
 ![Cong](https://raw.githubusercontent.com/Shhoya/Shhoya.github.io/master/assets/images/logo/Cong.png "Cong"){:.circle.border.shadow}
 
-Welcome Shhoya blog!😃
+Welcome Shh0ya blog!😃
 {:.info}
 
 {% highlight Shhoya%}
@@ -22,7 +22,14 @@ My Angel is Yellow rose💕 and.... Angry Bird🐦!!
 
 ## About Me
 
-- Information Security
-- Hacking, CTF, Pwnable ...
-- Malware Analyze, Reverse code Engineering
-- I need some more!
+- A.K.A Shh0ya @ Cyberone Penetration Test Team
+  - 2017.09 ~ Now
+  - Web , Mobile Penetration test / Reversing / Malware Analysis
+  - Yewon Art Univercity / applied music / Vocal & Composition
+- History
+  - 2018 ~
+    - Autoready release (Android Analytics Simplification Tool)
+  - 2017 ~
+    - Cerber ransomware Analysis
+    - Erebus(Linux) ransomware Analysis
+    - Start
