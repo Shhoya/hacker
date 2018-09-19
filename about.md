@@ -8,7 +8,7 @@ titles:
 key: page-about
 ---
 
-![Cong](https://raw.githubusercontent.com/Shhoya/Shhoya.github.io/master/assets/images/logo/Cong.png "Cong"){:width="128px" height="128px"} 
+![Cong](https://raw.githubusercontent.com/Shhoya/Shhoya.github.io/master/assets/images/logo/Cong.png "Cong"){:.circle.border.shadow } 
 
 Welcome Shh0ya blog!😃
 {:.info}
