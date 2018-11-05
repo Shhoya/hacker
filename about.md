@@ -22,7 +22,7 @@ My Angel is Yellow rose💕 and.... Angry Bird🐦!!
 
 ## About Me
 
-![Shh0ya](https://raw.githubusercontent.com/Shhoya/Shhoya.github.io/master/assets/images/logo/icon-310x310.png "Shh0ya"){:width="128px" height="128px" :.aligncenter}
+![Shh0ya](https://raw.githubusercontent.com/Shhoya/Shhoya.github.io/master/assets/images/logo/icon-310x310.png "Shh0ya"){:.aligncenter}
 
 - A.K.A Shh0ya @ Cyberone Penetration Test Team, Cyb3r1, Shh0ya(single)
   - 2017.09 ~ Now
