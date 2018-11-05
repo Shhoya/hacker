@@ -22,7 +22,7 @@ My Angel is Yellow rose💕 and.... Angry Bird🐦!!
 
 ## About Me
 
-![Shh0ya](https://raw.githubusercontent.com/Shhoya/Shhoya.github.io/master/assets/images/logo/icon-310x310.png "Shh0ya"){:.aligncenter}
+![Shh0ya](https://raw.githubusercontent.com/Shhoya/Shhoya.github.io/master/assets/images/logo/icon-310x310.png "Shh0ya"){: .center}
 
 - A.K.A Shh0ya @ Cyberone Penetration Test Team, Cyb3r1, Shh0ya(single)
   - 2017.09 ~ Now
@@ -36,3 +36,4 @@ My Angel is Yellow rose💕 and.... Angry Bird🐦!!
     - Cerber ransomware Analysis
     - Erebus(Linux) ransomware Analysis
     - Start
+
