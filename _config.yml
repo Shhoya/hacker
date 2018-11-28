@@ -19,7 +19,7 @@ disqus_id: shh0ya
 ## => Site Settings
 ##############################
 text_color_theme: default # "default" (default), "dark", "forest", "ocean", "chocolate", "orange"
-highlight_color_theme: tomorrow-night-bright
+highlight_theme: tomorrow-night-bright # "default" (default), "tomorrow", "tomorrow-night", "tomorrow-night-eighties", "tomorrow-night-blue", "tomorrow-night-bright"
 url: https://Shhoya.github.io # the base hostname & protocol for your site e.g. 
 baseurl: / # does not include hostname
 title: Shhoya' Blog
