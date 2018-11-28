@@ -8,6 +8,8 @@ tags:
   - Mobile
   - Tool
   - Dev
+sidebar:
+  nav: sidem
 toc: true
 mathjax: true
 mathjax_autoNumber: true

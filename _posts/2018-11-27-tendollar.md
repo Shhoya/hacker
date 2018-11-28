@@ -7,6 +7,8 @@ tags:
   - Reversing
   - Forensic
   - CTF
+sidebar:
+  nav: sidem
 toc: true
 mathjax: true
 mathjax_autoNumber: true

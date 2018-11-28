@@ -6,6 +6,8 @@ tags:
   - Dev
   - Python
   - ML
+sidebar:
+  nav: sidem
 toc: true
 mathjax: true
 mathjax_autoNumber: true

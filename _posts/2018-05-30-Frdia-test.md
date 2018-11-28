@@ -7,6 +7,8 @@ tags:
   - Hooking
   - Security
   - Mobile
+sidebar:
+  nav: sidem
 toc: true
 mathjax: true
 mathjax_autoNumber: true

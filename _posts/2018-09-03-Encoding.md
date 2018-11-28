@@ -7,6 +7,8 @@ tags:
   - WriteUp
   - Reversing
   - Binary
+sidebar:
+  nav: sidem
 toc: true
 mathjax: true
 mathjax_autoNumber: true

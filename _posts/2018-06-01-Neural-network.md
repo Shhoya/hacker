@@ -6,6 +6,8 @@ tags:
   - Dev
   - ML
   - Neural
+sidebar:
+  nav: sidem
 toc: true
 mathjax: true
 mathjax_autoNumber: true

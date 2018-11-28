@@ -7,6 +7,8 @@ tags:
   - ML
   - Neural
   - Python
+sidebar:
+  nav: sidem
 toc: true
 mathjax: true
 mathjax_autoNumber: true
@@ -84,5 +86,3 @@ plt.show()
 1. <a href="http://www.hanbit.co.kr/store/books/look.php?p_code=B8475831198">*"밑바닥부터 시작하는 딥러닝"*</a>
 
 2. <a href="https://en.wikipedia.org/wiki/Step_function">*"Wiki Step Function"*</a>
-
-   
