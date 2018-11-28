@@ -12,16 +12,16 @@ header:
       zh-Hant:  關於
     url:        /about.html
     
- sidem:
-    - title: Home
-      url: /
-    - title: Archive
-      url:  /archive.html
-    - title: About
-      url: /about.html
-      children:
-        - title: Github
-          url: https://github.com/shhoya
-        - title: Email
-          url: hunho88@gmail.com
+sidem:
+  - title: Home
+    url: /
+  - title: Archive
+    url:  /archive.html
+  - title: About
+    url: /about.html
+    children:
+      - title: Github
+        url: https://github.com/shhoya
+      - title: Email
+        url: hunho88@gmail.com
  
