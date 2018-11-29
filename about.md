@@ -6,6 +6,8 @@ titles:
   zh-Hans: 关于
   zh-Hant: 關於
 key: page-about
+sidebar:
+  nav: sidem
 ---
 
 ![Cong](https://raw.githubusercontent.com/Shhoya/Shhoya.github.io/master/assets/images/logo/Cong.png "Cong"){:.circle.border.shadow } 

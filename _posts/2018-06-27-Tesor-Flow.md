@@ -8,8 +8,6 @@ tags:
   - Neural
   - Python
   - TensorFlow
-sidebar:
-  nav: sidem
 toc: true
 mathjax: true
 mathjax_autoNumber: true

@@ -7,8 +7,6 @@ tags:
   - ML
   - Neural
   - Python
-sidebar:
-  nav: sidem
 toc: true
 mathjax: true
 mathjax_autoNumber: true

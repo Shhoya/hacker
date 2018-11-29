@@ -7,8 +7,8 @@ tags:
   - Memoryscan
   - WriteUp
   - Forensic
-sidebar:
-  nav: sidem
+
+  
 toc: true
 mathjax: true
 mathjax_autoNumber: true

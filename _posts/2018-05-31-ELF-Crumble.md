@@ -7,8 +7,6 @@ tags:
   - WriteUp
   - Reversing
   - Binary
-sidebar:
-  nav: sidem
 toc: true
 ---
 
