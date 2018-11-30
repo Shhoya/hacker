@@ -24,6 +24,8 @@ mathjax_autoNumber: true
 
 ## [+] Change log
 
+<a href="https://shhoya.github.io/2018/07/31/Autoready.html#-version-12-release">**이전 릴리즈 확인**</a>
+
 ### 검색 기능 추가
 
 - 단말기 내 앱 또는 앱 데이터를 검색하여 선택할 수 있는 기능 추가
