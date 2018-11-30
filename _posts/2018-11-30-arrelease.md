@@ -18,7 +18,7 @@ mathjax_autoNumber: true
 
 ## [+] Download
 
-<a href="https://github.com/Shhoya/Shhoya_autoready/raw/master/Release/Python Release(v1.1 New)/Autoready_v1.1.zip">Autoready python Download</a>
+<a href="https://github.com/Shhoya/Shhoya_autoready/blob/master/Releases/Python%20Release(v1.1%20New)/Autoready_v1.1.zip">Autoready python Download</a>
 
 1.1 버전으로 오랜만에 기능도 추가해봤다. 개인정보도 넣고 싶었지만 그건 다음 릴리즈 때..
 
