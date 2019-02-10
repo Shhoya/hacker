@@ -28,12 +28,15 @@ My Angel is Yellow rose💕 and.... Angry Bird🐦!!
 
  
 
-- A.K.A Shh0ya @ Cyberone Penetration Test Team, Cyb3r1, Shh0ya(single)
+- A.K.A Shh0ya @ ~~Cyberone Penetration Test Team,~~ wonderpeople anti hacking team, Cyb3r1, Shh0ya(single)
   - 2017.09 ~ Now
   - Web , Mobile Penetration test / Reversing / Malware Analysis
   - Interested in dev.. (ML, C, Python, C++, R..)
   - Yewon Art Univercity / applied music / Vocal & Composition(!?)
 - History
+  - 2019 ~
+    - Join the Game Anti hacking team
+    - VMProtect, themida unpacking research
   - 2018 ~
     - Autoready release (Android Analytics Simplification Tool)
   - 2017 ~
