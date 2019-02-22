@@ -3,10 +3,8 @@ layout: article
 title: "[Mobile]Shhoya_Autoready release(New)"
 key: 20180731
 tags:
-  - iOS
   - Android
   - Mobile
-  - Tool
   - Dev
 toc: true
 mathjax: true

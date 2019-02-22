@@ -3,8 +3,6 @@ layout: article
 title: "[Mobile]Frida Hooking Test"
 key: 20180530
 tags:
-  - Frida
-  - Hooking
   - Security
   - Mobile
 toc: true

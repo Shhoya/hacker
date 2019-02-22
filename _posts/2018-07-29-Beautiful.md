@@ -4,8 +4,6 @@ title: "[Dev]Web Scraping(BeautifulSoup)"
 key: 20180730
 tags:
   - Dev
-  - Python
-  - ML
 toc: true
 mathjax: true
 mathjax_autoNumber: true

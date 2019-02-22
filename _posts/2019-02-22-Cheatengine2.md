@@ -3,9 +3,7 @@ layout: article
 title: "[Rev]Cheat Engine(2)"
 key: 20190222
 tags:
-  - Cheat
   - Reversing
-  - Hooking
 toc: true
 mathjax: true
 mathjax_autoNumber: true

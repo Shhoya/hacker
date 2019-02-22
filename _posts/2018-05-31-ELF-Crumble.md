@@ -6,7 +6,6 @@ tags:
   - CTF
   - WriteUp
   - Reversing
-  - Binary
 toc: true
 ---
 

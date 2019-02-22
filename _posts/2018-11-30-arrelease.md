@@ -5,7 +5,6 @@ key: 20181130
 tags:
   - Android
   - Mobile
-  - Tool
   - Dev
 toc: true
 mathjax: true

@@ -5,8 +5,6 @@ key: 20180628
 tags:
   - Dev
   - ML
-  - Neural
-  - Python
 toc: true
 mathjax: true
 mathjax_autoNumber: true

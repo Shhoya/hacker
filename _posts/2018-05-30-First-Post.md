@@ -4,7 +4,6 @@ title: "[ML]Perceptron"
 key: 20180530
 tags:
   - ML
-  - Perceptron
   - Dev
 toc: true
 mathjax: true

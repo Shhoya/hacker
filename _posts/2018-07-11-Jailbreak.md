@@ -5,8 +5,6 @@ key: 20180711
 tags:
   - iOS
   - Mobile
-  - Tool
-  - Jailbreak
 toc: true
 mathjax: true
 mathjax_autoNumber: true

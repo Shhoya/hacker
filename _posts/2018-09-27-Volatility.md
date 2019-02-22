@@ -3,12 +3,8 @@ layout: article
 title: "[Forensic]Volatility"
 key: 20180927
 tags:
-  - Framework
-  - Memoryscan
   - WriteUp
   - Forensic
-
-  
 toc: true
 mathjax: true
 mathjax_autoNumber: true

@@ -3,8 +3,6 @@ layout: article
 title: "[Mobile]Frida Android Hooking"
 key: 20180604
 tags:
-  - Frida
-  - Hooking
   - Security
   - Mobile
 toc: true

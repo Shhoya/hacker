@@ -5,7 +5,6 @@ key: 20180601
 tags:
   - Dev
   - ML
-  - Neural
 toc: true
 mathjax: true
 mathjax_autoNumber: true

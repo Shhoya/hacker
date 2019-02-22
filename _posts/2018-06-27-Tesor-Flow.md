@@ -5,9 +5,6 @@ key: 20180627
 tags:
   - Dev
   - ML
-  - Neural
-  - Python
-  - TensorFlow
 toc: true
 mathjax: true
 mathjax_autoNumber: true
