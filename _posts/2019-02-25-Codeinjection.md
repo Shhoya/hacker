@@ -692,6 +692,15 @@ int main(int argc, char *argv[])
 
 다른 점은 인젝션하는 코드에 필요한 데이터를 포함시키느냐 포함시키지 않느냐가 다르다. 확인해보면 문자열 데이터가 인젝션하는 코드 내에 포함되어 `THREAD_PARAM` 구조체에 문자열이 존재하지 않는 것을 확인할 수 있다.
 
+
+
+1. `GetModuleHandleA`로   프로세스에 로드되어 있는 `kernel32.dll` 라이브러리의 핸들 값을 가져옴
+2. 타겟 프로세스의 핸들 값을 가져옴(`OpenProcess`)
+3. `ThreadProc` 함수의 크기를 구함(`dwSize`)
+4. 타겟 프로세스에 `ThreadProc` 크기 만큼 메모리를 할당하고 시작 주소를 리턴 받음(`VirtualAllocEx`)
+5. 리턴받은 주소에 `ThreadProc` 을 쓴다.(`WriteProcessMemory`)
+6. `CreateRemoteThread`를 이용하여 스레드를 생성하고 원하는 코드를 실행
+
 # [+] Reference
 
 1. ***리버싱 핵심 원리***
