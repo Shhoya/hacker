@@ -396,5 +396,163 @@ BOOL hook_iat(LPCSTR szDllName, PROC pfnOrg, PROC pfnNew)
 }
 ```
 
-빡세서 30분만쉬고옴...
+흠 변수 선언들부터 차근차근 확인한다.
+
+```c
+	HMODULE hMod;
+	LPCSTR szLibName;
+	PIMAGE_IMPORT_DESCRIPTOR pImportDesc; 
+	PIMAGE_THUNK_DATA pThunk;
+	DWORD dwOldProtect, dwRVA;
+	PBYTE pAddr;
+
+    // hMod, pAddr = ImageBase of calc.exe
+    //             = VA to MZ signature (IMAGE_DOS_HEADER)
+	hMod = GetModuleHandle(NULL);
+	pAddr = (PBYTE)hMod;
+    // pAddr = VA to PE signature (IMAGE_NT_HEADERS)
+	pAddr += *((DWORD*)&pAddr[0x3C]);
+    // dwRVA = RVA to IMAGE_IMPORT_DESCRIPTOR Table
+	dwRVA = *((DWORD*)&pAddr[0x80]);
+    // pImportDesc = VA to IMAGE_IMPORT_DESCRIPTOR Table
+	pImportDesc = (PIMAGE_IMPORT_DESCRIPTOR)((DWORD)hMod+dwRVA);
+```
+
+먼저 `GetModuleHandle(NULL)`을 호출한다는 것은 이 함수를 호출한 프로세스의 핸들 값을 가지고 오는 것이다.
+
+먼저 `paddr` 은 `IMAGE_DOS_HEADER` 에서 NT Header의 주소를 가지고 온다. 그리고 `dwRVA` 변수에 `IMAGE_IMPORT_DESCRIPTOR` 의 주소를 얻는다. 여기까지 계산을 해보면 다음과 같다.
+
+**`pAddr`은 도스헤더이고 여기에 0x3C의 위치에는 NT 헤더의 시작주소가 있다.**
+**`dwRVA` 변수에는 `pAddr` 위치부터 0x80의 위치에 있는 `IMAGE_IMPORT_DESCRIPTOR`의 시작주소(RVA) 값을 얻는다**
+
+`pImportDesc`에는 위에서 구한 `hMod`(Image Base) + `dwRVA`을 계산하여 VA 값으로 변환하여 저장한다.
+
+이를 확인하려고 다음과 같이 출력을 해보면 쉽게 알 수 있다.
+
+```c
+#include <stdio.h>
+#include <Windows.h>
+
+void main(){
+
+	HMODULE hMod;
+	LPCSTR szLibName;
+	PIMAGE_IMPORT_DESCRIPTOR pImportDesc; 
+	PIMAGE_THUNK_DATA pThunk;
+	DWORD dwOldProtect, dwRVA;
+	PBYTE pAddr;
+
+	hMod = GetModuleHandle(NULL);
+	printf("hMod(IMAGE_BASE) : %p\n",hMod);
+	pAddr = (PBYTE)hMod;
+	pAddr += *((DWORD*)&pAddr[0x3C]);
+	printf("IMAGE_NT_HEADER(VA) = %p\n",pAddr);
+	dwRVA = *((DWORD*)&pAddr[0x80]);
+	printf("IMAGE_IMPORT_DESCRIPTOR(RVA) = %p\n",dwRVA);
+	pImportDesc = (PIMAGE_IMPORT_DESCRIPTOR)((DWORD)hMod+dwRVA);
+}
+```
+
+PEview로 확인해보면 딱 맞는 것을 알 수 있다.(신기방기...)
+위의 코드를 테스트하고 실제 주소와 맵핑해보면 잘 맞아 떨어지는 것을 확인할 수 있다.
+
+XP 기준으로 저 코드가 계산기에서 동작한다고 했을 때 `pImportDesc` 변수의 값은 `0x1012B80`이 나온다. 확인해보면 IDT의 시작 위치인 것을 알 수 있다.
+
+이제 이 위치에서 `user32.dll`의 `FirstThunk(IAT)` 를 찾아가면 된다.
+
+```c
+	for( ; pImportDesc->Name; pImportDesc++ )
+	{
+        // szLibName = VA to IMAGE_IMPORT_DESCRIPTOR.Name
+		szLibName = (LPCSTR)((DWORD)hMod + pImportDesc->Name);
+		if( !_stricmp(szLibName, szDllName) )
+		{
+            // pThunk = IMAGE_IMPORT_DESCRIPTOR.FirstThunk
+            //        = VA to IAT(Import Address Table)
+			pThunk = (PIMAGE_THUNK_DATA)((DWORD)hMod + 
+                                         pImportDesc->FirstThunk);
+```
+
+위의 코드를 보자. pImportDesc는 `IMAGE_IMPORT_DESCRIPTOR` 구조체의 변수다. (`winnt.h`에서 구조체를 확인해보면 typedef로 *PIMAGE_IMPORT_DESCRIPTOR를 확인할 수 있다.) 
+`Name` 멤버를 확인하여 전달된 `szDllName`과 `_stricmp` 함수를 이용해 비교한다.(동일한 경우 0을 반환하므로 not 연산자가 붙음)
+그리고 `pThunk` 변수에 `FirstThunk(IAT)(RVA)` 값과 `hMod(Image Base)` 값을 더해 VA 값으로 만들어 저장한다.
+
+이로써 `user32.dll`의 `IAT` 주소 값(VA)을 찾아냈다.
+확인은 아래의 코드를 이용하면 확인할 수 있다. 아래 소스를 컴파일해서 확인하면 Import하는 라이브러리가 Kernel32.dll와 msvcr100.dll 두개 인 것을 알 수 있다. improt하는 함수를 차례대로 출력하고 Kernel32.dll의 IAT 주소를 출력해주는 소스코드이다.
+
+```c
+#include <stdio.h>
+#include <Windows.h>
+
+void main(){
+
+	HMODULE hMod;
+	LPCSTR szLibName[2];
+	PIMAGE_IMPORT_DESCRIPTOR pImportDesc;
+	PIMAGE_THUNK_DATA pThunk;
+	DWORD dwOldProtect, dwRVA;
+	PBYTE pAddr;
+	int i=0;
+
+	hMod = GetModuleHandle(NULL);
+	//printf("hMod(IMAGE_BASE) : %p\n",hMod);
+	pAddr = (PBYTE)hMod;
+	pAddr += *((DWORD*)&pAddr[0x3C]);
+	//printf("IMAGE_NT_HEADER(VA) = %p\n",pAddr);
+	dwRVA = *((DWORD*)&pAddr[0x80]);
+	//printf("IMAGE_IMPORT_DESCRIPTOR(RVA) = %p\n",dwRVA);
+	pImportDesc = (PIMAGE_IMPORT_DESCRIPTOR)((DWORD)hMod+dwRVA);
+
+	for(;pImportDesc->Name;pImportDesc++)
+	{
+		printf("Check Lib Name : %s\n",(DWORD)hMod+pImportDesc->Name);
+		szLibName[i]=(LPCSTR)(DWORD)hMod+pImportDesc->Name;
+		i++;
+	}
+	if(!_stricmp(szLibName[0],"KERNEL32.dll"))
+	{
+		pImportDesc-=2;//테스트
+		pThunk = (PIMAGE_THUNK_DATA)((DWORD)hMod + pImportDesc->FirstThunk);
+		printf("%s IAT(VA) = %p\n",szLibName[0],pThunk);
+	}
+}
+```
+
+
+
+이제 마지막 부분이다.
+
+```c
+ // pThunk->u1.Function = VA to API
+			for( ; pThunk->u1.Function; pThunk++ )
+			{
+				if( pThunk->u1.Function == (DWORD)pfnOrg )
+				{
+                    // 메모리 속성을 E/R/W 로 변경
+					VirtualProtect((LPVOID)&pThunk->u1.Function, 
+                                   4, 
+                                   PAGE_EXECUTE_READWRITE, 
+                                   &dwOldProtect);
+
+                    // IAT 값을 변경
+                    pThunk->u1.Function = (DWORD)pfnNew;
+					
+                    // 메모리 속성 복원
+                    VirtualProtect((LPVOID)&pThunk->u1.Function, 
+                                   4, 
+                                   dwOldProtect, 
+                                   &dwOldProtect);						
+
+					return TRUE;
+				}
+			}
+```
+
+
+
+
+
+
+
+
 
