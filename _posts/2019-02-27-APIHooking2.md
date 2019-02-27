@@ -518,8 +518,6 @@ void main(){
 }
 ```
 
-
-
 이제 마지막 부분이다.
 
 ```c
@@ -548,7 +546,43 @@ void main(){
 			}
 ```
 
+자 `pThunk`는 `PIMAGE_THUNK_DATA` 구조체의 변수이다. 해당 구조체를 살펴보면 다음과 같다.
 
+```c
+typedef struct _IMAGE_THUNK_DATA64 {
+    union {
+        ULONGLONG ForwarderString;  // PBYTE 
+        ULONGLONG Function;         // PDWORD
+        ULONGLONG Ordinal;
+        ULONGLONG AddressOfData;    // PIMAGE_IMPORT_BY_NAME
+    } u1;
+} IMAGE_THUNK_DATA64;
+typedef IMAGE_THUNK_DATA64 * PIMAGE_THUNK_DATA64;
+
+#include "poppack.h"                        // Back to 4 byte packing
+
+typedef struct _IMAGE_THUNK_DATA32 {
+    union {
+        DWORD ForwarderString;      // PBYTE 
+        DWORD Function;             // PDWORD
+        DWORD Ordinal;
+        DWORD AddressOfData;        // PIMAGE_IMPORT_BY_NAME
+    } u1;
+} IMAGE_THUNK_DATA32;
+typedef IMAGE_THUNK_DATA32 * PIMAGE_THUNK_DATA32;
+```
+
+중요한건 `Function` 맴버다.   메모리에 로드 되는 함수의 실제 주소가 담긴다. `pfnOrg` 변수에는 정상적인 `SetWindowTextW` API의 주소가 담겨있다. 이를 비교하여 해당 맞으면 메모리의 속성을 변경하고 주소를 `MySetWindowTextW` 후킹 함수로 변경한다. 그리고 다시 원래의 메모리 속성으로 돌려놓고 함수가 종료된다.
+
+끝!!! 후 이것저것 찾아보느라 시간이 꽤 걸렸다. 반대로 종료하게 되면 파라미터를 바꿔 보냄으로써 원래의 IAT와 함수주소를 돌려받아 정상적으로 돌아가는 것이다.
+
+음 `OriginalFirstThunk(INT)` 를 이용해서 해보려고 했는데 오늘은 실패했다. 담에 또해봐야딩
+
+끗
+
+# [+] Reference
+
+1. ***리버싱 핵심 원리***
 
 
 
