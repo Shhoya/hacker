@@ -580,6 +580,67 @@ typedef IMAGE_THUNK_DATA32 * PIMAGE_THUNK_DATA32;
 
 끗
 
+-----------추가
+
+INT 를 이용해서 API 이름을 가져오는데 성공했다.
+현재 실행중인 프로세스의 라이브러리에서 어떤 API를 사용하는지 가져올 수 있다.!
+
+```c
+#include <stdio.h>
+#include <Windows.h><
+#include <WinNT.h>
+
+
+void main(){
+
+	HMODULE hMod;
+	LPCSTR szLibName[3];
+	PIMAGE_IMPORT_DESCRIPTOR pImportDesc;
+	PIMAGE_THUNK_DATA pThunk;
+	PIMAGE_THUNK_DATA pName;
+	DWORD dwOldProtect, dwRVA;
+	PBYTE pAddr;
+	int i=0;
+
+	hMod = GetModuleHandle(NULL);
+	printf("hMod(IMAGE_BASE) : %p\n",hMod);
+	pAddr = (PBYTE)hMod;
+	pAddr += *((DWORD*)&pAddr[0x3C]);
+	printf("IMAGE_NT_HEADER(VA) = %p\n",pAddr);
+	dwRVA = *((DWORD*)&pAddr[0x80]);
+	printf("IMAGE_IMPORT_DESCRIPTOR(RVA) = %p\n",dwRVA);
+	pImportDesc = (PIMAGE_IMPORT_DESCRIPTOR)((DWORD)hMod+dwRVA);
+
+	for(;pImportDesc->Name;pImportDesc++)
+	{
+		printf("Check Lib Name : %s\n",(DWORD)hMod+pImportDesc->Name);
+		szLibName[i]=(LPCSTR)(DWORD)hMod+pImportDesc->Name;
+		i++;
+	}
+	if(!_stricmp(szLibName[1],"USER32.dll"))
+	{
+		pImportDesc-=2;//테스트(배열맞춰주기위함)
+		pThunk = (PIMAGE_THUNK_DATA)((DWORD)hMod + pImportDesc->FirstThunk);
+		pName = (PIMAGE_THUNK_DATA)((DWORD)hMod + pImportDesc->OriginalFirstThunk);
+		printf("\n%s IAT(VA) = %p\n\n",szLibName[1],pThunk);
+	}
+	for( ; pThunk->u1.Function; pThunk++ )
+	{
+		if(pName->u1.AddressOfData)
+		{
+			printf("INT(VA) : %p\n",(DWORD)hMod+pName->u1.AddressOfData);	// IMAGE_IMPORT_BY_NAME, 해당 라이브러리에서 사용하는 API의 IMPORT Name Table 시작 주소
+			printf("API Name : %s\n",(DWORD)hMod+pName->u1.AddressOfData+0x2);	// 2byte의 서수와 이름으로 이루어져있기 때문에 서수를 뺀 이름 문자열만 가져옴(마지막이 NULL로 끝나므로 가능)
+			pName++;
+		}
+		printf("API Address : %p\n\n",pThunk->u1.Function);	
+	MessageBoxA(0,"Test","Shh0ya",MB_OK);
+	MessageBoxW(0,(LPCWSTR)"A",(LPCWSTR)"B",MB_OK);
+}
+
+```
+
+재미지다아
+
 # [+] Reference
 
 1. ***리버싱 핵심 원리***
