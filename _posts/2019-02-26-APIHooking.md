@@ -1,6 +1,6 @@
 ---
 layout: article
-title: "[Rev]Windows Hooking(2)"
+title: "[Rev]API Hooking(debug)"
 key: 20190226
 tags:
   - Reversing
