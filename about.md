@@ -28,7 +28,7 @@ My Angel is Yellow rose💕 and.... Angry Bird🐦!!
 
  
 
-- A.K.A Shh0ya @ ~~Cyberone Penetration Test Team,~~ wonderpeople anti hacking team, Cyb3r1, Shh0ya(single)
+- A.K.A Shh0ya @ Wonderpeople anti hacking team, Cyb3r1, Shh0ya(single)
   - 2017.09 ~ Now
   - Web , Mobile Penetration test / Reversing / Malware Analysis
   - Interested in dev.. (ML, C, Python, C++, R..)
