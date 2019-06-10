@@ -29,7 +29,7 @@ published : true
 typedef NTSTATUS (NTAPI *PFLDRLOADDLL)(
 	IN PWCHAR               PathToFile OPTIONAL,
 	IN ULONG                *Flags OPTIONAL,
-	IN PUNICODE_STRING		*ModuleFileName,
+	IN UNICODE_STRING		*ModuleFileName,
 	OUT PHANDLE             *ModuleHandle
 	);
 
@@ -37,15 +37,16 @@ PVOID OrgLdr = DetourFindFunction("ntdll.dll", "LdrLoadDll");
 
 NTSTATUS NTAPI NewLdrLoadDll(
 	IN PWCHAR               PathToFile OPTIONAL,
-	IN ULONG                Flags OPTIONAL,
-	IN PUNICODE_STRING		ModuleFileName,
-	OUT PHANDLE             ModuleHandle)
+	IN ULONG                *Flags OPTIONAL,
+	IN UNICODE_STRING		*ModuleFileName,
+	OUT PHANDLE             *ModuleHandle)
 {
 	TCHAR tmpPath[MAX_PATH];
-	lstrcpynW(tmpPath, ModuleFileName->Buffer,ModuleFileName->Length);
+	lstrcpynW(tmpPath,ModuleFileName->Buffer,ModuleFileName->Length);
 	printf("[#] ModuleName : %ws\n", tmpPath);
 	//printf("[#] ModuleName : %wZ\n", *ModuleFileName);
-	return ((PFLDRLOADDLL)OrgLdr)(PathToFile, &Flags, &ModuleFileName, &ModuleHandle);
+	NTSTATUS err=((PFLDRLOADDLL)OrgLdr)(NULL, Flags, ModuleFileName, ModuleHandle);
+	return  err;
 	
 }
 
@@ -72,9 +73,10 @@ int main()
 	{
 		printf("[!] Error Code : %d\n", errcode);
 	}
-	MessageBoxA(NULL, "Hello!", "Shh0ya", MB_OK);
 	LoadLibrary(L"wininet.dll");
 	LoadLibrary(L"d3d9.dll");
+	MessageBoxA(NULL, "Hello!", "Shh0ya", MB_OK);
+	
 	return 0;
 }
 ```
