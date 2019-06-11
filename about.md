@@ -10,7 +10,7 @@ sidebar:
   nav: sidem
 ---
 
-## [+] About Me
+## [+] Shh0ya
 
 <center><img src="https://raw.githubusercontent.com/Shhoya/Shhoya.github.io/master/assets/images/logo/icon-310x310.png"></center>
 
