@@ -10,19 +10,7 @@ sidebar:
   nav: sidem
 ---
 
-![Cong](https://raw.githubusercontent.com/Shhoya/Shhoya.github.io/master/assets/images/logo/Cong.png "Cong"){:.circle.border.shadow } 
-
-Welcome Shh0ya blog!😃
-{:.info}
-
-{% highlight Shhoya%}
-Puppy name is Cong🐶
-My Angel is Yellow rose💕 and.... Angry Bird🐦!!
-{% endhighlight %}
-
-
-
-## About Me
+## [+] About Me
 
 <center><img src="https://raw.githubusercontent.com/Shhoya/Shhoya.github.io/master/assets/images/logo/icon-310x310.png"></center>
 
@@ -53,3 +41,14 @@ My Angel is Yellow rose💕 and.... Angry Bird🐦!!
     - Erebus(Linux) ransomware Analysis
     - Start
 
+
+
+<center><img src="https://raw.githubusercontent.com/Shhoya/Shhoya.github.io/master/assets/images/logo/Cong.png"></center>
+
+Welcome Shh0ya blog!😃
+{:.info}
+
+{% highlight Shhoya%}
+Puppy name is Cong🐶
+My Angel is Yellow rose💕 and.... Angry Bird🐦!!
+{% endhighlight %}
