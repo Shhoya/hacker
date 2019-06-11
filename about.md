@@ -28,14 +28,14 @@ sidebar:
   - 2019 ~
     - Anti Reversing research & module development
     - Anti Cheat solution research
-    - Join the Game Anti hacking team
+    - Joined the Game Anti hacking team
     - VMProtect, themida unpacking research
   - 2018 ~
     - Autoready release (Android Analytics Simplification Tool)
     - CVE-2018-2628(Weblogic, RCE) Analysis
     - CVE-2017-12615, 12617(Apache Tomcat) Analysis
     - Web & Mobile penetration testing
-    - Join the Cyberone Penetration Test Team
+    - Joined the Cyberone Penetration Test Team
   - 2017 ~
     - Cerber ransomware Analysis
     - Erebus(Linux) ransomware Analysis
