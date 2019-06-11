@@ -35,8 +35,8 @@ My Angel is Yellow rose💕 and.... Angry Bird🐦!!
   - Yewon Art Univercity / applied music / Vocal & Composition(!?)
 - History
   - 2019.06
-    - Themida Unpacking( Less than v2.46 )
-    - VMP Unpacking( Less than v3.2 )
+    - Themida Unpacking( v 2.46.30 or less )
+    - VMP Unpacking(  v3.2.0 or less )
   - 2019 ~
     - Anti Reversing research & module development
     - Anti Cheat solution research
