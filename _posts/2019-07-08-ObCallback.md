@@ -100,8 +100,8 @@ fffff803`3b06110c ff150e0f0000    call    qword ptr [ProcessProtect+0x2020 (ffff
 
 ```c
 NTSTATUS ObRegisterCallbacks(
-    POB_CALLBACK_REGISTRATION CallbackRegistration,
-    PVOID                     *RegistrationHandle
+	POB_CALLBACK_REGISTRATION CallbackRegistration,
+	PVOID                     *RegistrationHandle
 );
 ```
 
@@ -113,11 +113,11 @@ NTSTATUS ObRegisterCallbacks(
 
 ```c
 typedef struct _OB_CALLBACK_REGISTRATION {
-    USHORT                    Version;
-    USHORT                    OperationRegistrationCount;
-    UNICODE_STRING            Altitude;
-    PVOID                     RegistrationContext;
-    OB_OPERATION_REGISTRATION *OperationRegistration;
+	USHORT                    Version;
+	USHORT                    OperationRegistrationCount;
+	UNICODE_STRING            Altitude;
+	PVOID                     RegistrationContext;
+	OB_OPERATION_REGISTRATION *OperationRegistration;
 } OB_CALLBACK_REGISTRATION, *POB_CALLBACK_REGISTRATION;
 ```
 
