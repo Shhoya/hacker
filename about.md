@@ -18,10 +18,12 @@ sidebar:
 
 - A.K.A Shh0ya @ Wonderpeople anti hacking team, Cyb3r1, Shh0ya(single)
   - 2017.09 ~ Now
-  - Web , Mobile Penetration test / Reversing / Malware Analysis
+  - Web , Mobile Penetration test / Reversing / Game Hacking / Malware Analysis
   - Interested in dev.. (ML, C, Python, C++, R..)
   - Yewon Art Univercity / applied music / Vocal & Composition(!?)
 - History
+  - 2019.07
+    - Latest Windows operating system research
   - 2019.06
     - Themida Unpacking( v 2.46.30 or less )
     - VMP Unpacking(  v3.2.0 or less )
