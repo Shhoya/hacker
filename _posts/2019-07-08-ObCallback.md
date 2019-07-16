@@ -1,6 +1,6 @@
 ---
 layout: article
-title: "[Rev]ObResgisterCallbacks Bypass"
+title: "[Rev]ObRegisterCallbacks Bypass"
 key: 20190708
 tags:
   - Rev
