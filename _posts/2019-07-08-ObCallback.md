@@ -3,7 +3,7 @@ layout: article
 title: "[Rev]ObRegisterCallbacks Bypass"
 key: 20190708
 tags:
-  - Rev
+  - Reversing
   - Windows
 toc: true
 mathjax: true
