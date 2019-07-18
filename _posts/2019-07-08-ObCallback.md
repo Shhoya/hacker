@@ -3,6 +3,8 @@ layout: article
 title: "[Rev]ObRegisterCallbacks Bypass"
 key: 20190708
 tags:
+  - Dev
+  - Kernel
   - Reversing
   - Windows
 toc: true

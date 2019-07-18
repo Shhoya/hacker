@@ -3,6 +3,7 @@ layout: article
 title: "[Rev]LdrLoadDll Hooking(2)"
 key: 20190610
 tags:
+  - Dev
   - Reversing
 toc: true
 mathjax: true
