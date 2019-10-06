@@ -14,7 +14,6 @@ sidebar:
 
 <center><img src="https://raw.githubusercontent.com/Shhoya/Shhoya.github.io/master/assets/images/logo/icon-310x310.png"></center>
 
- 
 
 - A.K.A Shh0ya @ Wonderpeople anti hacking team, Cyb3r1, Shh0ya(single)
   - 2017.09 ~ Now
@@ -22,6 +21,10 @@ sidebar:
   - Interested in dev.. (ML, C, Python, C++, R..)
   - Yewon Art Univercity / applied music / Vocal & Composition(!?)
 - History
+  
+  - 2019.09
+    
+    - KVE-2019-1287 GomPlayer
   - 2019.07
     - Latest Windows operating system research
   - 2019.06
@@ -46,7 +49,6 @@ sidebar:
 
 
 <center><img src="https://raw.githubusercontent.com/Shhoya/Shhoya.github.io/master/assets/images/logo/Cong.png"></center>
-
 Welcome Shh0ya blog!😃
 {:.info}
 
