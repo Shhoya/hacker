@@ -201,5 +201,5 @@ fffff801`3ff2502a c3              ret
 
 ## [+] Video
 
-[![Manually Find DriverEntry|]( https://img.youtube.com/vi/ixj2_N_tsHw/mq3.jpg )](https://youtu.be/ixj2_N_tsHw?t=0s) 
+[![Manually Find DriverEntryl](http://img.youtube.com/vi/ixj2_N_tsHw/mq3.jpg)](https://youtu.be/ixj2_N_tsHw?t=0s) 
 
