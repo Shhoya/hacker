@@ -105,7 +105,42 @@ nt!IopLoadDriverImage:
 내 삽질은 소중하기 때문에 결론만 정리하면 다음과 같은 루틴을 가진다. 하나도 빠짐없이 적어놨다.
 
 ```
-IopLoadDriver-> NtQueryKey -> IopVerifierExAllocatePool -> NtQueryKey -> IopVerifierExAllocatePool -> memcpy -> RtlAppendUnicodeToString -> HeadlessKernelAddLogEntry -> PnpDiagnosticTraceObject -> IopBuildFullDriverPath -> IopGetDriverNameFromKeyNode -> ExAcquireResourceExclusiveLite -> MmLoadSystemImageEx -> RtlImageNtHeader -> PnpPrepareDriverLoading -> ObCreateObjectEx -> memset -> RtlImageNtHeader -> ObInsertObjectEx -> ExReleaseResourceLite -> ObReferenceObjectByHandle -> ZwClose -> IopVerifierExAllocatePool -> memcpy -> IopVerifierExAllocatePool  -> NtQueryObject -> IopVerifierExAllocatePool -> memcpy -> PnpDiagnosticTraceObject -> guard_dispatch_icall
+1.nt!NtLoadDriver->
+2.IopLoadDriverImage->
+3.IopLoadUnloadDriver->
+4.IopLoadDriver-> 
+4-1.NtQueryKey -> 
+4-2.IopVerifierExAllocatePool -> 
+4-3.NtQueryKey -> 
+4-4.IopVerifierExAllocatePool -> 
+4-5.memcpy -> 
+4-6.RtlAppendUnicodeToString -> 
+4-7.HeadlessKernelAddLogEntry -> 
+4-8.PnpDiagnosticTraceObject -> 
+4-9.IopBuildFullDriverPath -> 
+4-10.IopGetDriverNameFromKeyNode -> 
+4-11.ExAcquireResourceExclusiveLite -> 
+4-12.MmLoadSystemImageEx -> 
+4-13.RtlImageNtHeader -> 
+4-14.PnpPrepareDriverLoading -> 
+4-15.ObCreateObjectEx -> 
+4-16.memset -> 
+4-17.RtlImageNtHeader -> 
+4-18.ObInsertObjectEx -> 
+4-19.ExReleaseResourceLite -> 
+4-20.ObReferenceObjectByHandle -> 
+4-21.ZwClose -> 
+4-22.IopVerifierExAllocatePool -> 
+4-23.memcpy -> 
+4-24.IopVerifierExAllocatePool  -> 
+4-25.NtQueryObject -> 
+4-26.IopVerifierExAllocatePool -> 
+4-27.memcpy -> 
+4-28.PnpDiagnosticTraceObject -> 
+
+4-29.guard_dispatch_icall	; nt!IopLoadDriver+0x4b8
+	[-] guard_dispatch_icall+0x71:
+		jmp rax ; rax = DriverName!GsDriverEntry
 ```
 
 바로 `guard_dispatch_icall` 에서 `DriverEntry`를 호출하는 `GsDriverEntry`로 `jmp rax` 명령을 통해 진행되게 된다.
