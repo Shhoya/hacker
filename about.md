@@ -16,14 +16,14 @@ sidebar:
 
 
 - A.K.A Shh0ya @ Wonderpeople anti hacking team, Cyb3r1, Shh0ya(single)
-  - 2017.09 ~ Now
+  - 2017.07 ~ Now
   - Web , Mobile Penetration test / Reversing / Game Hacking / Malware Analysis
+  - Windows Ring 0 Debugging, Anti-Cheat Driver, Malware Driver Research
   - Interested in dev.. (ML, C, Python, C++, R..)
   - Yewon Art Univercity / applied music / Vocal & Composition(!?)
 - History
-  
+
   - 2019.09
-    
     - KVE-2019-1287 GomPlayer
   - 2019.07
     - Latest Windows operating system research
