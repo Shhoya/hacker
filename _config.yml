@@ -131,6 +131,9 @@ ga_anonymize_ip: false # Anonymize IP tracking for Analytics
 ##############################
 markdown: kramdown
 highlighter: rouge
+syntax_highlighter_opts:
+        block:
+            line_numbers: true
 permalink: date
 
 exclude:
