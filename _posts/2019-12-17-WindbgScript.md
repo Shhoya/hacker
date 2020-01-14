@@ -5,7 +5,7 @@ key: 20191217
 tags:
   - Windows
   - Reversing
-  - Kerenl
+  - Kernel
 toc: true
 mathjax: true
 mathjax_autoNumber: true
