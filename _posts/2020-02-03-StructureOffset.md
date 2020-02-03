@@ -5,7 +5,7 @@ key: 20200203
 tags:
   - Windows
   - Dev
-  - Kerenl
+  - Kernel
 toc: true
 mathjax: true
 mathjax_autoNumber: true
@@ -162,8 +162,8 @@ typedef struct _IMPORT_OFFSET
 {
 	int			UniqueProcessid_off;		// 0x0000
 	int			ActiveProcessLinks_off;		// 0x0004
-	int			ImageFileName_off;			// 0x0008
-	int			PEB_off;					// 0x000C
+	int			ImageFileName_off;          // 0x0008
+	int			PEB_off;		           // 0x000C
 }IMPORT_OFFSET;
 
 
