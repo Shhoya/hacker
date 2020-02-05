@@ -12,11 +12,11 @@ mathjax_autoNumber: true
 published : true
 ---
 
-# [0x00] Get EPROCESS Offset
+# [+] Get EPROCESS Offset
 
 <!--more-->
 
-## [+] PID & ProcessListEntry Offset
+## [0x00] PID & ProcessListEntry Offset
 
 ### [-] Source
 
@@ -62,7 +62,7 @@ BOOLEAN GetOffset(PEPROCESS Process)
 
 
 
-## [+] ImageFileName Offset
+## [0x01] ImageFileName Offset
 
 ### [-] Source
 
@@ -88,7 +88,7 @@ if (!success)
 }
 ```
 
-## [+] PEB Offset
+## [0x02] PEB Offset
 
 ### [-] Source
 
@@ -140,9 +140,9 @@ BOOLEAN GetPebOffset()
 }
 ```
 
-# [0x01] Source Code
+# [+] Source Code
 
-## [+] Common.h
+## [0x00] Common.h
 
 ```c
 // Common.h
@@ -198,7 +198,7 @@ typedef NTSTATUS(*NtQueryInformationProcess_t)(
 	);
 ```
 
-## [+] Sub.h
+## [0x01] Sub.h
 
 ```c
 #pragma once
@@ -315,7 +315,7 @@ BOOLEAN GetOffset(PEPROCESS Process)
 }
 ```
 
-## [+] DriverEntry.c
+## [0x02] DriverEntry.c
 
 ```c
 #include "Sub.h"
