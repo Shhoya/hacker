@@ -9,7 +9,7 @@ tags:
 toc: true
 mathjax: true
 mathjax_autoNumber: true
-published : false
+published : true
 ---
 
 # [+] Get Process Information via PEB
