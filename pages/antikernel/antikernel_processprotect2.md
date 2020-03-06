@@ -59,7 +59,7 @@ void PloadImageNotifyRoutine(
 - ProcessId : 이미지가 맵핑 된 프로세스의 식별 값이지만, 드라이버의 경우 0
 - ImageInfo : 이미지 정보가 포함 된 `IMAGE_INFO` 구조에 대한 포인터
 
-{% include note.html content="https://docs.microsoft.com/ko-kr/windows-hardware/drivers/kernel/windows-kernel-mode-process-and-thread-manager#best" %}
+{% include note.html content=" 참조 : https://docs.microsoft.com/ko-kr/windows-hardware/drivers/kernel/windows-kernel-mode-process-and-thread-manager#best " %}
 
 
 
