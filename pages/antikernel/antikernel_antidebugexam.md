@@ -556,7 +556,7 @@ VOID LoadImageNotifyRoutine(
 
 위의 드라이버가 동작하는 모습을 영상으로 준비했습니다. 
 
-<iframe src="http://youtube.com/embed/r11Qz5ace9s?autoplay=1" width="720" height="365"></iframe>
+<iframe src="http://youtube.com/embed/r11Qz5ace9s" allowfullscreen="" width="720" height="365"></iframe>
 
 커널 디버깅을 탐지하여 디버그 로그에 출력되고, 프로세스 디버깅 시도 시 프로세스가 종료되는 것을 볼 수 있습니다.
 
