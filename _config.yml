@@ -100,6 +100,7 @@ defaults:
 # these are defaults used for the frontmatter for these file types
 
 sidebars:
+- api_sidebar
 - home_sidebar
 - antikernel_sidebar
 - mydoc_sidebar
