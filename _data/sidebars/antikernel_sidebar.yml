@@ -39,7 +39,7 @@ entries:
       url: /antikernel_antidebugging.html
       output: web, pdf
 
-    - title: Process protection using Kernel driver
+    - title: Process protect(ObRegisterCallbacks)
       url: /antikernel_processprotect.html
       output: web, pdf
 
