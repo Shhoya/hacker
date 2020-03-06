@@ -1,5 +1,5 @@
 ---
-title: "Development Pages"
+title: "Development tag pages"
 tagName: Dev
 search: exclude
 permalink: tag_Dev.html

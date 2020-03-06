@@ -1,5 +1,5 @@
 ---
-title: "Windows Pages"
+title: "Windows tag pages"
 tagName: Windows
 search: exclude
 permalink: tag_Windows.html

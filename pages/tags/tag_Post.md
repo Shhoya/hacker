@@ -1,5 +1,5 @@
 ---
-title: "Posting List"
+title: "Post tag pages"
 tagName: Post
 search: exclude
 permalink: tag_Post.html

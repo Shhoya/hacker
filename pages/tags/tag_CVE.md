@@ -1,5 +1,5 @@
 ---
-title: "CVE Pages"
+title: "CVE tag pages"
 tagName: CVE
 search: exclude
 permalink: tag_CVE.html

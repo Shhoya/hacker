@@ -1,5 +1,5 @@
 ---
-title: "Mobile Pages"
+title: "Mobile tag pages"
 search: exclude
 tagName: Mobile
 permalink: tag_Mobile.html

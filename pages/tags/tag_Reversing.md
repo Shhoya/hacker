@@ -1,5 +1,5 @@
 ---
-title: "Reversing Pages"
+title: "Reversing tag pages"
 tagName: Reversing
 search: exclude
 permalink: tag_Reversing.html

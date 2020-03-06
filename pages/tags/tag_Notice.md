@@ -1,8 +1,8 @@
 ---
-title: "Writeup tag pages"
-tagName: Writeup
+title: "Notice tag pages"
+tagName: Notice
 search: exclude
-permalink: tag_Writeup.html
+permalink: tag_Notice.html
 folder: tags
 ---
 {% include taglogic.html %}
