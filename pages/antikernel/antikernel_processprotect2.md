@@ -210,7 +210,7 @@ VOID UnloadDriver(IN PDRIVER_OBJECT pDriver)
 
 
 
-<img src="https://github.com/Shh0ya/shhoya.github.io/blob/master/rsrc/antikernel/proc_01.png?raw=true">
+<img src="https://github.com/Shhoya/shhoya.github.io/blob/master/rsrc/antikernel/proc_01.png?raw=true">
 
 
 
