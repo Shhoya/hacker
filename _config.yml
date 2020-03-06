@@ -1,174 +1,122 @@
-# Welcome to Jekyll!
-#
-# This config file is meant for settings that affect your whole blog, values
-# which you are expected to set up once and rarely need to edit after that.
-# For technical reasons, this file is *NOT* reloaded automatically when you use
-# 'jekyll serve'. If you change this file, please restart the server process.
-#
-# ,--------.      ,--.   ,--. ,--.
-# '--.  .--',---.  \  `.'  /,-'  '-.
-#    |  |  | .-. :  .'    \ '-.  .-'
-#    |  |  \   --. /  .'.  \  |  |
-#    `--'   `----''--'   '--' `--'
+repository: shh0ya/shh0ya.github.io
 
+output: web
+# this property is useful for conditional filtering of content that is separate from the PDF.
 
-#disque comments
-disqus: True
-disqus_id: shh0ya
+topnav_title: Shh0ya Security Lab
+# this appears on the top navigation bar next to the home button
 
-## => Site Settings
-##############################
-text_color_theme: default # "default" (default), "dark", "forest", "ocean", "chocolate", "orange"
-highlight_theme: tomorrow-night-bright # "default" (default), "tomorrow", "tomorrow-night", "tomorrow-night-eighties", "tomorrow-night-blue", "tomorrow-night-bright"
-url: https://Shhoya.github.io # the base hostname & protocol for your site e.g. 
-baseurl: / # does not include hostname
-title: Shhoya' Blog
-description: > # this means to ignore newlines until "Language & timezone"
-  Shh0ya' Bl0g
+site_title: Shh0ya Security Lab
+# this appears in the html browser tab for the site title (seen mostly by search engines, not users)
 
+company_name: Shh0ya Security Lab
+# this appears in the footer
 
-## => Language and Timezone
-##############################
-lang: # the language of your site, "en" (default, English), "zh"(简体中文), "zh-Hans"(简体中文), "zh-Hant"(繁體中文)
-timezone: # see https://en.wikipedia.org/wiki/List_of_tz_database_time_zones for the available values
+github_editme_path: 
+# if you're using Github, provide the basepath to the branch you've created for reviews, following the sample here. if not, leave this value blank.
 
+# gitlab_editme_path: tomjoht/documentation-theme-jekyll/blob/gh-pages/
+# if you're using GitLab, provide the basepath to the branch you've created for reviews, following the sample here. if not, leave this value blank.
 
-## => Author and Social
-##############################
-author:
-  name: Shhoya
-  email: hunho88@naver.com # your Email address e.g. someone@site.com
-  facebook: # your Facebook username
-  twitter: # your Twitter username
-  github: # your GitHub username
-  linkedin: # your Linkedin username
-  googleplus: # your Google+ username
-  weibo: # your Weibo username
-  douban: # your Douban username
+google_analytics: 
+# if you have google-analytics ID, put it in. if not, edit this value to blank.
 
+host: 127.0.0.1
+# the preview server used. Leave as is.
 
-## => GitHub Repository (if the site is hosted by GitHub)
-##############################
-repository: Shhoya/Shhoya.github.io
-repository_tree: master
-
-
-## => Paths
-##############################
-paths:
-  base: /
-
-
-## => Post
-##############################
-## excerpt
-excerpt_separator: <!--more-->
-excerpt_type: html # text (default), html
-
-## TOC
-toc:
-  selectors: "h1,h2,h3,h4"
-  #selectors: # "h1,h2,h3" (default)
-
-## Markdown Enhancements
-
-# Mathjax
-mathjax: # false (default), true
-mathjax_autoNumber: # false (default), true
-
-# Mermaid
-mermaid: # false (default), true
-
-# Chart
-chart: # false (default), true
-
-
-## => Paginate
-##############################
-paginate: 8
-paginate_path: /page:num # don't change this unless for special need
-
-
-## => Sources
-##############################
-sources: # bootcdn (default), unpkg
-
-
-## => Comments
-##############################
-## Disqus
-disqus:
-  shortname: # the Disqus shortname for the site
-
-## Gitalk
-# please refer to https://github.com/gitalk/gitalk for more info.
-gitalk:
-  clientID: # GitHub Application Client ID
-  clientSecret: # GitHub Application Client Secret
-  repository: # GitHub repo
-  owner: # GitHub repo owner
-  admin: # GitHub repo owner and collaborators, only these guys can initialize GitHub issues, IT IS A LIST.
-    # - your GitHub Id
-
-
-## => Pageview
-##############################
-## Leancloud
-leancloud:
-  app_id: # LeanCloud App id
-  app_key: # LeanCloud App key
-  app_class: # LeanCloud App class
-
-
-## => Analytics
-##############################
-## Google Analytics
-ga_tracking_id: # Google Analytics id for the site
-ga_anonymize_ip: false # Anonymize IP tracking for Analytics
-
-
-## => Build
-##############################
-markdown: kramdown
-highlighter: rouge
-syntax_highlighter_opts:
-        block:
-            line_numbers: true
-permalink: date
+port: 4000
+# the port where the preview is rendered. You can leave this as is unless you have other Jekyll builds using this same port that might cause conflicts. in that case, use another port such as 4006.
 
 exclude:
-  - CHANGELOG.md
-  - CHECKLIST.md
-  - Gemfile
-  - Gemfile.lock
-  - LICENSE
-  - README-*.md
-  - README.md
-  - gulpfile.js
-  - jekyll-text-theme.gemspec
-  - package-lock.json
-  - package.json
-  - /docs
-  - /node_modules
-  - /screenshots
-  - /test
-  - /vendor
+  - .idea/
+  - .gitignore
+  - vendor
+# these are the files and directories that jekyll will exclude from the build
+
+feedback_subject_line: Shh0ya Security Lab
+
+feedback_email: hunho88@gmail.com
+# used as a contact email for the Feedback link in the top navigation bar
+
+# feedback_disable: true
+# if you uncomment the previous line, the Feedback link gets removed
+
+# feedback_text: "Need help?"
+# if you uncomment the previous line, it changes the Feedback text
+
+#feedback_link: "https://shhoya.github.io"
+# if you uncomment the previous line, it changes where the feedback link points to
+
+markdown: kramdown
+highlighter: rouge
+# library used for syntax highlighting
+
+kramdown:
+ input: GFM
+ auto_ids: true
+ hard_wrap: false
+ syntax_highlighter: rouge
+
+# filter used to process markdown. note that kramdown differs from github-flavored markdown in some subtle ways
+
+collections:
+  tooltips:
+    output: false
+# collections are declared here. this renders the content in _tooltips and processes it, but doesn't output it as actual files in the output unless you change output to true
 
 defaults:
-  - scope:
+  -
+    scope:
+      path: ""
+      type: "pages"
+    values:
+      layout: "page"
+      comments: false
+      # if you don't want to use Commento.io and just hide comments, change true to false wherever you see the comments property
+      search: true
+      #sidebar: home_sidebar
+      topnav: topnav
+  -
+    scope:
+      path: ""
+      type: "tooltips"
+    values:
+      layout: "page"
+      search: true
+      tooltip: true
+
+  -
+    scope:
       path: ""
       type: "posts"
     values:
-      license: true
-      aside:
-        toc: true
-      pageview: true
+      layout: "post"
+      comments: false
+      # if you don't want to use Commento.io and just hide comments, change true to false wherever you see the comments property
+      search: true
+      #sidebar: home_sidebar
+      topnav: topnav
 
+# these are defaults used for the frontmatter for these file types
 
-## => Plugins
-##############################
-plugins:
-  - jekyll-feed
-  - jekyll-paginate
-  - jekyll-sitemap
-  - jemoji
+sidebars:
+- home_sidebar
+- antikernel_sidebar
+- mydoc_sidebar
+- product1_sidebar
+- product2_sidebar
+- other
+
+description: "Shh0ya github pages. Security research"
+# the description is used in the feed.xml file
+
+# needed for sitemap.xml file only
+url: https://shh0ya.github.io
+baseurl: /
+highlight_theme: tomorrow-night-bright
+
+excerpt_separator: <!--more-->
+
+disqus-identifier: shh0ya-1
+
+github: [metadata]

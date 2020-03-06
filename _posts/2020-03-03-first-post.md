@@ -1,0 +1,47 @@
+---
+title:  "[+] 블로그 이전"
+tags: [Post]
+published: true
+permalink: firstpost.html
+comments: true
+summary: "기존 블로그(https://shhoya.github.io)에서 이전하였습니다."
+---
+
+## [0x00] Overview
+
+좀 더 전문적이고 체계적으로 관리하기 위해 새로운 페이지로 이전하였습니다.
+열심히 운영해보겠습니다.
+
+
+
+## [0x01] Shh0ya Security Lab
+
+### [-] Post
+
+`Post` 의 경우, 특정 기술에 대해 본인이 느낀점과 해당 기술에 대한 간략한 설명을 위주로 작성되었습니다. 댓글기능이 존재하므로 간단한 피드백이 가능합니다.
+
+
+
+### [-] Archive
+
+`Archive` 내의 포스팅의 경우 특정 카테고리를 만들어 문서화를 목표로 작성되는 메뉴입니다.
+`Post` 보다 상세한 설명과 기술적 증명이 들어간 문서입니다.
+
+
+
+### [-] Reference Link
+
+주로 참조하는 링크 목록입니다. 본인의 이전 블로그 주소가 들어가있으며, 그 외에 관심있는 링크들이 존재합니다.
+
+
+
+### [-] Feedback
+
+`Post` 외에는 댓글 기능을 제공하지 않습니다. 궁금한 점, 고쳐야 할 점 등은 해당 메뉴를 통해 메일로 전달주시면 감사하겠습니다.
+
+
+
+## [0x02] Old Blog link
+
+<a href="https://shhoya.github.io">Shhoya' Blog</a>
+

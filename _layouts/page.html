@@ -1,98 +1,71 @@
 ---
-layout: base
+layout: default
 ---
 
-{%- if page.sidebar -%}
-<div class="layout--page layout--page--sidebar clearfix js-page-root">
-  <div class="page__actions">
-    <div class="button button--secondary button--circle  button--lg box-shadow-2 js-sidebar-button">
-      <i class="fas fa-bars icon--show"></i>
-      <i class="fas fa-times icon--hide"></i>
-    </div>
-  </div>
-  <div class="page__sidebar">
-    {%- include sidebar/toc.html -%}
-  </div>
+<link href="/css/highlight.css" rel="stylesheet">
 
-
-{%- else -%}
-<div class="layout--page clearfix">
-{%- endif -%}
-
-  {%- if page.aside -%}
-    <div class="page__main js-page-main has-aside">
-  {%- else -%}
-    <div class="page__main js-page-main">
-  {%- endif -%}
-    <div class="page__main-inner">
-      <div class="page__header">{%- include header.html -%}</div>
-
-      <div class="page__content">
-        <div class ="main">
-
-          <div class="col-2 js-col-2">
-            {%- if page.aside -%}
-              <aside class="page__aside js-page-aside">
-                {%- include aside/toc.html -%}
-              </aside>
-            {%- endif -%}
-          </div>
-
-          <div class="col-1">
-            <article>
-              {%- include snippets/page-title.html -%}
-              {%- assign _title = __return -%}
-
-              {%- assign __source = page.show_title -%}
-              {%- assign __target = site.data.variables.default.show_title -%}
-              {%- include snippets/assign.html -%}
-              {%- if __return -%}
-                <div class="main__title"><h1>{{ _title }}</h1></div>
-              {%- endif-%}
-
-              {%- include article-info.html -%}
-              <div class="js-article-content">{{ content }}</div>
-
-              {%- if jekyll.environment != "development" and page.comment != false -%}
-                <section class="page__comment">{%- include comment.html -%}</section>
-              {%- endif -%}
-
-            </article>
-          </div>
-        </div>
-      </div>
-
-      <div class="page__footer">{%- include footer.html -%}</div>
-
-    </div>
-  </div>
+<div class="post-header">
+   <h1 class="post-title-main">{{ page.title }}</h1>
 </div>
 
+{% if page.simple_map == true %}
 
 <script>
-  {%- include scripts/lib/scroll.js -%}
-  {%- include scripts/lib/affix.js -%}
-  {%- include scripts/lib/toc.js -%}
-  {%- include scripts/page.js -%}
+    $(document).ready ( function(){
+        $('.box{{page.box_number}}').addClass('active');
+    });
 </script>
 
-{%- if page.sidebar -%}
+{% include custom/{{page.map_name}}.html %}
+
+{% elsif page.complex_map == true %}
+
 <script>
-  {%- include scripts/sidebar.js -%}
+    $(document).ready ( function(){
+        $('.modalButton{{page.box_number}}').addClass('active');
+    });
 </script>
-{%- endif -%}
 
-{%- if page.aside -%}
-<script>
-  /* toc must before affix, since affix need to konw toc' height. */
-  {%- if page.aside.toc -%}
-    {%- include scripts/aside/toc.js -%}
-  {%- endif -%}
-  {%- include scripts/aside/affix.js -%}
-</script>
-{%- endif -%}
+{% include custom/{{page.map_name}}.html %}
+
+{% endif %}
+
+<div class="post-content">
+
+   {% if page.summary %}
+    <div class="summary">{{page.summary}}</div>
+   {% endif %}
+
+    {% unless page.toc == false %}
+    {% include toc.html %}
+    {% endunless %}
 
 
-{%- include markdown-enhancements.html -%}
-{%- include pageview.html -%}
-{%- include analytics.html -%}
+    {% if site.github_editme_path %}
+
+    <a target="_blank" rel="noopener" href="https://github.com/{{site.github_editme_path}}{{page.path}}" class="btn btn-default githubEditButton" role="button"><i class="fa fa-github fa-lg"></i> Edit me</a>
+
+    {% endif %}
+
+   {{content}}
+
+    <div class="tags">
+        {% if page.tags != null %}
+        <b>Tags: </b>
+        {% assign projectTags = site.data.tags.allowed-tags %}
+        {% for tag in page.tags %}
+        {% if projectTags contains tag %}
+        <a href="{{ "tag_" | append: tag | append: ".html" }}" class="btn btn-default navbar-btn cursorNorm" role="button">{{page.tagName}}{{tag}}</a>
+        {% endif %}
+        {% endfor %}
+        {% endif %}
+    </div>
+
+{% if page.comments %} <div id="post-disqus" class="container"> {% include commento.html %} </div> {% endif %}
+{% if page.comments %} <script>	$("#tg-sb-content").toggleClass();</script>{% endif %}
+
+</div>
+
+{{site.data.alerts.hr_shaded}}
+
+{% include footer.html %}
