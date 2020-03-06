@@ -42,6 +42,10 @@ entries:
     - title: Process protect(ObRegisterCallbacks)
       url: /antikernel_processprotect.html
       output: web, pdf
+      
+    - title: Process protect(NotifyRoutine)
+      url: /antikernel_processprotect2.html
+      output: web, pdf
 
 
 #  - title: Tag archives
