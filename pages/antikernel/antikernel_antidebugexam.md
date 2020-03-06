@@ -10,145 +10,28 @@ folder: antikernel
 
 ## [0x00] Overview
 
-이전 챕터에서 두 가지의 콜백 루틴을 등록하는 함수에 대해 알아봤습니다. 이번 챕터에서는 본격적으로 안티 디버깅 예제를 만들어보겠습니다.
+이전 챕터에서 두 가지의 콜백 루틴을 등록하는 함수에 대해 알아봤습니다. 굳이 콜백 루틴으로 접근한 이유는 간단하고 강력하기 때문입니다. 이번 챕터에서는 본격적으로 안티 디버깅 기법을 적용하여 동작을 분석하고 최대한 깊은 곳에서 우회하는 법에 대해 알아보겠습니다.
 
+## [0x01] Tutorial Design
 
+우선 기존에 사용하던 헤더와 소스코드를 활용할 것입니다. 다만 조금은 정리할 필요를 느꼈기에 아래와 같이 정의하고 시작하겠습니다. 아래의 설계대로 진행이 되며, 추가되는 경우 바로 수정할 것이니 비어있는 부분은 신경쓰지 않아도 됩니다.
 
-
-
-## [0x01] Process Protect(NotifyRoutine)
-
-마찬가지로 콜백 루틴 중 하나입니다. 이름에서 알 수 있듯이 알려주는 루틴이라고 볼 수 있습니다. 이 중에 우리는 `PsSetLoadImageNotifyRoutine` 함수를 이용하여 콜백 루틴을 등록하고 사용할 것입니다.
-
-
-
-### [-] PsSetLoadImageNotifyRoutine
-
-로드되는 이미지들에 대한 알림을 받을 콜백 루틴을 등록하는 함수입니다.
-
-```c++
-NTSTATUS PsSetLoadImageNotifyRoutine(
-  PLOAD_IMAGE_NOTIFY_ROUTINE NotifyRoutine
-);
-```
-
-- NotifyRoutine : 이미지가 로드되는 것을 알리기 위해 구현한 `LOAD_IMAGE_NOTIFY_ROUTINE` 콜백 루틴의 포인터
-
-{% include note.html content="최대 드라이버 수는 8개 입니다.Windows 8.1과 7 SP1부터 64개로 늘어났습니다." %}
-
-
-
-### [-] LOAD_IMAGE_NOTIFY_ROUTINE
-
-드라이버 이미지 또는 사용자 이미지(DLL, EXE) 가 가상 메모리에 매핑 될 때 호출되는 콜백 루틴
-
-```c++
-PLOAD_IMAGE_NOTIFY_ROUTINE PloadImageNotifyRoutine;
-
-void PloadImageNotifyRoutine(
-  PUNICODE_STRING FullImageName,
-  HANDLE ProcessId,
-  PIMAGE_INFO ImageInfo
-)
-{...}
-```
-
-- FullImageName : `UNICOE_STRING` 으로 이루어진 실행 가능한 이미지 파일 이름의 포인터(NULL 일 수 있음)
-- ProcessId : 이미지가 맵핑 된 프로세스의 식별 값이지만, 드라이버의 경우 0
-- ImageInfo : 이미지 정보가 포함 된 `IMAGE_INFO` 구조에 대한 포인터
-
-{% include note.html content=" 참조 : https://docs.microsoft.com/ko-kr/windows-hardware/drivers/kernel/windows-kernel-mode-process-and-thread-manager#best " %}
-
-
-
-### [-] IMAGE_INFO
-
-```c++
-typedef struct _IMAGE_INFO {
-  union {
-    ULONG Properties;
-    struct {
-      ULONG ImageAddressingMode : 8;
-      ULONG SystemModeImage : 1;
-      ULONG ImageMappedToAllPids : 1;
-      ULONG ExtendedInfoPresent : 1;
-      ULONG MachineTypeMismatch : 1;
-      ULONG ImageSignatureLevel : 4;
-      ULONG ImageSignatureType : 3;
-      ULONG ImagePartialMap : 1;
-      ULONG Reserved : 12;
-    };
-  };
-  PVOID  ImageBase;
-  ULONG  ImageSelector;
-  SIZE_T ImageSize;
-  ULONG  ImageSectionNumber;
-} IMAGE_INFO, *PIMAGE_INFO;
-```
-
-- Properties : 공용체 내 모든 비트 값
-- ImageAddressingMode : 항상 IMAGE_ADDRESSING_MODE_32BIT 로 설정
-- SystemModeImage : 드라이버와 같이 커널 모드의 구성요소의 경우 1, 유저모드에 매핑 된 이미지의 경우 0
-- ImageMappedToAllPids : 항상 0
-- ExtendedInfoPresent : 해당 비트가 설정된 경우 `IMAGE_INFO`는 `IMAGE_INFO_EX`의 일부
-- MachineTypeMismatch : 항상 0
-- ImageSignatureLevel : 코드 무결성(CI)이 이미지에 레이블을 붙인 서명의 수준(`ntddk.h` 내 `SE_SIGNING_LEVEL_*` 상수 중 하나)
-- ImageSignatureType : 코드 무결성(CI)이 이미지에 레이블을 붙인 서명의 유형(`ntddk.h` 내 `SE_IMAGE_SIGNATURE_TYPE` enum 의 값 중 하나)
-- ImagePartialMap : 맵핑뷰가 전체 이미지를 맵핑하지 않는 경우 0이 아닌 값, 전체 이미지를 맵핑하는 경우 0
-- Reserved : 항상 0
-- ImageBase : 이미지의 ImageBase
-- ImageSelector : 항상 0
-- ImageSize : 이미지의 Virtual Size
-- ImageSectionNumber : 항상 0
-
-
-
-### [-] IMAGE_INFO_EX
-
-`IMAGE_INFO` 구조체에서 `ExtendedInfoPresent`의 비트가 설정되면 `IMAGE_INFO_EX` 구조체 내부에 포함됩니다.
-
-```c++
-typedef struct _IMAGE_INFO_EX {
-  SIZE_T              Size;
-  IMAGE_INFO          ImageInfo;
-  struct _FILE_OBJECT *FileObject;
-} IMAGE_INFO_EX, *PIMAGE_INFO_EX;
-```
-
-- Size : `IMAGE_INFO_EX` 구조체의 크기
-- ImageInfo : `IMAGE_INFO` 구조체
-- FileObject : 드라이버에서 파일 객체를 참조하여 특정 작업을 할 수 있음, 이미지 파일에 대한 파일 객체
-
-
-
-## [0x02] PsSetLoadImageNotifyRoutine Template
-
-- <a href="https://github.com/shhoya/Examples">예제 소스코드</a> 
-
-### [-] notify.h
-
-굳이 만들 필요는 없지만 추후에 따로 정의할 수 있기 때문에 선언 헤더 파일을 만들었습니다.
+### [-] common.h
 
 ```c++
 #pragma once
 #include <ntifs.h>
 
-//============================================//
-//========= LoadImageNotify Routine ==========//
-//============================================//
-
-VOID LoadImageNotifyRoutine(IN PUNICODE_STRING FullImageName, IN HANDLE ProcessId, IN PIMAGE_INFO ImageInfo);
-```
+/*//////////////////////////////////////////////
+# File : common.h
+# Desc : 모든 함수와 구조체, 전역변수 등으 선언
+*///////////////////////////////////////////////
 
 
-
-### [-] common.h
-
-단순히 드라이버 엔트리와 언로드 루틴의 선언이 되어 있습니다.
-
-```c++
-#pragma once
-#include "notify.h"
+#define PROCESS_TERMINATE       0x0001
+#define PROCESS_VM_OPERATION    0x0008
+#define PROCESS_VM_READ         0x0010
+#define PROCESS_VM_WRITE        0x0020
 
 //============================================//
 //======= DriverEntry & Unload Routine =======//
@@ -156,151 +39,232 @@ VOID LoadImageNotifyRoutine(IN PUNICODE_STRING FullImageName, IN HANDLE ProcessI
 
 NTSTATUS DriverEntry(IN PDRIVER_OBJECT pDriver, IN PUNICODE_STRING pRegPath);
 VOID UnloadDriver(IN PDRIVER_OBJECT pDriver);
-```
-
-
-
-### [-] main.c
-
-드라이버 엔트리에서 `NotifyRoutine`을 등록하고, 어떠한 동작을 할지 정의되어 있습니다. 단순히 `ImageInfo` 내 `SystemModeImage` 비트를 이용하여 드라이버인지 유저모드 이미지인지 나눠 출력하고 있습니다.
-
-```c++
-#include "common.h"
-
-/*
-# Name  : LoadImageNotifyRoutine
-# Param : PUNICODE_STRING, HANDLE, PIMAGE_INFO
-# Desc  : 이미지가 로드 될 때 이미지 종류(유저모드,커널모드)에 따라 정보를 출력
-*/
-VOID LoadImageNotifyRoutine(IN PUNICODE_STRING FullImageName, IN HANDLE ProcessId, IN PIMAGE_INFO ImageInfo)
-{
-	if (!ImageInfo->SystemModeImage)
-	{
-		DbgPrintEx(DPFLTR_ACPI_ID, DPFLTR_INFO_LEVEL,
-			"[INFO] Load Image Name : \n\t[%.4X] %wZ\n", ProcessId, FullImageName);
-	}
-
-	else
-	{
-		DbgPrintEx(DPFLTR_ACPI_ID, DPFLTR_INFO_LEVEL,
-			"[INFO] Load Driver Name : \n\t[%.4X] %wZ\n", ProcessId, FullImageName);
-	}
-}
-
-/*
-# Name  : DriverEntry
-# Param : PDRIVER_OBJECT, PUNICODE_STRING
-# Desc  : 드라이버 진입점
-*/
-NTSTATUS DriverEntry(IN PDRIVER_OBJECT pDriver, IN PUNICODE_STRING pRegPath)
-{
-	UNREFERENCED_PARAMETER(pRegPath);
-
-	pDriver->DriverUnload = UnloadDriver;
-
-	DbgPrintEx(DPFLTR_ACPI_ID, DPFLTR_INFO_LEVEL, "[INFO] Load Driver\n");
-
-	if (PsSetLoadImageNotifyRoutine(&LoadImageNotifyRoutine) != STATUS_SUCCESS)
-	{
-		DbgPrintEx(DPFLTR_ACPI_ID, DPFLTR_ERROR_LEVEL, "[ERROR] Failed register\n");
-
-	}
-	else
-	{
-		DbgPrintEx(DPFLTR_ACPI_ID, DPFLTR_INFO_LEVEL, "[INFO] Success register\n");
-	}
-
-	return STATUS_SUCCESS;
-}
-
-/*
-# Name  : UnloadDriver
-# Param : PDRIVER_OBJECT
-# Desc  : 드라이버 종료 루틴, 등록된 콜백 루틴을 해제
-*/
-VOID UnloadDriver(IN PDRIVER_OBJECT pDriver)
-{
-	UNREFERENCED_PARAMETER(pDriver);
-	PsRemoveLoadImageNotifyRoutine(&LoadImageNotifyRoutine);
-	DbgPrintEx(DPFLTR_ACPI_ID, DPFLTR_INFO_LEVEL, "[INFO] Unload Driver\n");
-
-}
-```
-
-
-
-<img src="https://github.com/Shhoya/shhoya.github.io/blob/master/rsrc/antikernel/proc_01.png?raw=true">
-
-
-
-## [0x03] PsSetLoadImageNotifyRoutine Example
-
-`ObRegisterCallbacks` 의 예제와 마찬가지로 어떠한 방법으로 프로세스를 보호할 수 있을지 생각해야 합니다. 상상력이 필요한 시점입니다. 
-
-예제는 특정 프로세스 이미지를 로드하지 못하도록 합니다. 특정 프로세스를 보호한다라는 의미와는 조금 다르지만 보안 프로그램들에서 자주 하는 행위 중 하나입니다.
-
-- <a href="https://github.com/shhoya/Examples">예제 소스코드</a> 
-
-### [-] notify.h
-
-템플릿과 다른 점은 블랙 리스트 프로세스 이름이 정의되어 있습니다. 현재는 메모장과 `x64dbg.exe` 를 예제로 등록했습니다.
-
-```c++
-#pragma once
-#include <ntifs.h>
 
 //============================================//
-//========= LoadImageNotify Routine ==========//
+//============= Callback Routine =============//
 //============================================//
 
 VOID LoadImageNotifyRoutine(IN PUNICODE_STRING FullImageName, IN HANDLE ProcessId, IN PIMAGE_INFO ImageInfo);
-
-//============================================//
-//=============== Black List =================//
-//============================================//
-
-const wchar_t *szTarget[2] = { L"notepad.exe" ,L"x64dbg.exe" };
-```
-
-
-
-### [-] common.h
-
-`TerminateProcess` 라는 함수를 선언하였습니다. 이 함수는 블랙 리스트에 등록 된 프로세스가 로드되면 종료하기 위한 함수입니다.
-
-```c++
-#pragma once
-#include "notify.h"
-
-//============================================//
-//======= DriverEntry & Unload Routine =======//
-//============================================//
-
-NTSTATUS DriverEntry(IN PDRIVER_OBJECT pDriver, IN PUNICODE_STRING pRegPath);
-VOID UnloadDriver(IN PDRIVER_OBJECT pDriver);
+OB_PREOP_CALLBACK_STATUS PreCallback(PVOID RegistrationContext, POB_PRE_OPERATION_INFORMATION pOperationInformation);
+VOID PostCallback(PVOID RegistrationContext, POB_POST_OPERATION_INFORMATION pOperationInformation);
 
 //============================================//
 //========== User-defined Function  ==========//
 //============================================//
 
 VOID TerminateProcess(IN HANDLE pid);
+NTSTATUS ObCallbackReg();
+BOOLEAN GetOffset(PEPROCESS Process);
+BOOLEAN GetPebOffset();
+
+
+//============================================//
+//=========== Undocumented API ===============//
+//============================================//
+
+typedef NTSTATUS(*NtQueryInformationProcess_t)(
+	IN    HANDLE              ProcessHandle,
+	IN    PROCESSINFOCLASS    ProcessInformationClass,
+	OUT   PVOID               ProcessInformation,
+	IN    ULONG               ProcessInformationLength,
+	OUT   PULONG              ReturnLength
+	);
+
+//============================================//
+//======= Structure & Global Variable ========//
+//============================================//
+
+typedef struct _IMPORT_OFFSET
+{
+	int			UniqueProcessid_off;
+	int			ActiveProcessLinks_off;
+	int			ImageFileName_off;
+	int			PEB_off;
+}IMPORT_OFFSET;
+
+PVOID hRegistration = NULL;	// ObUnRegisterCallbacks 전용
+HANDLE hPid;
+IMPORT_OFFSET iOffset;
+const char szSystem[] = "System";
+const wchar_t szNtQueryInformationProcess[] = L"NtQueryInformationProcess";
 ```
 
 
 
-
-
-### [-] main.c
-
-`LoadImageNotifyRoutine` 에서 블랙 리스트에 등록된 파일 이름이 로드되는 이미지의 이름에 포함되는지 확인합니다. 일치하는 경우 `TerminateProcess`를 호출하고, `ZwOpenProcess`와 `ZwTerminateProcess`를 이용하여 강제로 프로세스를 종료하게 됩니다.
+### [-] offset.h
 
 ```c++
+#pragma once
 #include "common.h"
+
+/*/////////////////////////////////////
+# File : offset.h
+# Desc : 오프셋 관련 함수에 대한 정의
+*/////////////////////////////////////
+
+
+/*
+# Name  : GetOffset
+# Param : PEPROCESS
+# Desc  : EPROCESS 구조체의 특정 멤버 오프셋 구하는 함수
+*/
+BOOLEAN GetOffset(PEPROCESS Process)
+{
+	BOOLEAN success = FALSE;
+	HANDLE PID = PsGetCurrentProcessId();
+	PLIST_ENTRY ListEntry = { 0, };
+	PLIST_ENTRY NextEntry = { 0, };
+
+	for (int i = 0x80; i < PAGE_SIZE - 0x10; i += 4)
+	{
+		if (*(PHANDLE)((PCHAR)Process + i) == PID)
+		{
+			ListEntry = (PVOID*)((PCHAR)Process + i + 0x8);
+			if (MmIsAddressValid(ListEntry) && MmIsAddressValid(ListEntry->Flink))
+			{
+				NextEntry = ListEntry->Flink;
+				if (ListEntry == NextEntry->Blink)
+				{
+					iOffset.UniqueProcessid_off = i;
+					iOffset.ActiveProcessLinks_off = i + 8;
+					success = TRUE;
+					break;
+				}
+			}
+		}
+	}
+	if (!success)
+	{
+		DbgPrintEx(DPFLTR_ACPI_ID, DPFLTR_ERROR_LEVEL, "[ERR] Not found offset\n");
+		return success;
+	}
+
+	// ImageFileName Offset 
+	success = FALSE;
+	for (int i = iOffset.ActiveProcessLinks_off; i < PAGE_SIZE; i++)
+	{
+		if (!strncmp((PCHAR)Process + i, szSystem, 6))
+		{
+			iOffset.ImageFileName_off = i;
+			success = TRUE;
+			break;
+		}
+	}
+	if (!success)
+	{
+		DbgPrintEx(DPFLTR_ACPI_ID, DPFLTR_ERROR_LEVEL, "[ERR] Not found offset\n");
+		return success;
+	}
+
+	if (!GetPebOffset())
+	{
+		DbgPrintEx(DPFLTR_ACPI_ID, DPFLTR_ERROR_LEVEL, "[ERR] Not found offset\n");
+		return success;
+	}
+	return success;
+}
+
+/*
+# Name  : GetPebOffset
+# Param : x
+# Desc  : EPROCESS 구조체 내 PEB 오프셋 구하는 함수
+*/
+BOOLEAN GetPebOffset()
+{
+	int LinkOffset = iOffset.ActiveProcessLinks_off;
+	int ProcName = iOffset.ImageFileName_off;
+	BOOLEAN success = FALSE;
+	PEPROCESS Process = PsGetCurrentProcess();
+	UNICODE_STRING routineName = { 0, };
+
+	RtlInitUnicodeString(&routineName, szNtQueryInformationProcess);
+	NtQueryInformationProcess_t NtQueryInformationProcess = MmGetSystemRoutineAddress(&routineName);
+
+	for (int i = 0; i < 0x10; i++)
+	{
+		PROCESS_BASIC_INFORMATION ProcessInformation = { 0, };
+		PLIST_ENTRY ListEntry = (PVOID*)((PCHAR)Process + LinkOffset);
+		Process = ((PCHAR)ListEntry->Flink - LinkOffset);
+		HANDLE Key = NULL;
+
+		if (ObOpenObjectByPointer(Process, NULL, NULL, NULL, *PsProcessType, KernelMode, &Key) == STATUS_SUCCESS)
+		{
+			PULONG Ret = NULL;
+			NtQueryInformationProcess(Key, ProcessBasicInformation, &ProcessInformation, sizeof(ProcessInformation), Ret);
+			ZwClose(Key);
+		}
+
+		if (ProcessInformation.PebBaseAddress)
+		{
+			for (int j = iOffset.ActiveProcessLinks_off; j < PAGE_SIZE - 0x10; j += 4)
+			{
+				if (*(PHANDLE)((PCHAR)Process + j) == ProcessInformation.PebBaseAddress)
+				{
+					iOffset.PEB_off = j;
+					success = TRUE;
+					return success;
+				}
+			}
+		}
+	}
+	return success;
+}
+```
+
+
+
+### [-] callbacks.h
+
+```c++
+#pragma once
+#include "offset.h"
+
+/*//////////////////////////////////////////////
+# File : callbacks.h
+# Desc : 콜백 루틴에 대한 정의와 관련 함수 정의
+*///////////////////////////////////////////////
+
+
+/*
+# Name  : LoadImageNotifyRoutine
+# Param : PUNICODE_STRING, HANDLE, PIMAGE_INFO
+# Desc  : 
+*/
+VOID LoadImageNotifyRoutine(IN PUNICODE_STRING FullImageName, IN HANDLE ProcessId, IN PIMAGE_INFO ImageInfo)
+{
+	// your code
+}
+
+/*
+# Name  : PreCallback
+# Param : PVOID, POB_PRE_OPERATION_INFORMATION
+# Desc  :
+*/
+OB_PREOP_CALLBACK_STATUS PreCallback(PVOID RegistrationContext, POB_PRE_OPERATION_INFORMATION pOperationInformation)
+{
+	UNREFERENCED_PARAMETER(RegistrationContext);
+
+	// your code
+
+}
+
+/*
+# Name  : PostCallback
+# Param : PVOID, POB_POST_OPERATION_INFORMATION
+# Desc  : 사용하지 않을 수 있음
+*/
+VOID PostCallback(PVOID RegistrationContext, POB_POST_OPERATION_INFORMATION pOperationInformation)
+{
+	UNREFERENCED_PARAMETER(RegistrationContext);
+
+	// your code
+
+}
 
 /*
 # Name  : TerminateProcess
 # Param : HANDLE
-# Desc  : PID로 프로세스 핸들을 얻은 후, 강제 프로세스 종료
+# Desc  : 프로세스 강제 종료 시 사용
 */
 VOID TerminateProcess(IN HANDLE pid)
 {
@@ -322,87 +286,82 @@ VOID TerminateProcess(IN HANDLE pid)
 		else
 		{
 			DbgPrintEx(DPFLTR_ACPI_ID, DPFLTR_WARNING_LEVEL,
-				"[ERROR] Failed terminate process\n");
+				"[ERR] Failed terminate process\n");
 		}
 	}
 	else
 	{
 		DbgPrintEx(DPFLTR_ACPI_ID, DPFLTR_WARNING_LEVEL,
-			"[ERROR] Failed open process\n");
-	}
-
-
-}
-
-/*
-# Name  : LoadImageNotifyRoutine
-# Param : PUNICODE_STRING, HANDLE, PIMAGE_INFO
-# Desc  : 블랙 리스트에 등록 된 이미지가 로드 될 때 TerminateProcess 함수를 호출
-*/
-VOID LoadImageNotifyRoutine(IN PUNICODE_STRING FullImageName, IN HANDLE ProcessId, IN PIMAGE_INFO ImageInfo)
-{
-	if (!ImageInfo->SystemModeImage)
-	{
-		for (int i = 0; i < sizeof(szTarget) / sizeof(PVOID); i++)
-		{
-			if (wcsstr(FullImageName->Buffer, szTarget[i]))
-			{
-				DbgPrintEx(DPFLTR_ACPI_ID, DPFLTR_WARNING_LEVEL,
-					"[WARN] Unauthorized Image Load : \n\t[%.4X] %wZ\n", ProcessId, FullImageName);
-
-				TerminateProcess(ProcessId);
-				
-			}
-		}
-
+			"[ERR] Failed open process\n");
 	}
 }
 
 /*
-# Name  : DriverEntry
-# Param : PDRIVER_OBJECT, PUNICODE_STRING
-# Desc  : 드라이버 진입점
+# Name  : ObCallbackReg
+# Param : x
+# Desc  : ObRegisterCallbacks 호출
 */
-NTSTATUS DriverEntry(IN PDRIVER_OBJECT pDriver, IN PUNICODE_STRING pRegPath)
+NTSTATUS ObCallbackReg()
 {
-	UNREFERENCED_PARAMETER(pRegPath);
+	OB_CALLBACK_REGISTRATION obRegistration = { 0, };
+	OB_OPERATION_REGISTRATION opRegistration = { 0, };
 
-	pDriver->DriverUnload = UnloadDriver;
+	obRegistration.Version = ObGetFilterVersion();	// Get version
+	obRegistration.OperationRegistrationCount = 1;	// OB_OPERATION_REGISTRATION count, opRegistration[2] 인 경우 2
+	RtlInitUnicodeString(&obRegistration.Altitude, L"300000");	// 임의의 Altitude 지정
+	obRegistration.RegistrationContext = NULL;
 
-	DbgPrintEx(DPFLTR_ACPI_ID, DPFLTR_INFO_LEVEL, "[INFO] Load Driver\n");
+	opRegistration.ObjectType = PsProcessType;
+	opRegistration.Operations = OB_OPERATION_HANDLE_CREATE;	// Create 또는 Open 시 동작
+	opRegistration.PreOperation = PreCallback;	// PreOperation 등록
+	opRegistration.PostOperation = PostCallback;	// PostOperation 등록
 
-	if (PsSetLoadImageNotifyRoutine(&LoadImageNotifyRoutine) != STATUS_SUCCESS)
-	{
-		DbgPrintEx(DPFLTR_ACPI_ID, DPFLTR_ERROR_LEVEL, "[ERROR] Failed register\n");
+	obRegistration.OperationRegistration = &opRegistration;	// OperationRegistration 등록
 
-	}
-	else
-	{
-		DbgPrintEx(DPFLTR_ACPI_ID, DPFLTR_INFO_LEVEL, "[INFO] Success register\n");
-	}
+	DbgPrintEx(DPFLTR_ACPI_ID, 0, "[+] ObRegisterCallbacks Test\n");
 
-	return STATUS_SUCCESS;
-}
-
-/*
-# Name  : UnloadDriver
-# Param : PDRIVER_OBJECT
-# Desc  : 드라이버 종료 루틴, 등록된 콜백 루틴을 해제
-*/
-VOID UnloadDriver(IN PDRIVER_OBJECT pDriver)
-{
-	UNREFERENCED_PARAMETER(pDriver);
-	PsRemoveLoadImageNotifyRoutine(&LoadImageNotifyRoutine);
-	DbgPrintEx(DPFLTR_ACPI_ID, DPFLTR_INFO_LEVEL, "[INFO] Unload Driver\n");
-
+	return ObRegisterCallbacks(&obRegistration, &hRegistration);
 }
 ```
 
 
 
-## [0x04] Conclusion
+### [-] main.c
 
-`ObRegisterCallbacks`와 `PsSetLoadImageNotifyRoutine`까지 두 가지 콜백 루틴을 등록하는 함수에 대해 알아봤습니다. 이 외에도 다양한 콜백 루틴을 이용할 수 있는 함수들이 있습니다. 
+```c++
+#include "callbacks.h"
 
-다음 챕터에서는 지금까지 알아본 두 가지 기능을 이용하여 커널 디버깅을 탐지하는 내용을 알아보겠습니다.
+/*//////////////////////////////////////////////////////
+# File : main.c
+# Desc : 드라이버 진입점과 종료 루틴, 사용자 정의 함수
+*///////////////////////////////////////////////////////
+
+
+NTSTATUS DriverEntry(IN PDRIVER_OBJECT pDriver, IN PUNICODE_STRING pRegPath)
+{
+	UNREFERENCED_PARAMETER(pRegPath);
+	
+	pDriver->DriverUnload = UnloadDriver;
+	DbgPrintEx(DPFLTR_ACPI_ID, DPFLTR_INFO_LEVEL, "[INFO] Driver load success\n");
+
+
+
+	return STATUS_SUCCESS;
+}
+
+VOID UnloadDriver(IN PDRIVER_OBJECT pDriver)
+{
+	UNREFERENCED_PARAMETER(pDriver);
+	
+	PsRemoveLoadImageNotifyRoutine(&LoadImageNotifyRoutine);
+	if (hRegistration)	// 콜백 등록에 실패할 경우 예외 처리
+	{
+		ObUnRegisterCallbacks(hRegistration);
+	}
+	
+	DbgPrintEx(DPFLTR_ACPI_ID, DPFLTR_INFO_LEVEL, "[INFO] Driver unload success\n");
+}
+```
+
+
 
