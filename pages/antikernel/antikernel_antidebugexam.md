@@ -548,7 +548,7 @@ VOID LoadImageNotifyRoutine(
 
 이제 드라이버를 로드하고 어떻게 동작하는지 확인해보겠습니다.
 
-{% include info.html content="TerminateProcess()를 주석 처리한 이유는 프로세스 디버깅 방지와 커널 디버깅 방지가 잘 적용되는지 확인하기 위함입니다. 주석을 해제하는 경우, 프로세스 디버깅 방지가 되는지 확인하기 어렵습니다." %}
+{% include note.html content="TerminateProcess()를 주석 처리한 이유는 프로세스 디버깅 방지와 커널 디버깅 방지가 잘 적용되는지 확인하기 위함입니다. 주석을 해제하는 경우, 프로세스 디버깅 방지가 되는지 확인하기 어렵습니다." %}
 
 
 
