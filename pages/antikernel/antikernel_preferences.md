@@ -38,3 +38,9 @@ Link: <a href="https://docs.microsoft.com/ko-kr/windows-hardware/drivers/debugge
    <img src="https://github.com/Shh0ya/shh0ya.github.io/blob/master/rsrc/antikernel/pre_03.png?raw=true">
 
 5. 커널 디버깅을 하기 위한 환경설정이 완료되었습니다. 아래와 같이 자동으로 WinDbg가 시작됩니다. 만약 실행되지 않는 경우, `vmmon`에서 `Debugger path...` 버튼을 클릭하여 `windbg.exe` 경로를 지정해주시길 바랍니다.<img src="https://github.com/Shh0ya/shh0ya.github.io/blob/master/rsrc/antikernel/pre_04.png?raw=true">
+
+
+
+## [0x03] Conclusion
+
+위와 같이 환경을 설정하고, 이를 사용하는 것은 극 후반의 일입니다. 기본적인 windbg 명령어를 습득해두는 것이 도움이 될 것입니다. 다음 챕터에서는 안티 커널 디버깅의 목적에 대한 간략한 제 생각에 대한 글입니다.

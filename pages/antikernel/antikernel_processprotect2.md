@@ -125,6 +125,8 @@ typedef struct _IMAGE_INFO_EX {
 
 ## [0x02] PsSetLoadImageNotifyRoutine Template
 
+- <a href="https://github.com/shhoya/Examples">예제 소스코드</a> 
+
 ### [-] notify.h
 
 굳이 만들 필요는 없지만 추후에 따로 정의할 수 있기 때문에 선언 헤더 파일을 만들었습니다.
@@ -132,6 +134,10 @@ typedef struct _IMAGE_INFO_EX {
 ```c++
 #pragma once
 #include <ntifs.h>
+
+//============================================//
+//========= LoadImageNotify Routine ==========//
+//============================================//
 
 VOID LoadImageNotifyRoutine(IN PUNICODE_STRING FullImageName, IN HANDLE ProcessId, IN PIMAGE_INFO ImageInfo);
 ```
@@ -163,12 +169,17 @@ VOID UnloadDriver(IN PDRIVER_OBJECT pDriver);
 ```c++
 #include "common.h"
 
+/*
+# Name  : LoadImageNotifyRoutine
+# Param : PUNICODE_STRING, HANDLE, PIMAGE_INFO
+# Desc  : 이미지가 로드 될 때 이미지 종류(유저모드,커널모드)에 따라 정보를 출력
+*/
 VOID LoadImageNotifyRoutine(IN PUNICODE_STRING FullImageName, IN HANDLE ProcessId, IN PIMAGE_INFO ImageInfo)
 {
 	if (!ImageInfo->SystemModeImage)
 	{
-		DbgPrintEx(DPFLTR_ACPI_ID, DPFLTR_INFO_LEVEL, 
-			"[INFO] Load Image Name : \n\t[%.4X] %wZ\n", ProcessId,FullImageName);
+		DbgPrintEx(DPFLTR_ACPI_ID, DPFLTR_INFO_LEVEL,
+			"[INFO] Load Image Name : \n\t[%.4X] %wZ\n", ProcessId, FullImageName);
 	}
 
 	else
@@ -178,6 +189,11 @@ VOID LoadImageNotifyRoutine(IN PUNICODE_STRING FullImageName, IN HANDLE ProcessI
 	}
 }
 
+/*
+# Name  : DriverEntry
+# Param : PDRIVER_OBJECT, PUNICODE_STRING
+# Desc  : 드라이버 진입점
+*/
 NTSTATUS DriverEntry(IN PDRIVER_OBJECT pDriver, IN PUNICODE_STRING pRegPath)
 {
 	UNREFERENCED_PARAMETER(pRegPath);
@@ -185,11 +201,11 @@ NTSTATUS DriverEntry(IN PDRIVER_OBJECT pDriver, IN PUNICODE_STRING pRegPath)
 	pDriver->DriverUnload = UnloadDriver;
 
 	DbgPrintEx(DPFLTR_ACPI_ID, DPFLTR_INFO_LEVEL, "[INFO] Load Driver\n");
-	
+
 	if (PsSetLoadImageNotifyRoutine(&LoadImageNotifyRoutine) != STATUS_SUCCESS)
 	{
 		DbgPrintEx(DPFLTR_ACPI_ID, DPFLTR_ERROR_LEVEL, "[ERROR] Failed register\n");
-		
+
 	}
 	else
 	{
@@ -198,6 +214,12 @@ NTSTATUS DriverEntry(IN PDRIVER_OBJECT pDriver, IN PUNICODE_STRING pRegPath)
 
 	return STATUS_SUCCESS;
 }
+
+/*
+# Name  : UnloadDriver
+# Param : PDRIVER_OBJECT
+# Desc  : 드라이버 종료 루틴, 등록된 콜백 루틴을 해제
+*/
 VOID UnloadDriver(IN PDRIVER_OBJECT pDriver)
 {
 	UNREFERENCED_PARAMETER(pDriver);
@@ -205,7 +227,6 @@ VOID UnloadDriver(IN PDRIVER_OBJECT pDriver)
 	DbgPrintEx(DPFLTR_ACPI_ID, DPFLTR_INFO_LEVEL, "[INFO] Unload Driver\n");
 
 }
-
 ```
 
 
@@ -216,5 +237,174 @@ VOID UnloadDriver(IN PDRIVER_OBJECT pDriver)
 
 ## [0x03] PsSetLoadImageNotifyRoutine Example
 
+`ObRegisterCallbacks` 의 예제와 마찬가지로 어떠한 방법으로 프로세스를 보호할 수 있을지 생각해야 합니다. 상상력이 필요한 시점입니다. 
 
+예제는 특정 프로세스 이미지를 로드하지 못하도록 합니다. 특정 프로세스를 보호한다라는 의미와는 조금 다르지만 보안 프로그램들에서 자주 하는 행위 중 하나입니다.
+
+- <a href="https://github.com/shhoya/Examples">예제 소스코드</a> 
+
+### [-] notify.h
+
+템플릿과 다른 점은 블랙 리스트 프로세스 이름이 정의되어 있습니다. 현재는 메모장과 `x64dbg.exe` 를 예제로 등록했습니다.
+
+```c++
+#pragma once
+#include <ntifs.h>
+
+//============================================//
+//========= LoadImageNotify Routine ==========//
+//============================================//
+
+VOID LoadImageNotifyRoutine(IN PUNICODE_STRING FullImageName, IN HANDLE ProcessId, IN PIMAGE_INFO ImageInfo);
+
+//============================================//
+//=============== Black List =================//
+//============================================//
+
+const wchar_t *szTarget[2] = { L"notepad.exe" ,L"x64dbg.exe" };
+```
+
+
+
+### [-] common.h
+
+`TerminateProcess` 라는 함수를 선언하였습니다. 이 함수는 블랙 리스트에 등록 된 프로세스가 로드되면 종료하기 위한 함수입니다.
+
+```c++
+#pragma once
+#include "notify.h"
+
+//============================================//
+//======= DriverEntry & Unload Routine =======//
+//============================================//
+
+NTSTATUS DriverEntry(IN PDRIVER_OBJECT pDriver, IN PUNICODE_STRING pRegPath);
+VOID UnloadDriver(IN PDRIVER_OBJECT pDriver);
+
+//============================================//
+//========== User-defined Function  ==========//
+//============================================//
+
+VOID TerminateProcess(IN HANDLE pid);
+```
+
+
+
+
+
+### [-] main.c
+
+`LoadImageNotifyRoutine` 에서 블랙 리스트에 등록된 파일 이름이 로드되는 이미지의 이름에 포함되는지 확인합니다. 일치하는 경우 `TerminateProcess`를 호출하고, `ZwOpenProcess`와 `ZwTerminateProcess`를 이용하여 강제로 프로세스를 종료하게 됩니다.
+
+```c++
+#include "common.h"
+
+/*
+# Name  : TerminateProcess
+# Param : HANDLE
+# Desc  : PID로 프로세스 핸들을 얻은 후, 강제 프로세스 종료
+*/
+VOID TerminateProcess(IN HANDLE pid)
+{
+	HANDLE hProcess = NULL;
+	OBJECT_ATTRIBUTES obAttr = { 0, };
+	CLIENT_ID cid = { 0, };
+
+	obAttr.Length = sizeof(obAttr);
+	obAttr.Attributes = OBJ_CASE_INSENSITIVE | OBJ_KERNEL_HANDLE;
+	cid.UniqueProcess = pid;
+
+	if (ZwOpenProcess(&hProcess, PROCESS_ALL_ACCESS, &obAttr, &cid) == STATUS_SUCCESS)	// Get process handle
+	{
+		if (ZwTerminateProcess(hProcess, STATUS_ACCESS_DENIED) == STATUS_SUCCESS)	// Terminate process
+		{
+			DbgPrintEx(DPFLTR_ACPI_ID, DPFLTR_WARNING_LEVEL,
+				"[INFO] Success terminate process\n");
+		}
+		else
+		{
+			DbgPrintEx(DPFLTR_ACPI_ID, DPFLTR_WARNING_LEVEL,
+				"[ERROR] Failed terminate process\n");
+		}
+	}
+	else
+	{
+		DbgPrintEx(DPFLTR_ACPI_ID, DPFLTR_WARNING_LEVEL,
+			"[ERROR] Failed open process\n");
+	}
+
+
+}
+
+/*
+# Name  : LoadImageNotifyRoutine
+# Param : PUNICODE_STRING, HANDLE, PIMAGE_INFO
+# Desc  : 블랙 리스트에 등록 된 이미지가 로드 될 때 TerminateProcess 함수를 호출
+*/
+VOID LoadImageNotifyRoutine(IN PUNICODE_STRING FullImageName, IN HANDLE ProcessId, IN PIMAGE_INFO ImageInfo)
+{
+	if (!ImageInfo->SystemModeImage)
+	{
+		for (int i = 0; i < sizeof(szTarget) / sizeof(PVOID); i++)
+		{
+			if (wcsstr(FullImageName->Buffer, szTarget[i]))
+			{
+				DbgPrintEx(DPFLTR_ACPI_ID, DPFLTR_WARNING_LEVEL,
+					"[WARN] Unauthorized Image Load : \n\t[%.4X] %wZ\n", ProcessId, FullImageName);
+
+				TerminateProcess(ProcessId);
+				
+			}
+		}
+
+	}
+}
+
+/*
+# Name  : DriverEntry
+# Param : PDRIVER_OBJECT, PUNICODE_STRING
+# Desc  : 드라이버 진입점
+*/
+NTSTATUS DriverEntry(IN PDRIVER_OBJECT pDriver, IN PUNICODE_STRING pRegPath)
+{
+	UNREFERENCED_PARAMETER(pRegPath);
+
+	pDriver->DriverUnload = UnloadDriver;
+
+	DbgPrintEx(DPFLTR_ACPI_ID, DPFLTR_INFO_LEVEL, "[INFO] Load Driver\n");
+
+	if (PsSetLoadImageNotifyRoutine(&LoadImageNotifyRoutine) != STATUS_SUCCESS)
+	{
+		DbgPrintEx(DPFLTR_ACPI_ID, DPFLTR_ERROR_LEVEL, "[ERROR] Failed register\n");
+
+	}
+	else
+	{
+		DbgPrintEx(DPFLTR_ACPI_ID, DPFLTR_INFO_LEVEL, "[INFO] Success register\n");
+	}
+
+	return STATUS_SUCCESS;
+}
+
+/*
+# Name  : UnloadDriver
+# Param : PDRIVER_OBJECT
+# Desc  : 드라이버 종료 루틴, 등록된 콜백 루틴을 해제
+*/
+VOID UnloadDriver(IN PDRIVER_OBJECT pDriver)
+{
+	UNREFERENCED_PARAMETER(pDriver);
+	PsRemoveLoadImageNotifyRoutine(&LoadImageNotifyRoutine);
+	DbgPrintEx(DPFLTR_ACPI_ID, DPFLTR_INFO_LEVEL, "[INFO] Unload Driver\n");
+
+}
+```
+
+
+
+## [0x04] Conclusion
+
+`ObRegisterCallbacks`와 `PsSetLoadImageNotifyRoutine`까지 두 가지 콜백 루틴을 등록하는 함수에 대해 알아봤습니다. 이 외에도 다양한 콜백 루틴을 이용할 수 있는 함수들이 있습니다. 
+
+다음 챕터에서는 지금까지 알아본 두 가지 기능을 이용하여 커널 디버깅을 탐지하는 내용을 알아보겠습니다.
 

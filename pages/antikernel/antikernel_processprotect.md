@@ -716,6 +716,14 @@ VOID UnloadDriver(IN PDRIVER_OBJECT pDriver)
 
 
 
+## [0x04] Conclusion
+
+`ObRegisterCallbacks`에 대해 간단하게 알아봤습니다. 매 챕터에서 이야기하겠지만 상상력에 따라 아주 유용하게 또는 아주 멍청하게 사용될 수 있습니다.
+
+다음 챕터에서는 `PsSetLoadImageNotifyRoutine` 을 이용한 방법에 대해 알아보겠습니다.
+
+
+
 
 
 
