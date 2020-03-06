@@ -1,6 +1,6 @@
 ---
 title:  "[#] 블로그 개편"
-tags: [Post]
+tags: [Post, Notice]
 published: true
 permalink: firstpost.html
 comments: true
