@@ -116,7 +116,7 @@ void PobPostOperationCallback(
 위의 내용을 토대로 `ObRegisterCallbacks` 함수를 사용해보고 어떻게 동작하는지 확인해보겠습니다.
 우선 콜백 루틴이 어떻게 동작하는지 알기 위해 `ObRegisterCallbakcs` 함수의 템플릿을 만들었습니다.(x64 기준)
 
-- <a href="https://github.com/shh0ya/Examples">예제 소스코드</a> 
+- <a href="https://github.com/shhoya/Examples">예제 소스코드</a> 
 
 {% include warning.html content="BSOD가 발생할 수 있습니다. 속성 페이지 -> 링커 -> 명령줄 에 /INTEGRITYCHECK 옵션을 추가하고 컴파일해야 합니다." %}
 
