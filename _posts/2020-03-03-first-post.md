@@ -1,10 +1,10 @@
 ---
-title:  "[+] 블로그 이전"
+title:  "[#] 블로그 이전"
 tags: [Post]
 published: true
 permalink: firstpost.html
 comments: true
-summary: "기존 블로그(https://shhoya.github.io)에서 이전하였습니다."
+summary: "블로그 개편"
 ---
 
 ## [0x00] Overview
@@ -38,10 +38,3 @@ summary: "기존 블로그(https://shhoya.github.io)에서 이전하였습니다
 ### [-] Feedback
 
 `Post` 외에는 댓글 기능을 제공하지 않습니다. 궁금한 점, 고쳐야 할 점 등은 해당 메뉴를 통해 메일로 전달주시면 감사하겠습니다.
-
-
-
-## [0x02] Old Blog link
-
-<a href="https://shhoya.github.io">Shhoya' Blog</a>
-
