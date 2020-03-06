@@ -1,4 +1,4 @@
-repository: shh0ya/shh0ya.github.io
+repository: Shhoya/Shhoya.github.io
 
 output: web
 # this property is useful for conditional filtering of content that is separate from the PDF.
@@ -111,7 +111,7 @@ description: "Shh0ya github pages. Security research"
 # the description is used in the feed.xml file
 
 # needed for sitemap.xml file only
-url: https://shh0ya.github.io
+url: https://shhoya.github.io
 baseurl: /
 highlight_theme: tomorrow-night-bright
 
