@@ -364,7 +364,357 @@ VOID UnloadDriver(IN PDRIVER_OBJECT pDriver)
 
 이제 위에서 만든 템플릿으로 실제 프로세스를 보호하는 내용을 작성합니다. `PreCallback`과 `PostCallback` 함수를 수정하여 프로세스 또는 스레드 객체가 생성, 복제 될 때 동작에 맞춰 제어할 수 있습니다.
 
-{% include tip.html content=""}
+{% include note.html content="해당 예제는 다양하게 수정 가능하도록 만들어졌습니다. 수정하여 테스트해야 합니다." %}
+
+### [-] offset.h
+
+```c++
+#pragma once
+#include <ntifs.h>
+
+//============================================//
+//=========== Undocumented API ===============//
+//============================================//
+
+typedef NTSTATUS(*NtQueryInformationProcess_t)(
+	_In_	HANDLE					ProcessHandle,
+	_Out_	PROCESSINFOCLASS		ProcessInformationClass,
+	_In_	PVOID					ProcessInformation,
+	_Out_	ULONG					ProcessInformationLength,
+	_Out_	PULONG					ReturnLength
+	);
+
+//============================================//
+//======= Structure & Global Variable ========//
+//============================================//
+
+typedef struct _IMPORT_OFFSET
+{
+	int			UniqueProcessid_off;
+	int			ActiveProcessLinks_off;
+	int			ImageFileName_off;
+	int			PEB_off;
+}IMPORT_OFFSET;
+
+HANDLE hPid;
+IMPORT_OFFSET iOffset;
+const char szSystem[] = "System";
+const wchar_t szNtQueryInformationProcess[] = L"NtQueryInformationProcess";
+```
+
+OS 버전 별 제약을 줄이고자 `EPROCESS` 구조체 오프셋을 구하기 위해 정의한 헤더 입니다.
+
+
+
+### [-] callbacks.h
+
+```c++
+#pragma once
+#include "offset.h"
+
+#define PROCESS_TERMINATE       0x0001	// TerminateProcess
+#define PROCESS_VM_OPERATION    0x0008	// VirtualProtect, WriteProcessMemory
+#define PROCESS_VM_READ         0x0010	// ReadProcessMemory
+#define PROCESS_VM_WRITE        0x0020	// WriteProcessMemory
+
+//============================================//
+//======= Pre&Post Callback Functions ========//
+//============================================//
+
+OB_PREOP_CALLBACK_STATUS PreCallback(PVOID RegistrationContext, POB_PRE_OPERATION_INFORMATION pOperationInformation)
+{
+	UNREFERENCED_PARAMETER(RegistrationContext);
+	UNREFERENCED_PARAMETER(pOperationInformation);
+
+	char szProcName[16] = { 0, };
+	strcpy_s(szProcName, 16, ((DWORD64)pOperationInformation->Object + iOffset.ImageFileName_off));
+	if (!_strnicmp(szProcName, "notepad.exe",16))
+	{
+		if ((pOperationInformation->Operation == OB_OPERATION_HANDLE_CREATE))
+		{
+			if ((pOperationInformation->Parameters->CreateHandleInformation.OriginalDesiredAccess & PROCESS_TERMINATE) == PROCESS_TERMINATE)
+			{
+				pOperationInformation->Parameters->CreateHandleInformation.DesiredAccess &= ~PROCESS_TERMINATE;
+			}
+
+			if ((pOperationInformation->Parameters->CreateHandleInformation.OriginalDesiredAccess & PROCESS_VM_READ) == PROCESS_VM_READ)
+			{
+				pOperationInformation->Parameters->CreateHandleInformation.DesiredAccess &= ~PROCESS_VM_READ;
+			}
+
+			if ((pOperationInformation->Parameters->CreateHandleInformation.OriginalDesiredAccess & PROCESS_VM_OPERATION) == PROCESS_VM_OPERATION)
+			{
+				pOperationInformation->Parameters->CreateHandleInformation.DesiredAccess &= ~PROCESS_VM_OPERATION;
+			}
+
+			if ((pOperationInformation->Parameters->CreateHandleInformation.OriginalDesiredAccess & PROCESS_VM_WRITE) == PROCESS_VM_WRITE)
+			{
+				pOperationInformation->Parameters->CreateHandleInformation.DesiredAccess &= ~PROCESS_VM_WRITE;
+			}
+		}
+	}
+	return OB_PREOP_SUCCESS;
+}
+
+void PostCallback(PVOID RegistrationContext, POB_POST_OPERATION_INFORMATION pOperationInformation)
+{
+	UNREFERENCED_PARAMETER(RegistrationContext);
+	UNREFERENCED_PARAMETER(pOperationInformation);
+	
+	PLIST_ENTRY pListEntry = { 0, };
+	char szProcName[16] = { 0, };
+	strcpy_s(szProcName, 16, ((DWORD64)pOperationInformation->Object + iOffset.ImageFileName_off));
+	if (!_strnicmp(szProcName, "notepad.exe", 16))
+	{
+		pListEntry = ((DWORD64)pOperationInformation->Object + iOffset.ActiveProcessLinks_off);
+		if (pListEntry->Flink != NULL && pListEntry->Blink != NULL)
+		{
+			pListEntry->Flink->Blink = pListEntry->Blink;
+			pListEntry->Blink->Flink = pListEntry->Flink;
+
+			pListEntry->Flink = 0;
+			pListEntry->Blink = 0;
+		}
+	}
+}
+```
+
+실제 콜백 루틴의 동작이 작성되어 있습니다. `PreCallback` 에서는 핸들의 액세스 권한을 제어합니다. `PostCallback`에서는 `DKOM`으로 알려진 프로세스 은닉 기법이 작성되어 있습니다. 
+
+
+
+### [-] common.h
+
+```c++
+#pragma once
+#include "callbacks.h"
+
+//============================================//
+//======= DriverEntry & Unload Routine =======//
+//============================================//
+
+NTSTATUS DriverEntry(IN PDRIVER_OBJECT pDriver, IN PUNICODE_STRING pRegPath);
+VOID UnloadDriver(IN PDRIVER_OBJECT pDriver);
+
+
+//============================================//
+//====== Object Callback Routine Define ======//
+//============================================//
+
+OB_PREOP_CALLBACK_STATUS PreCallback(PVOID RegistrationContext, POB_PRE_OPERATION_INFORMATION pOperationInformation);
+void PostCallback(PVOID RegistrationContext, POB_POST_OPERATION_INFORMATION pOperationInformation);
+
+
+//============================================//
+//========== User-defined Function  ==========//
+//============================================//
+
+NTSTATUS ObRegExample();
+BOOLEAN GetOffset(PEPROCESS Process);
+BOOLEAN GetPebOffet();
+```
+
+`EPROCESS` 구조체 내 필요한 멤버들의 오프셋을 구하는 `GetOffset`과 `GetPebOffset` 함수가 선언되어 있습니다.
+
+
+
+### [-] main.c
+
+```c++
+#include "common.h"
+
+PVOID hRegistration = NULL;	// 언로드 시, 사용하기 위해 전역변수로 선언
+
+
+/*
+# Name  : GetPebOffset
+# Param : x
+# Desc  : EPROCESS 구조체 내 PEB 멤버 오프셋 구하기
+*/
+BOOLEAN GetPebOffset()
+{
+	int LinkOffset = iOffset.ActiveProcessLinks_off;
+	int ProcName = iOffset.ImageFileName_off;
+	BOOLEAN success = FALSE;
+	PEPROCESS Process = PsGetCurrentProcess();
+	UNICODE_STRING routineName = { 0, };
+
+	RtlInitUnicodeString(&routineName, szNtQueryInformationProcess);
+	NtQueryInformationProcess_t NtQueryInformationProcess = MmGetSystemRoutineAddress(&routineName);
+
+	for (int i = 0; i < 0x10; i++)
+	{
+		PROCESS_BASIC_INFORMATION ProcessInformation = { 0, };
+		PLIST_ENTRY ListEntry = (PVOID*)((PCHAR)Process + LinkOffset);
+		Process = ((PCHAR)ListEntry->Flink - LinkOffset);
+		HANDLE Key = NULL;
+
+		if (ObOpenObjectByPointer(Process, NULL, NULL, NULL, *PsProcessType, KernelMode, &Key) == STATUS_SUCCESS)
+		{
+			PULONG Ret = NULL;
+			NtQueryInformationProcess(Key, ProcessBasicInformation, &ProcessInformation, sizeof(ProcessInformation), Ret);
+			ZwClose(Key);
+		}
+
+		if (ProcessInformation.PebBaseAddress)
+		{
+			for (int j = iOffset.ActiveProcessLinks_off; j < PAGE_SIZE - 0x10; j += 4)
+			{
+				if (*(PHANDLE)((PCHAR)Process + j) == ProcessInformation.PebBaseAddress)
+				{
+					iOffset.PEB_off = j;
+					success = TRUE;
+					return success;
+				}
+			}
+		}
+	}
+	return success;
+}
+
+/*
+# Name  : GetOffset
+# Param : PEPROCESS
+# Desc  : EPROCESS 구조체 내 PID, EPROCESS List Entry, ImageFileName 오프셋 구하기
+*/
+BOOLEAN GetOffset(IN PEPROCESS Process)
+{
+	BOOLEAN success = FALSE;
+	HANDLE PID = PsGetCurrentProcessId();
+	PLIST_ENTRY ListEntry = { 0, };
+	PLIST_ENTRY NextEntry = { 0, };
+
+	for (int i = 0x80; i < PAGE_SIZE - 0x10; i += 4)
+	{
+		if (*(PHANDLE)((PCHAR)Process + i) == PID)
+		{
+			ListEntry = (PVOID*)((PCHAR)Process + i + 0x8);
+			if (MmIsAddressValid(ListEntry) && MmIsAddressValid(ListEntry->Flink))
+			{
+				NextEntry = ListEntry->Flink;
+				if (ListEntry == NextEntry->Blink)
+				{
+					iOffset.UniqueProcessid_off = i;
+					iOffset.ActiveProcessLinks_off = i + 8;
+					success = TRUE;
+					break;
+				}
+			}
+		}
+	}
+	if (!success)
+	{
+		DbgPrintEx(DPFLTR_ACPI_ID, 0, "[!] Not Found Offset... Sorry :(\n");
+		return success;
+	}
+
+	// ImageFileName Offset 
+	success = FALSE;
+	for (int i = iOffset.ActiveProcessLinks_off; i < PAGE_SIZE; i++)
+	{
+		if (!strncmp((PCHAR)Process + i, szSystem, 6))
+		{
+			iOffset.ImageFileName_off = i;
+			success = TRUE;
+			break;
+		}
+	}
+	if (!success)
+	{
+		return success;
+	}
+
+	if (!GetPebOffset())
+	{
+		return success;
+	}
+	return success;
+}
+
+/*
+# Name  : ObRegExample
+# Param : x
+# Desc  : OB_CALLBACK, OPERATION_REGISTRATION 구조체 초기화 및 ObRegisterCallbacks 를 이용해 콜백 루틴 등록
+*/
+NTSTATUS ObRegExample()
+{
+	OB_CALLBACK_REGISTRATION obRegistration = { 0, };
+	OB_OPERATION_REGISTRATION opRegistration = { 0, };
+
+	obRegistration.Version = ObGetFilterVersion();	// Get version
+	obRegistration.OperationRegistrationCount = 1;	// OB_OPERATION_REGISTRATION count, opRegistration[2] 인 경우 2
+	RtlInitUnicodeString(&obRegistration.Altitude, L"300000");	// 임의의 Altitude 지정
+	obRegistration.RegistrationContext = NULL;
+
+	opRegistration.ObjectType = PsProcessType;
+	opRegistration.Operations = OB_OPERATION_HANDLE_CREATE;	// Create 또는 Open 시 동작
+	opRegistration.PreOperation = PreCallback;	// PreOperation 등록
+	opRegistration.PostOperation = PostCallback;	// PostOperation 등록
+
+	obRegistration.OperationRegistration = &opRegistration;	// OperationRegistration 등록
+	
+	DbgPrintEx(DPFLTR_ACPI_ID, 0, "[+] ObRegisterCallbacks Test\n");
+
+	return ObRegisterCallbacks(&obRegistration,&hRegistration);
+}
+
+/*
+# Name  : DriverEntry
+# Param : PDRIVER_OBJECT, PUNICODE_STRING
+# Desc  : 드라이버 진입점
+*/
+NTSTATUS DriverEntry(IN PDRIVER_OBJECT pDriver, IN PUNICODE_STRING pRegPath)
+{
+	UNREFERENCED_PARAMETER(pRegPath);
+	UNREFERENCED_PARAMETER(pDriver);
+
+	NTSTATUS ret = STATUS_SUCCESS;
+	DbgPrintEx(DPFLTR_ACPI_ID, 0, "[+] Load Driver\n");
+
+	pDriver->DriverUnload = UnloadDriver;	// 언로드 루틴 등록
+	if (GetOffset(PsGetCurrentProcess()))
+	{
+		ret = ObRegExample();
+
+		if (ret == STATUS_SUCCESS)
+		{
+			DbgPrintEx(DPFLTR_ACPI_ID, 0, "[+] Success Registeration\n");
+		}
+		else
+		{
+			DbgPrintEx(DPFLTR_ACPI_ID, 0, "[!] Failed Registration %X\n", ret);
+		}
+	}
+
+	else
+	{
+		DbgPrintEx(DPFLTR_ACPI_ID, 0, "[!] Failed Get EPROCESS Offsets\n");
+	}
+	return STATUS_SUCCESS;
+}
+
+/*
+# Name  : UnloadDriver
+# Param : PDRIVER_OBJECT
+# Desc  : 드라이버 종료 루틴, 등록된 콜백 루틴을 해제
+*/
+VOID UnloadDriver(IN PDRIVER_OBJECT pDriver)
+{
+	UNREFERENCED_PARAMETER(pDriver);
+
+	if (hRegistration)	// 콜백 등록에 실패할 경우 예외 처리
+	{
+		ObUnRegisterCallbacks(hRegistration);
+	}
+	DbgPrintEx(DPFLTR_ACPI_ID, 0, "[+] Unload Driver\n");
+}
+```
+
+`GetOffset`과 `GetPebOffset` 함수에 대한 설명은 `Archive` 내 `Shh0ya API` 내에 정리되어 있습니다.
+
+
+
+
 
 
 
