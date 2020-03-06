@@ -438,7 +438,7 @@ NTSTATUS DriverEntry(IN PDRIVER_OBJECT pDriver, IN PUNICODE_STRING pRegPath)
 
 이제 콜백 루틴을 정의할 차례입니다.
 
-{% include warn.html content="MmGetSystemRoutineAddress의 반환 값이 NULL일 수 있습니다. 해당 함수가 존재하지 않을 경우이므로, 조건문으로 좀 더 안전하게 작성할 수 있습니다. " %}
+{% include warning.html content="MmGetSystemRoutineAddress의 반환 값이 NULL일 수 있습니다. 해당 함수가 존재하지 않을 경우이므로, 조건문으로 좀 더 안전하게 작성할 수 있습니다. " %}
 
 
 
