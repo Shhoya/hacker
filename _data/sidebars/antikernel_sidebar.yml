@@ -46,6 +46,14 @@ entries:
     - title: Process protect(NotifyRoutine)
       url: /antikernel_processprotect2.html
       output: web, pdf
+  
+  - title: Anti Kernel Debugging
+    output: web, pdf
+    folderitems:
+
+    - title: Anti Kernel Debugging Tutorial
+      url: /antikernel_antidebugexam.html
+      output: web, pdf
 
 
 #  - title: Tag archives
