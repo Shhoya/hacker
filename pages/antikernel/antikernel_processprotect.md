@@ -364,6 +364,8 @@ VOID UnloadDriver(IN PDRIVER_OBJECT pDriver)
 
 이제 위에서 만든 템플릿으로 실제 프로세스를 보호하는 내용을 작성합니다. `PreCallback`과 `PostCallback` 함수를 수정하여 프로세스 또는 스레드 객체가 생성, 복제 될 때 동작에 맞춰 제어할 수 있습니다.
 
+- <a href="https://github.com/shhoya/Examples">예제 소스코드</a> 
+
 {% include note.html content="해당 예제는 다양하게 수정 가능하도록 만들어졌습니다. 수정하여 테스트해야 합니다." %}
 
 ### [-] offset.h
