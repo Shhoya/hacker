@@ -14,7 +14,9 @@ folder: antikernel
 
 - <a href="https://shhoya.github.io/antikernel_preferences.html">Preferences</a> : 간략한 가상머신 설정에 대한 설명입니다. `VirtualKD`를 이용하여 커널 디버깅을 준비합니다.
 - <a href="https://shhoya.github.io/antikernel_antidebugging.html">Anti Debugging</a> : 실제 챕터에 들어가기 전에 안티 커널 디버깅에 대한 요약입니다.
-- <a href="https://shhoya.github.io/antikernel_processprotect.html">Process Protect</a> : 커널 드라이버에서 프로세스 보호를 어떤 식으로 하는지에 대한 내용입니다.
+- <a href="https://shhoya.github.io/antikernel_processprotect.html">Process Protect(1)</a> : 커널 드라이버에서 프로세스 보호를 어떤 식으로 하는지에 대한 내용입니다.
+- <a href="https://shhoya.github.io/antikernel_processprotect2.html">Process Protect(2)</a> : 커널 드라이버에서 프로세스 보호를 어떤 식으로 하는지에 대한 내용입니다.
+- Anti Kernel Debugging : 커널 드라이버를 이용한 안티 디버깅 기법에 대한 내용입니다.
 - Kernel Debugging : 커널 디버깅을 OS에서 어떻게 처리하는지에 관한 내용입니다.
 - Code Sign : 코드 무결성(CI)에 관한 내용입니다.
 - Bypass : 커널 디버깅 중이라는 사실을 숨긴 채 디버깅을 하는 방법에 관한 내용입니다.
