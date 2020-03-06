@@ -1,5 +1,5 @@
 ---
-title:  "[#] 블로그 이전"
+title:  "[#] 블로그 개편"
 tags: [Post]
 published: true
 permalink: firstpost.html
