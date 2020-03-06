@@ -22,7 +22,7 @@ Link: <a href="https://docs.microsoft.com/ko-kr/windows-hardware/drivers/debugge
 
 
 
-## [0x01] Install VirtualKD on Windows
+## [0x02] Install VirtualKD on Windows
 
 `VirtualKD` 를 이용하여 커널 디버깅 환경을 구축합니다.
 
