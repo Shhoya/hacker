@@ -111,6 +111,93 @@ void PobPostOperationCallback(
 
 
 
+### [-] OB_PRE(POST)_OPERATION_INFORMATION
+
+```c++
+typedef struct _OB_PRE_OPERATION_INFORMATION {
+    _In_ OB_OPERATION           Operation;
+    union {
+        _In_ ULONG Flags;
+        struct {
+            _In_ ULONG KernelHandle:1;
+            _In_ ULONG Reserved:31;
+        };
+    };
+    _In_ PVOID                         Object;
+    _In_ POBJECT_TYPE                  ObjectType;
+    _Out_ PVOID                        CallContext;
+    _In_ POB_PRE_OPERATION_PARAMETERS  Parameters;
+} OB_PRE_OPERATION_INFORMATION, *POB_PRE_OPERATION_INFORMATION;
+
+typedef struct _OB_POST_OPERATION_INFORMATION {
+    _In_ OB_OPERATION  Operation;
+    union {
+        _In_ ULONG Flags;
+        struct {
+            _In_ ULONG KernelHandle:1;
+            _In_ ULONG Reserved:31;
+        };
+    };
+    _In_ PVOID                          Object;
+    _In_ POBJECT_TYPE                   ObjectType;
+    _In_ PVOID                          CallContext;
+    _In_ NTSTATUS                       ReturnStatus;
+    _In_ POB_POST_OPERATION_PARAMETERS  Parameters;
+} OB_POST_OPERATION_INFORMATION,*POB_POST_OPERATION_INFORMATION;
+```
+
+- Operation : Handle Operation의 유형
+  - OB_OPERATION_HANDLE_CREATE : 프로세스 또는 스레드  핸들 생성
+  - OB_OPERATIOIN_HANDLE_DUPLICATE : 프로세스 또는 스레드의 핸들이 복제
+- Flags : 예약 된 영역, `KernelHandle` 사용
+- KernelHandle : 핸들이 커널 핸들인지를 지정하는 값. TRUE인 경우 커널 핸들
+- Reserved : 시스템에서 사용하기 위한 예약 영역
+- Object : 프로세스 또는 스레드 오브젝트(EPROCESS, ETHREAD 등)
+- ObjectType : `PsProcessType` 또는 `PsThreadType`
+- CallContext : 드라이버의 특정 컨텍스트 정보에 대한 포인터
+- ReturnStatus(POST) : 핸들 동작에 대한 `NTSTATUS`
+- Parameters : `OB_PRE(POST)_OPERATION_PARAMETERS` 에 대한 포인터
+
+
+
+### [-] OB_PRE(POST)_OPERATION_PARAMETERS
+
+```c++
+typedef union _OB_PRE_OPERATION_PARAMETERS {
+  OB_PRE_CREATE_HANDLE_INFORMATION    CreateHandleInformation;
+  OB_PRE_DUPLICATE_HANDLE_INFORMATION DuplicateHandleInformation;
+} OB_PRE_OPERATION_PARAMETERS, *POB_PRE_OPERATION_PARAMETERS;
+
+typedef union _OB_POST_OPERATION_PARAMETERS {
+  OB_POST_CREATE_HANDLE_INFORMATION    CreateHandleInformation;
+  OB_POST_DUPLICATE_HANDLE_INFORMATION DuplicateHandleInformation;
+} OB_POST_OPERATION_PARAMETERS, *POB_POST_OPERATION_PARAMETERS;
+```
+
+- CreateHandleInformation : 열려있는 핸들과 관련 정보를 포함하는 `OB_PRE(POST)_CREATE_HANDLE_INFORMATION`  구조
+- DuplicateHandleInformation : 복제된 핸들과 관련 정보를 포함하는 `OB_PRE(POST)_DUPLICATE_HANDLE_INFORMATION` 구조
+
+
+
+### [-] OB_PRE(POST)_CREATE_HANDLE_INFORMATION
+
+```c++
+typedef struct _OB_PRE_CREATE_HANDLE_INFORMATION {
+  ACCESS_MASK DesiredAccess;
+  ACCESS_MASK OriginalDesiredAccess;
+} OB_PRE_CREATE_HANDLE_INFORMATION, *POB_PRE_CREATE_HANDLE_INFORMATION;
+
+typedef struct _OB_POST_CREATE_HANDLE_INFORMATION {
+  ACCESS_MASK GrantedAccess;
+} OB_POST_CREATE_HANDLE_INFORMATION, *POB_POST_CREATE_HANDLE_INFORMATION;
+```
+
+- DesiredAccess(PRE) : `OriginalDesiredAccess` 값과 기본적으로 동일하지만 `PreCallback` 루틴을 이용하여 액세스를 제한할 수 있음
+- OriginalDesiredAccess(PRE) : 핸들에 요청 된 원래의 액세스를 지정하는 값
+- GrantedAccess(POST) : 핸들에 부여 된 액세스를 지정하는 값
+
+
+
 ## [0x02] ObRegisterCallbacks Template
 
 위의 내용을 토대로 `ObRegisterCallbacks` 함수를 사용해보고 어떻게 동작하는지 확인해보겠습니다.
@@ -275,19 +362,9 @@ VOID UnloadDriver(IN PDRIVER_OBJECT pDriver)
 
 ## [0x03] ObRegisterCallbacks Example
 
-이제 위에서 만든 템플릿으로 실제 프로세스를 보호하는 내용을 작성합니다. 가장 기본적으로 단순히 생성되는 프로세스의 이름을 기반으로 보호할 수 있습니다.
+이제 위에서 만든 템플릿으로 실제 프로세스를 보호하는 내용을 작성합니다. `PreCallback`과 `PostCallback` 함수를 수정하여 프로세스 또는 스레드 객체가 생성, 복제 될 때 동작에 맞춰 제어할 수 있습니다.
 
-해당 예제는 상상력을 발휘할 수 있도록 만들었습니다. 컴파일하여 로드하여도 바라는 대로 동작하지 않습니다.
-
-`PreCallback` 루틴에는 `ACCESS_RIGHT` 를 변경하는 로직이 구현되어 있습니다. 드라이버를 먼저 로드하고 프로세스를 실행하면 프로세스가 실행이 되지 않는 것을 확인할 수 있습니다. 프로세스를 먼저 로드하고, 원하는 권한을 제거한 후 테스트해보길 바랍니다.
-
-`PostCallback` 루틴에는 해당 프로세스의 `ActiveProcessLinks` 를 끊어 프로세스를 숨기는 `DKOM` 기법이 작성되어 있습니다.
-
-본래의 목적을 위해 다음에 `ObRegisterCallbacks` 를 이용하여 안티 커널 디버깅을 구현해 볼 것입니다.
-
-
-
-
+{% include tip.html content=""}
 
 
 
