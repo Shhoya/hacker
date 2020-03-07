@@ -519,17 +519,15 @@ ffff948c`8b306120 ; 0x010 Altitude         : UNICODE_STRING
 ffff948c`8b306130 ; 0x020 Items            : CALLBACK_ENTRY_ITEM
 ```
 
-자 지금 `CALLBACK_ENTRY` 구조로 되어있는 `0xffff948c'8b306110` 은 무언가와 매우 닮아있습니다.
+자 지금 `CALLBACK_ENTRY` 구조로 되어있는 `0xffff948c'8b306110` 은 무언가와 매우 닮아있습니다. 바로 이 위치가 `RegistrationHandle` 입니다. 즉 `CALLBACK_ENTRY_ITEM` 내 `CallbackEntry` 포인터의 값이 `RegistrationHandle` 입니다.
 
-
-
-
-
-
+이제 이 값을 이용해 `ObUnRegisterCallbacks` 함수를 호출할 수 있습니다.
 
 
 
 ## [0x02] Conclusion
+
+`ObUnRegisterCallbacks` 함수를 이용하여 콜백 루틴을 해제하는 방법에 대해 알아봤습니다. 이제 다음 챕터에서 실제로 해제를 하는 드라이버 코드를 작성하고 테스트해보겠습니다.
 
 
 
