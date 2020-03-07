@@ -149,7 +149,7 @@ VOID UnloadDriver(IN PDRIVER_OBJECT pDriver)
 
 `main.c` 부분만 아래와 같이 바꿔 진행해봅니다.
 
-```main.c
+```c
 #include "common.h"
 
 VOID Dummy()
