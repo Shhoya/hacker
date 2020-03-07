@@ -54,7 +54,14 @@ entries:
     - title: Anti Kernel Debugging Tutorial
       url: /antikernel_antidebugexam.html
       output: web, pdf
-
+    
+    - title: Kernel Debugging
+      output: web
+      subfolderitems:
+      
+      - title: KdInitSystem
+        url: /antikernel_kerneldebugging.html
+        ouput: web, pdf
 
 #  - title: Tag archives
 #    output: web
