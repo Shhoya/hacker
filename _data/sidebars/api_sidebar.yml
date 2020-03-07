@@ -2,8 +2,8 @@
 
 entries:
 - title: sidebar
-  product: Anti Kernel Debugging Bypass(Not Completed)
-  version: 0.9
+  product: Useful Custom API(Incomplete)
+  version: 1.0
   folders:
 
   - title:
@@ -19,40 +19,20 @@ entries:
       output: pdf
       type: frontmatter
 
-  - title: Overview
+  - title: User Mode
     output: web, pdf
     folderitems:
 
-    - title: Introduction
+    - title: API_NAME
       url: /antikernel_introduction.html
       output: web, pdf
 
-    - title: Preferences
-      url: /antikernel_preferences.html
-      output: web, pdf
-
-  - title: Process Protection
+  - title: Kernel Mode
     output: web, pdf
     folderitems:
 
-    - title: Anti kernel debugging?
+    - title: API_NAME
       url: /antikernel_antidebugging.html
-      output: web, pdf
-
-    - title: Process protect(ObRegisterCallbacks)
-      url: /antikernel_processprotect.html
-      output: web, pdf
-      
-    - title: Process protect(NotifyRoutine)
-      url: /antikernel_processprotect2.html
-      output: web, pdf
-  
-  - title: Anti Kernel Debugging
-    output: web, pdf
-    folderitems:
-
-    - title: Anti Kernel Debugging Tutorial
-      url: /antikernel_antidebugexam.html
       output: web, pdf
 
 
