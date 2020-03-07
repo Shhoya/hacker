@@ -255,7 +255,7 @@ LABEL_19:
 
 이 함수는 레퍼런스를 확인하면 약 10개의 로직에서 호출됩니다. 함수로는 `KdEnabledDebuggerWithLock`, `KdEnterKernelDebugger`, `KiSystemStartup`, `KiSetProcessorSignature`, `KiSetFeatureBits`, `PopHiberCheckResume`, `Phase1InitializationDiscard` 에서 호출하는 걸 알 수 있습니다.
 
-
+<img src="https://github.com/Shhoya/shhoya.github.io/blob/master/rsrc/antikernel/kd_00.png?raw=true">
 
 
 
