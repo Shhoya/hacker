@@ -18,7 +18,7 @@ folder: antikernel
 - <a href="https://shhoya.github.io/antikernel_processprotect2.html">Process Protect(2)</a> : 커널 드라이버에서 프로세스 보호를 어떤 식으로 하는지에 대한 내용입니다.
 - <a href="https://shhoya.github.io/antikernel_antidebugexam.html">Anti Kernel Debugging</a> : 커널 드라이버를 이용한 안티 디버깅 기법에 대한 내용입니다.
 - <a href="https://shhoya.github.io/antikernel_kerneldebugging.html">Kernel Debugging</a> : 커널 디버깅을 OS에서 어떻게 처리하는지에 관한 내용입니다.
-- Bypass : 커널 디버깅 중이라는 사실을 숨긴 채 디버깅을 하는 방법에 관한 내용입니다.
+- <a href="https://shhoya.github.io/antikernel_bypassintro.html">Bypass</a> : 커널 디버깅 중이라는 사실을 숨긴 채 디버깅을 하는 방법에 관한 내용입니다. ObRegisterCallbacks Bypass에 관한 내용이 추가적으로 존재합니다.
 - Bonus : 코드 무결성(CI)에 관한 부록입니다.
 
 
