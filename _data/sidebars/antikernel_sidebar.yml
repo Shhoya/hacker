@@ -71,6 +71,10 @@ entries:
         - title: KdTrap
           url: /antikernel_kerneldebugging3.html
           output: web
+        
+        - title: Kernel Global Variable
+          url: /antikernel_kerneldebugging4.html
+          output: web
 
 
 #  - title: Tag archives
