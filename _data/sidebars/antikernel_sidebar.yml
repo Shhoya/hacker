@@ -96,6 +96,18 @@ entries:
           - title: ObRegisterCallbacks Bypass
             url: /antikernel_bypassob2.html
             output: web
+            
+        - title: Anti Kernel Debugging Bypass
+          output: web
+          subfolderitems:
+              
+          - title: KdDebuggerEnabled Bypass
+            url: /antikernel_bypassob.html
+            output: web
+          
+          - title: KdDebuggerNotPresent Bypass
+            url: /antikernel_bypassob2.html
+            output: web
 
 #  - title: Tag archives
 #    output: web
