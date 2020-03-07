@@ -62,7 +62,7 @@ entries:
           
         - title: KdInitSystem
           url: /antikernel_kerneldebugging.html
-          ouput: web, pdf
+          output: web
 
 #  - title: Tag archives
 #    output: web
