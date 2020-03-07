@@ -16,244 +16,97 @@ folder: antikernel
 
 
 
-## [0x01] KdInitSystem
+## [0x01] KdEnableDebuggerWIthLock
 
-`ntoskrnl.exe`를 IDA의 Hexray 기능을 이용해 해당 함수를 확인하면 다음과 같습니다. 함수가 매우 길기 때문에 처음과 끝 부분은 생략했습니다. 직접 확인해보길 바랍니다.
+`KdEnableDebugger` 함수가 호출되면, 실제 로직이 존재하는 함수입니다. 이름에서 알 수 있듯이 Disable 함수도 존재하며 디버거를 활성화/비활성화 하는 함수입니다.
+
+`ntoskrnl.exe`를 IDA의 Hexray 기능을 이용해 해당 함수를 확인하면 다음과 같습니다.
 
 ```c
-char __fastcall KdInitSystem(int a1, __int64 a2)
+signed __int64 __fastcall KdEnableDebuggerWithLock(char a1)
 {
-  __int64 v2; // rsi
-  char v3; // r13
-  char v4; // r12
-  char v5; // r15
-  __int64 v6; // rcx
-  struct _KPRCB *v7; // rcx
-  char *v8; // rbp
-  char v9; // di
-  char *v10; // rax
-  __int64 v11; // rdi
-  unsigned int v13; // eax
-  const char *v14; // r14
-  char *v15; // rdx
-  char v16; // al
-  signed __int64 v17; // rcx
-  const char *i; // rcx
-  char v19; // al
-  const char *v20; // r14
-  signed __int64 v21; // rdx
-  int v22; // eax
-  unsigned int v23; // er15
-  __int64 *j; // rdi
-  char *v25; // r9
-  signed __int64 v26; // r8
-  __int64 v27; // rdx
-  char v28; // al
-  unsigned int v29; // edi
-  PVOID v30; // rax
-  PVOID v31; // rsi
-  int v32; // [rsp+0h] [rbp-178h]
-  STRING DestinationString; // [rsp+20h] [rbp-158h]
-  char SourceString[256]; // [rsp+30h] [rbp-148h]
+  unsigned __int8 v1; // di
+  char v2; // bl
+  int v4; // eax
 
-  v2 = a2;
-  v3 = 0;
-  v4 = 0;
-// ...
-// ...
-// ...
-    
-  if ( v2 )
+  v1 = 0;
+  v2 = a1;
+  if ( KdPitchDebugger )
+    return 0xC0000354i64;	//STATUS_DEBUGGER_INACTIVE
+  if ( KdBlockEnable )
+    return 0xC0000022i64;	//STATUS_ACCESS_DENIED
+  if ( a1 )
   {
-    v7 = *(struct _KPRCB **)(*(_QWORD *)(v2 + 16) + 48i64);
-    off_1403967F8 = &KdpLoaderDebuggerBlock;
-    KdpLoaderDebuggerBlock = v2 + 16;
-    v8 = *(char **)(v2 + 216);
-    *(_QWORD *)&xmmword_140399DA0 = v7;
-    if ( !v8 )
+    v1 = KeGetCurrentIrql();
+    __writecr8(2ui64);
+    KxAcquireSpinLock(&KdDebuggerLock);
+  }
+  v4 = KdDisableCount;
+  if ( KdDisableCount )
+  {
+    --KdDisableCount;
+    if ( v4 == 1 && KdPreviouslyEnabled )
     {
-      KdPitchDebugger = 1;
-      v9 = 0;
-      KdPageDebuggerSection = 1;
-      goto LABEL_19;
-    }
-    strupr(v8);
-    LODWORD(KdPrintBufferAllocateSize) = 0;
-    v9 = 0;
-    v10 = strstr(v8, "DBGPRINT_LOG_SIZE=");
-    if ( v10 )
-    {
-      v13 = ((unsigned __int64)atol(v10 + 18) + 4095) & 0xFFFFF000;
-      LODWORD(KdPrintBufferAllocateSize) = v13;
-      if ( v13 > 0x1000000 )
+      if ( v2 )
       {
-        LODWORD(KdPrintBufferAllocateSize) = 0x1000000;
-        v13 = 0x1000000;
+        KdPowerTransitionEx(1i64);
+        KdpDebugRoutineSelect = 1;
+        LOBYTE(KdDebuggerEnabled) = 1;
+        MEMORY[0xFFFFF780000002D4] = 1;
+        KdpRestoreAllBreakpoints();
       }
-      if ( v13 <= 0x1000 )
-        LODWORD(KdPrintBufferAllocateSize) = 0;
-    }
-    if ( strstr(v8, "CRASHDEBUG") )
-    {
-      KdPitchDebugger = 0;
-      KdpBootedNodebug = 0;
-    }
-    else if ( strstr(v8, "NODEBUG") )
-    {
-      KdPitchDebugger = 1;
-      KdPageDebuggerSection = 1;
-      KdpBootedNodebug = 1;
-    }
-    else if ( strstr(v8, "DEBUGPORT=LOCAL") )
-    {
-      KdPitchDebugger = 1;
-      v5 = 1;
-      KdPageDebuggerSection = 1;
-      LOBYTE(KdDebuggerNotPresent) = 1;
-      KdLocalDebugEnabled = 1;
-      KdpBootedNodebug = 0;
-    }
-    else
-    {
-      v14 = v8;
-      do
+      else
       {
-        v15 = strstr(v14, " DEBUG=");
-        if ( !v15 )
-        {
-          v15 = strstr(v14, " DEBUG");
-          if ( !v15 )
-            break;
-        }
-        v14 = v15 + 6;
-        v16 = v15[6];
-        if ( (unsigned __int8)v16 <= 0x3Du )
-        {
-          v17 = 2305843013508661249i64;
-          if ( _bittest64(&v17, v16) )
-          {
-            v9 = 1;
-            KdpBootedNodebug = 0;
-            if ( v15[6] == 61 )
-            {
-              for ( i = v15 + 7; ; i = v20 + 1 )
-              {
-                v19 = *i;
-                v20 = i;
-                while ( v19 )
-                {
-                  if ( (unsigned __int8)v19 <= 0x2Cu )
-                  {
-                    v21 = 17596481012224i64;
-                    if ( _bittest64(&v21, v19) )
-                      break;
-                  }
-                  v19 = *++v20;
-                }
-                v22 = (_DWORD)v20 - (_DWORD)i;
-                if ( (_DWORD)v20 == (_DWORD)i )
-                  break;
-                if ( v22 == 10 )
-                {
-                  if ( !strncmp(i, "AUTOENABLE", 0xAui64) )
-                  {
-                    v3 = 1;
-                    KdAutoEnableOnEvent = 1;
-                    v4 = 0;
-                  }
-                }
-                else if ( v22 == 7 )
-                {
-                  if ( !strncmp(i, "DISABLE", 7ui64) )
-                  {
-                    v3 = 1;
-                    KdAutoEnableOnEvent = 0;
-                    v4 = 1;
-                  }
-                }
-                else if ( v22 == 6 && !strncmp(i, "NOUMEX", 6ui64) )
-                {
-                  KdIgnoreUmExceptions = 1;
-                }
-                if ( *v20 != 44 )
-                  break;
-              }
-            }
-            break;
-          }
-        }
+        PoHiberInProgress = 1;
+        KdInitSystem(0, 0i64);
+        KdpRestoreAllBreakpoints();
+        PoHiberInProgress = 0;
       }
-      while ( v15 != (char *)-6i64 );
     }
-    if ( strstr(v8, "NOEVENT") )
+    if ( v2 )
     {
-      KdEventLoggingEnabled = 0;
-      goto LABEL_19;
+      KxReleaseSpinLock(&KdDebuggerLock);
+      __writecr8(v1);
     }
-    if ( !strstr(v8, "EVENT") )
-      goto LABEL_19;
-    KdEventLoggingEnabled = 1;
-    KdPageDebuggerSection = 0;
   }
   else
   {
-    *(_QWORD *)&xmmword_140399DA0 = PsNtosImageBase;
-  }
-  v9 = 1;
-LABEL_19:
-  qword_140396538 = xmmword_140399DA0;
-  if ( !v5 )
-  {
-    if ( v2 && *(_DWORD *)(v2 + 12) != 1 )
-      v9 = 0;
-    if ( !v9 )
+    if ( v2 )
     {
-      LOBYTE(KdDebuggerNotPresent) = 1;
-      goto LABEL_25;
+      KxReleaseSpinLock(&KdDebuggerLock);
+      __writecr8(v1);
+      return 0xC000000Di64;
     }
-    if ( (signed int)KdInitialize(0i64, v2, &KdpContext) < 0 )
-    {
-      KdPitchDebugger = 0;
-      v9 = 0;
-      LOBYTE(KdDebuggerNotPresent) = 1;
-      KdLocalDebugEnabled = 1;
-    }
-    else
-    {
-      KdpDebugRoutineSelect = 1;
-    }
+    KdInitSystem(0, 0i64);
   }
-  if ( !KdpDebuggerStructuresInitialized )
-  {
-    BYTE4(KdpContext) = 0;
-    LODWORD(KdpContext) = 20;
-    KeInitializeDpc(&KdpTimeSlipDpc, KdpTimeSlipDpcRoutine, 0i64);
-    KeInitializeTimerEx(&KdpTimeSlipTimer, 0);
-    KdpTimeSlipWorkItem.Parameter = 0i64;
-    KdpTimeSlipWorkItem.WorkerRoutine = (void (__fastcall *)(void *))KdpTimeSlipWork;
-    KdpTimeSlipWorkItem.List.Flink = 0i64;
-    KdpDebuggerStructuresInitialized = 1;
-  }
-  KdTimerStart = 0i64;
-  if ( KdEventLoggingEnabled && KdpBootedNodebug )
-  {
-    KdPitchDebugger = 1;
-    KdEventLoggingPresent = v9;
-    LOBYTE(KdDebuggerNotPresent) = 1;
-    KdLocalDebugEnabled = 0;
-  }
-  else
-  {
-    LOBYTE(KdDebuggerEnabled) = 1;
-    MEMORY[0xFFFFF780000002D4] = 1;
-    if ( KdLocalDebugEnabled )
-      goto LABEL_25;
-  }
-// ...
-// ...
+  return 0i64;
+}
 ```
 
-이 함수는 레퍼런스를 확인하면 약 10개의 로직에서 호출됩니다. 함수로는 `KdEnabledDebuggerWithLock`, `KdEnterKernelDebugger`, `KiSystemStartup`, `KiSetProcessorSignature`, `KiSetFeatureBits`, `PopHiberCheckResume`, `Phase1InitializationDiscard` 에서 호출하는 걸 알 수 있습니다.
+첫 번째 파라미터는 `Lock`의 사용여부를 판단하는 파라미터 입니다.
+
+먼저 해당 함수에 진입하면 두 가지 전역변수를 이용해 활성화가 가능한지를 판단합니다.
+
+```c
+  if ( KdPitchDebugger )
+    return 0xC0000354i64;	//STATUS_DEBUGGER_INACTIVE
+  if ( KdBlockEnable )
+    return 0xC0000022i64;	//STATUS_ACCESS_DENIED
+```
+
+`KdInitSystem`에서도 볼 수 있는 변수들입니다. 이 두 변수에 대한 간략한 설명을 하고 넘어가겠습니다.
+
+- KdPitchDebugger
+
+  `KdInitSystem` 함수에서 부팅 옵션에 따라 값이 설정됩니다. `/NODEBUG` 옵션의 경우 TRUE로 설정되고, 이 때 `KdEnableDebugger` 함수를 호출하면 디버그 모드가 아니므로 디버거 비활성화 오류 메시지를 반환합니다.
+
+- KdBlockEnable
+
+  마찬가지로 디버깅이 허용되어 있는지에 대한 확인을 하는 변수입니다. `KdChangeOption` 또는 `NtSystemDebugControl` 함수에 의해 설정이 가능하며, 이 값이 TRUE 인 경우 디버깅이 차단되어 있음을 의미하므로 접근 거부 오류를 반환하게 됩니다.
+
+
+
+
 
 <img src="https://github.com/Shhoya/shhoya.github.io/blob/master/rsrc/antikernel/kd_00.png?raw=true">
 
