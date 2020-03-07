@@ -76,6 +76,13 @@ entries:
           url: /antikernel_kerneldebugging4.html
           output: web
 
+  - title: Bypass
+    output: web, pdf
+    folderitems:
+
+    - title: ObRegisterCallbacks Bypass
+      url: /antikernel_antidebugexam.html
+      output: web, pdf
 
 #  - title: Tag archives
 #    output: web
