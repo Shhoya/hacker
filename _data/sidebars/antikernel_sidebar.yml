@@ -79,10 +79,15 @@ entries:
   - title: Bypass
     output: web, pdf
     folderitems:
-
-    - title: ObRegisterCallbacks Bypass
-      url: /antikernel_antidebugexam.html
-      output: web, pdf
+    
+    subfolders:
+      - title: ObRegisterCallbacks Bypass
+        output: web
+        subfolderitems:
+          
+        - title: ObRegisterCallbacks Debugging
+          url: /antikernel_bypassob.html
+          output: web
 
 #  - title: Tag archives
 #    output: web
