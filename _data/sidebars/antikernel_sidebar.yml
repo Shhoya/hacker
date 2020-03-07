@@ -92,6 +92,10 @@ entries:
           - title: ObRegisterCallbacks Debugging
             url: /antikernel_bypassob.html
             output: web
+          
+          - title: ObRegisterCallbacks Bypass
+            url: /antikernel_bypassob2.html
+            output: web
 
 #  - title: Tag archives
 #    output: web

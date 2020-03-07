@@ -1,10 +1,10 @@
 ---
-title: ObRegisterCallbacks Debugging
+title: ObRegisterCallbacks Bypass
 keywords: documentation, technique, debugging
 tags: [Windows, Reversing, Dev]
-summary: "ObRegisterCallbacks Bypass(1)"
+summary: "ObRegisterCallbacks Bypass(2)"
 sidebar: antikernel_sidebar
-permalink: antikernel_bypassob.html
+permalink: antikernel_bypassob2.html
 folder: antikernel
 ---
 
@@ -403,7 +403,7 @@ typedef struct _CALLBACK_ENTRY{
      INT16 Version;
      unsigned char unknown[6];
      POB_OPERATION_REGISTRATION RegistrationContext;
-     UNICODE_STRING Altitude;
+     UNICODE_STRING Altitude
      CALLBACK_ENTRY_ITEM Items;
 }CALLBACK_ENTRY, *PCALLBACK_ENTRY;
 ```
