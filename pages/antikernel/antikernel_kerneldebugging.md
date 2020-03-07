@@ -1,8 +1,8 @@
 ---
-title: Kernel Debugging
+title: Kernel Debugging (1)
 keywords: documentation, technique, debugging
 tags: [Windows, Reversing, Dev]
-summary: "커널 디버깅의 원리"
+summary: "커널 디버깅의 원리 (1)"
 sidebar: antikernel_sidebar
 permalink: antikernel_kerneldebugging.html
 folder: antikernel
@@ -257,9 +257,98 @@ LABEL_19:
 
 <img src="https://github.com/Shhoya/shhoya.github.io/blob/master/rsrc/antikernel/kd_00.png?raw=true">
 
+첫 번째 파라미터는  `Phase1InitializationDiscard` 함수를 제외하고는 모두 0을 전달합니다.
+두 번째 파라미터는 `KiSystemStartup` 함수를 제외하고는 모두 0을 전달합니다.
+
+이 중에 `KiSystemStartup` 함수에서 호출 될 때의 로직을 한번 살펴보겠습니다.
+
+`KiSystemStartup` 함수는 운영체제가 부팅 될 때 호출되는 함수 중 하나입니다. 이 때 `KdInitSystem`의 두 번째 파라미터로 `KeLoaderBlock` 를 전달하게 됩니다.
+
+중간에 보면 `DEBUG`, `DEBUGPORT` 등의 어디선가 익숙한 문자열들이 있습니다. 좀 더 자세히 살펴보겠습니다.
 
 
 
+### [-] Check boot options
+
+```c
+if ( v2 )
+    {
+      ...
+      v10 = *(char **)(v2 + 0xD8);
+      *(_QWORD *)&xmmword_140400F18 = v9;
+      if ( v10 )
+      {
+        strupr(v10);
+        LODWORD(KdPrintBufferAllocateSize) = 0;
+        v11 = 0;
+        v12 = strstr(v10, "DBGPRINT_LOG_SIZE=");
+        if ( v12 )
+        {
+          v14 = ((unsigned __int64)atol(v12 + 0x12) + 0xFFF) & 0xFFFFF000;
+          LODWORD(KdPrintBufferAllocateSize) = v14;
+          if ( v14 > 0x1000000 )
+          {
+            LODWORD(KdPrintBufferAllocateSize) = 0x1000000;
+            v14 = 0x1000000;
+          }
+          if ( v14 <= 0x1000 )
+            LODWORD(KdPrintBufferAllocateSize) = 0;
+        }
+        if ( strstr(v10, "CRASHDEBUG") )
+        {
+          KdPitchDebugger = 0;
+          KdpBootedNodebug = 0;
+        }
+        else if ( strstr(v10, "NODEBUG") )
+        {
+          KdPitchDebugger = 1;
+          KdPageDebuggerSection = 1;
+          KdpBootedNodebug = 1;
+        }
+        else if ( strstr(v10, "DEBUGPORT=LOCAL") )
+        {
+          KdPitchDebugger = 1;
+          v6 = 1;
+          KdPageDebuggerSection = 1;
+          LOBYTE(KdDebuggerNotPresent) = 1;
+          KdLocalDebugEnabled = 1;
+          KdpBootedNodebug = 0;
+        }
+   ...
+```
+
+`v2`  변수는 두 번째 파라미터를 의미합니다. `KeLoaderBlock` 이 존재하는 경우 위의 로직이 동작하게 됩니다. 이 때 `KeLoaderBlock+0xD8` 위치에서 어떤 값을 읽어오고, 분기에 따라 디버깅과 관련된 전역변수들을 설정하는 것을 볼 수 있습니다. 문자열들로 볼 때 `Debug Mode`와 관련된 옵션의 오프셋으로 확인됩니다.
+
+우선 부팅 옵션을 확인하기 위해 부팅 시 `windbg`를 이용해 확인해보면 아래와 같이 옵션을 확인할 수 있습니다.
+
+```
+kd> db poi(poi(KeLoaderBlock)+d8)
+fffff803`13173450  20 54 45 53 54 53 49 47-4e 49 4e 47 20 20 4e 4f   TESTSIGNING  NO
+fffff803`13173460  45 58 45 43 55 54 45 3d-4f 50 54 49 4e 20 20 44  EXECUTE=OPTIN  D
+fffff803`13173470  45 42 55 47 20 20 44 45-42 55 47 50 4f 52 54 3d  EBUG  DEBUGPORT=
+fffff803`13173480  43 4f 4d 31 20 20 42 41-55 44 52 41 54 45 3d 31  COM1  BAUDRATE=1
+fffff803`13173490  31 35 32 30 30 20 20 44-49 53 41 42 4c 45 5f 49  15200  DISABLE_I
+fffff803`131734a0  4e 54 45 47 52 49 54 59-5f 43 48 45 43 4b 53 00  NTEGRITY_CHECKS.
+fffff803`131734b0  00 35 17 13 03 f8 ff ff-40 34 17 13 03 f8 ff ff  .5......@4......
+fffff803`131734c0  60 f2 24 13 03 f8 ff ff-70 75 17 13 03 f8 ff ff  `.$.....pu......
+```
+
+현재 `VirtualKD`를 이용하여 디버깅 모드와 코드 테스팅 모드에 대한 내용이 존재하는 것을 알 수 있습니다.
+
+{% include note.html content="초기 부팅 시에만 확인이 가능합니다. 부팅 후에는 해당 블럭이 초기화 됩니다." %}
+
+위 노트에 적힌대로 부팅 후에는 초기화 됩니다. 정확히는 어딘가에 값을 써넣고 초기화 합니다. 바로 레지스트리 입니다.
+`HKLM/SYSTEM/CurrentControlSet/Control` 키의 `SystemStartOptions(REG_SZ)` 값에서 확인할 수 있습니다.
+
+<img src="https://github.com/Shhoya/shhoya.github.io/blob/master/rsrc/antikernel/kd_01.png?raw=true">
+
+
+
+## [0x02] Conclusion
+
+이번에는 `KdInitSystem` 함수에 대해 알아봤습니다. 로직이 복잡하지만 우선 디버그 모드로 부팅 시, 이 함수에서 부트 옵션을 읽어와 처리한다는 것을 알았습니다.
+
+직접 조사한 전역변수에 대한 내용은 이 챕터 후반부에 정리하겠습니다.
 
 
 
