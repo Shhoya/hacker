@@ -257,6 +257,8 @@ LABEL_19:
 
 <img src="https://github.com/Shhoya/shhoya.github.io/blob/master/rsrc/antikernel/kd_00.png?raw=true">
 
+
+
 첫 번째 파라미터는  `Phase1InitializationDiscard` 함수를 제외하고는 모두 0을 전달합니다.
 두 번째 파라미터는 `KiSystemStartup` 함수를 제외하고는 모두 0을 전달합니다.
 
