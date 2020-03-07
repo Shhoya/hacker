@@ -67,6 +67,10 @@ entries:
         - title: KdEnableDebugger
           url: /antikernel_kerneldebugging2.html
           output: web
+        
+        - title: KdTrap
+          url: /antikernel_kerneldebugging3.html
+          output: web
 
 
 #  - title: Tag archives
