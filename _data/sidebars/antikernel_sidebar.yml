@@ -63,6 +63,11 @@ entries:
         - title: KdInitSystem
           url: /antikernel_kerneldebugging.html
           output: web
+        
+        - title: KdEnableDebugger
+          url: /antikernel_kerneldebugging2.html
+          output: web
+
 
 #  - title: Tag archives
 #    output: web
