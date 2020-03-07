@@ -18,11 +18,248 @@ folder: antikernel
 
 ## [0x01] KdInitSystem
 
-`KD` 는 `Kernel Debugger`의 약자로 Windows OS 내 커널 디버거와 관련되어 있습니다. 이전 챕터에서 `KdDebuggerEnabled`와 `KdDebuggerNotPresent` 의 접두어가 `Kd` 인 것과 관련이 깊습니다.
+`ntoskrnl.exe`를 IDA의 Hexray 기능을 이용해 해당 함수를 확인하면 다음과 같습니다. 함수가 매우 길기 때문에 처음과 끝 부분은 생략했습니다. 직접 확인해보길 바랍니다.
 
-처음 이러한 내용을 공부할 때는 커널 내 디버거와 관련된 변수 또는 함수를 찾으면서, `Debugger` 또는 `Debugging`으로 문자열 검색을 해서 찾았습니다. 그리고 `Kd`의 존재를 알고나서 한결 수월해진 것 같습니다.
+```c
+char __fastcall KdInitSystem(int a1, __int64 a2)
+{
+  __int64 v2; // rsi
+  char v3; // r13
+  char v4; // r12
+  char v5; // r15
+  __int64 v6; // rcx
+  struct _KPRCB *v7; // rcx
+  char *v8; // rbp
+  char v9; // di
+  char *v10; // rax
+  __int64 v11; // rdi
+  unsigned int v13; // eax
+  const char *v14; // r14
+  char *v15; // rdx
+  char v16; // al
+  signed __int64 v17; // rcx
+  const char *i; // rcx
+  char v19; // al
+  const char *v20; // r14
+  signed __int64 v21; // rdx
+  int v22; // eax
+  unsigned int v23; // er15
+  __int64 *j; // rdi
+  char *v25; // r9
+  signed __int64 v26; // r8
+  __int64 v27; // rdx
+  char v28; // al
+  unsigned int v29; // edi
+  PVOID v30; // rax
+  PVOID v31; // rsi
+  int v32; // [rsp+0h] [rbp-178h]
+  STRING DestinationString; // [rsp+20h] [rbp-158h]
+  char SourceString[256]; // [rsp+30h] [rbp-148h]
 
-`KD` 관련된 함수와 변수를 확인하는 방법에 대한 이야기를 해보겠습니다. 우선 `ntoskrnl.exe`를 IDA의 xref 기능을 이용해 확인했습니다. 물론 더 중요한 내용들이 빠져있을 수 있지만 충분하다고 생각합니다.
+  v2 = a2;
+  v3 = 0;
+  v4 = 0;
+// ...
+// ...
+// ...
+    
+  if ( v2 )
+  {
+    v7 = *(struct _KPRCB **)(*(_QWORD *)(v2 + 16) + 48i64);
+    off_1403967F8 = &KdpLoaderDebuggerBlock;
+    KdpLoaderDebuggerBlock = v2 + 16;
+    v8 = *(char **)(v2 + 216);
+    *(_QWORD *)&xmmword_140399DA0 = v7;
+    if ( !v8 )
+    {
+      KdPitchDebugger = 1;
+      v9 = 0;
+      KdPageDebuggerSection = 1;
+      goto LABEL_19;
+    }
+    strupr(v8);
+    LODWORD(KdPrintBufferAllocateSize) = 0;
+    v9 = 0;
+    v10 = strstr(v8, "DBGPRINT_LOG_SIZE=");
+    if ( v10 )
+    {
+      v13 = ((unsigned __int64)atol(v10 + 18) + 4095) & 0xFFFFF000;
+      LODWORD(KdPrintBufferAllocateSize) = v13;
+      if ( v13 > 0x1000000 )
+      {
+        LODWORD(KdPrintBufferAllocateSize) = 0x1000000;
+        v13 = 0x1000000;
+      }
+      if ( v13 <= 0x1000 )
+        LODWORD(KdPrintBufferAllocateSize) = 0;
+    }
+    if ( strstr(v8, "CRASHDEBUG") )
+    {
+      KdPitchDebugger = 0;
+      KdpBootedNodebug = 0;
+    }
+    else if ( strstr(v8, "NODEBUG") )
+    {
+      KdPitchDebugger = 1;
+      KdPageDebuggerSection = 1;
+      KdpBootedNodebug = 1;
+    }
+    else if ( strstr(v8, "DEBUGPORT=LOCAL") )
+    {
+      KdPitchDebugger = 1;
+      v5 = 1;
+      KdPageDebuggerSection = 1;
+      LOBYTE(KdDebuggerNotPresent) = 1;
+      KdLocalDebugEnabled = 1;
+      KdpBootedNodebug = 0;
+    }
+    else
+    {
+      v14 = v8;
+      do
+      {
+        v15 = strstr(v14, " DEBUG=");
+        if ( !v15 )
+        {
+          v15 = strstr(v14, " DEBUG");
+          if ( !v15 )
+            break;
+        }
+        v14 = v15 + 6;
+        v16 = v15[6];
+        if ( (unsigned __int8)v16 <= 0x3Du )
+        {
+          v17 = 2305843013508661249i64;
+          if ( _bittest64(&v17, v16) )
+          {
+            v9 = 1;
+            KdpBootedNodebug = 0;
+            if ( v15[6] == 61 )
+            {
+              for ( i = v15 + 7; ; i = v20 + 1 )
+              {
+                v19 = *i;
+                v20 = i;
+                while ( v19 )
+                {
+                  if ( (unsigned __int8)v19 <= 0x2Cu )
+                  {
+                    v21 = 17596481012224i64;
+                    if ( _bittest64(&v21, v19) )
+                      break;
+                  }
+                  v19 = *++v20;
+                }
+                v22 = (_DWORD)v20 - (_DWORD)i;
+                if ( (_DWORD)v20 == (_DWORD)i )
+                  break;
+                if ( v22 == 10 )
+                {
+                  if ( !strncmp(i, "AUTOENABLE", 0xAui64) )
+                  {
+                    v3 = 1;
+                    KdAutoEnableOnEvent = 1;
+                    v4 = 0;
+                  }
+                }
+                else if ( v22 == 7 )
+                {
+                  if ( !strncmp(i, "DISABLE", 7ui64) )
+                  {
+                    v3 = 1;
+                    KdAutoEnableOnEvent = 0;
+                    v4 = 1;
+                  }
+                }
+                else if ( v22 == 6 && !strncmp(i, "NOUMEX", 6ui64) )
+                {
+                  KdIgnoreUmExceptions = 1;
+                }
+                if ( *v20 != 44 )
+                  break;
+              }
+            }
+            break;
+          }
+        }
+      }
+      while ( v15 != (char *)-6i64 );
+    }
+    if ( strstr(v8, "NOEVENT") )
+    {
+      KdEventLoggingEnabled = 0;
+      goto LABEL_19;
+    }
+    if ( !strstr(v8, "EVENT") )
+      goto LABEL_19;
+    KdEventLoggingEnabled = 1;
+    KdPageDebuggerSection = 0;
+  }
+  else
+  {
+    *(_QWORD *)&xmmword_140399DA0 = PsNtosImageBase;
+  }
+  v9 = 1;
+LABEL_19:
+  qword_140396538 = xmmword_140399DA0;
+  if ( !v5 )
+  {
+    if ( v2 && *(_DWORD *)(v2 + 12) != 1 )
+      v9 = 0;
+    if ( !v9 )
+    {
+      LOBYTE(KdDebuggerNotPresent) = 1;
+      goto LABEL_25;
+    }
+    if ( (signed int)KdInitialize(0i64, v2, &KdpContext) < 0 )
+    {
+      KdPitchDebugger = 0;
+      v9 = 0;
+      LOBYTE(KdDebuggerNotPresent) = 1;
+      KdLocalDebugEnabled = 1;
+    }
+    else
+    {
+      KdpDebugRoutineSelect = 1;
+    }
+  }
+  if ( !KdpDebuggerStructuresInitialized )
+  {
+    BYTE4(KdpContext) = 0;
+    LODWORD(KdpContext) = 20;
+    KeInitializeDpc(&KdpTimeSlipDpc, KdpTimeSlipDpcRoutine, 0i64);
+    KeInitializeTimerEx(&KdpTimeSlipTimer, 0);
+    KdpTimeSlipWorkItem.Parameter = 0i64;
+    KdpTimeSlipWorkItem.WorkerRoutine = (void (__fastcall *)(void *))KdpTimeSlipWork;
+    KdpTimeSlipWorkItem.List.Flink = 0i64;
+    KdpDebuggerStructuresInitialized = 1;
+  }
+  KdTimerStart = 0i64;
+  if ( KdEventLoggingEnabled && KdpBootedNodebug )
+  {
+    KdPitchDebugger = 1;
+    KdEventLoggingPresent = v9;
+    LOBYTE(KdDebuggerNotPresent) = 1;
+    KdLocalDebugEnabled = 0;
+  }
+  else
+  {
+    LOBYTE(KdDebuggerEnabled) = 1;
+    MEMORY[0xFFFFF780000002D4] = 1;
+    if ( KdLocalDebugEnabled )
+      goto LABEL_25;
+  }
+// ...
+// ...
+```
 
-꽤 길어질 수 있는 내용이기 때문에 카테고리를 분류하기로 하였습니다. 
+이 함수는 레퍼런스를 확인하면 약 10개의 로직에서 호출됩니다. 함수로는 `KdEnabledDebuggerWithLock`, `KdEnterKernelDebugger`, `KiSystemStartup`, `KiSetProcessorSignature`, `KiSetFeatureBits`, `PopHiberCheckResume`, `Phase1InitializationDiscard` 에서 호출하는 걸 알 수 있습니다.
+
+
+
+
+
+
+
+
 
