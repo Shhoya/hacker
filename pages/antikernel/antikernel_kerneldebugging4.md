@@ -20,22 +20,22 @@ folder: antikernel
 
 표를 볼 때 주의해야 할 점은 디버그 모드(디버깅 가능 상태)와 디버깅 중일 때에 대한 구분입니다. 단순히 디버그 모드가 활성화 되어있는것과 디버깅을 실제 하고 있을 때와 다르기 때문입니다.
 
-| Variable                         | DebugMode             | NoDebugMode             |
-| :------------------------------- | --------------------- | ----------------------- |
-| KdLocalDebugEnabled              | TRUE(Local Debugging) | FALSE                   |
-| KdDebuggerEnabled                | TRUE(Debugging)       | FALSE                   |
-| KdDebuggerNotPresent             | FALSE(Debugging)      | FALSE                   |
-| KdPitchDebugger                  | FALSE                 | TRUE                    |
-| KdpBootedNoDebug                 | FALSE                 | TRUE                    |
-| KdEnteredDebugger                | TRUE(Debugging)       | FALSE                   |
-| KdPageDebuggerSection            | FALSE(Debugging)      | TRUE                    |
-| KdpDebugRoutineSelect            | TRUE(Debugging)       | FALSE                   |
-| KdPreviouslyEnabled              | FALSE                 | TRUE(KdDebuggerEnabled) |
-| KdpDebuggerStructuresInitialized | TRUE(Debugging)       | FALSE                   |
-| KdPortLocked                     | TRUE(Debugging)       | FALSE                   |
-| KdDebugDevice                    | TRUE(pointer)         | FALSE                   |
-| KdpContext                       | TRUE(xmm)             | FALSE                   |
-| KdDebuggerEnteredCount           | TRUE                  | FALSE                   |
+| Variable                           | DebugMode             | NoDebugMode             |
+| :--------------------------------- | --------------------- | ----------------------- |
+| `KdLocalDebugEnabled`              | TRUE(Local Debugging) | FALSE                   |
+| `KdDebuggerEnabled`                | TRUE(Debugging)       | FALSE                   |
+| `KdDebuggerNotPresent`             | FALSE(Debugging)      | FALSE                   |
+| `KdPitchDebugger`                  | FALSE                 | TRUE                    |
+| `KdpBootedNoDebug`                 | FALSE                 | TRUE                    |
+| `KdEnteredDebugger`                | TRUE(Debugging)       | FALSE                   |
+| `KdPageDebuggerSection`            | FALSE(Debugging)      | TRUE                    |
+| `KdpDebugRoutineSelect`            | TRUE(Debugging)       | FALSE                   |
+| `KdPreviouslyEnabled`              | FALSE                 | TRUE(KdDebuggerEnabled) |
+| `KdpDebuggerStructuresInitialized` | TRUE(Debugging)       | FALSE                   |
+| `KdPortLocked`                     | TRUE(Debugging)       | FALSE                   |
+| `KdDebugDevice`                    | TRUE(pointer)         | FALSE                   |
+| `KdpContext`                       | TRUE(xmm)             | FALSE                   |
+| `KdDebuggerEnteredCount`           | TRUE                  | FALSE                   |
 
 
 
