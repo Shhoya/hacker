@@ -2,7 +2,7 @@
 title: ObRegisterCallbacks Debugging
 keywords: documentation, technique, debugging
 tags: [Windows, Reversing, Dev]
-summary: "ObRegisterCallbacks Bypass"
+summary: "ObRegisterCallbacks Bypass(1)"
 sidebar: antikernel_sidebar
 permalink: antikernel_bypassob.html
 folder: antikernel
