@@ -110,7 +110,7 @@ entries:
     folderitems:
     
     - title: Introduction
-      url: /antikernel_antikernel_ctrldebugger.html
+      url: /antikernel_ctrldebugger.html
       output: web, pdf  
 
 #  - title: Tag archives
