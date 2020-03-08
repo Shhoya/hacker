@@ -1,10 +1,10 @@
 ---
-title: Anti Kernel Debugging Bypass
+title: Control Debugger
 keywords: documentation, technique, debugging
 tags: [Windows, Reversing, Dev]
-summary: "안티 커널 디버깅 우회(1)"
+summary: "디버거 제어 드라이버"
 sidebar: antikernel_sidebar
-permalink: antikernel_bypasskd.html
+permalink: antikernel_ctrldebugger.html
 folder: antikernel
 ---
 

@@ -104,10 +104,14 @@ entries:
           - title: Anti Kernel Deubgging Bypass
             url: /antikernel_bypasskd.html
             output: web
-          
-          - title: KdDebuggerNotPresent Bypass
-            url: /antikernel_bypassob2.html
-            output: web
+            
+  - title: Control Debugger
+    output: web, pdf
+    folderitems:
+    
+    - title: Introduction
+      url: /antikernel_antikernel_ctrldebugger.html
+      output: web, pdf  
 
 #  - title: Tag archives
 #    output: web
