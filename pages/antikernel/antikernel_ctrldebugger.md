@@ -10,125 +10,32 @@ folder: antikernel
 
 ## [0x00] Overview
 
-기존에 두 가지 전역변수를 이용하여 안티 커널 디버깅을 구현하였습니다. 이번에 우회 기법을 소개하기 앞서 실제 이 전역변수들의 역할을 알아보고, 간단한 소스코드를 통해 확인해보겠습니다.
+이제 이 프로젝트의 최종장입니다. 보호 드라이버를 우회하는 우회 드라이버를 만들었지만 좀 더 완벽하게 디버거를 제어하기 위해 `Control Debugger` 라는 드라이버를 작성했습니다. 예제코드는 아래에서 확인할 수 있습니다.
 
 - <a href="https://shhoya.github.io/Examples">예제 소스코드</a>
 
 
 
-## [0x01] Anti Kernel Debugging Bypass
+## [0x01] Control Debugger Design
 
-이제 `ObRegisterCallbacks` 우회와 커널 디버깅 방지 로직을 우회하는 코드를 구현해보겠습니다.
+먼저 두 개의 프로젝트가 필요합니다.
 
-
-
-### [-] callbacks.h
-
-```c
-#pragma once
-#include <ntifs.h>
-
-typedef struct _CALLBACK_ENTRY 
-{
-	INT16							Version;
-	unsigned char					unknown[6];
-	POB_OPERATION_REGISTRATION		RegistrationContext;
-	UNICODE_STRING					Altitude;
-} CALLBACK_ENTRY, *PCALLBACK_ENTRY;
-
-typedef struct _CALLBACK_ENTRY_ITEM 
-{
-	LIST_ENTRY						EntryItemList;
-	OB_OPERATION					Operations1;
-	OB_OPERATION					Operations2;
-	PCALLBACK_ENTRY					CallbackEntry;
-	POBJECT_TYPE					ObjectType;
-	POB_PRE_OPERATION_CALLBACK		PreOperation;
-	POB_POST_OPERATION_CALLBACK		PostOperation;
-} CALLBACK_ENTRY_ITEM, *PCALLBACK_ENTRY_ITEM;
-
-typedef struct _OBJECT_TYPE
-{
-	LIST_ENTRY                 TypeList;
-	UNICODE_STRING             Name;
-	PVOID                      DefaultObject;
-	ULONG                      Index;
-	ULONG                      TotalNumberOfObjects;
-	ULONG                      TotalNumberOfHandles;
-	ULONG                      HighWaterNumberOfObjects;
-	ULONG                      HighWaterNumberOfHandles;
-	unsigned char			   TypeInfo[0x78];
-	EX_PUSH_LOCK               TypeLock;
-	ULONG                      Key;
-	LIST_ENTRY                 CallbackList;
-} OBJECT_TYPE, * POBJECT_TYPE;
-
-PVOID RegistrationHandle = NULL;
-```
+1. 유저모드 콘솔 프로그램
+   - `DeviceIoControl` 을 통해 드라이버와 통신하며 각 기능을 제어
+2. 커널 드라이버
+   - 유저모드에서 전달받은 데이터로 각 기능 동작
+   - `KdDebuggerEnabled` 제어
+   - `KdDebuggerNotPresent` 제어
+   - `ObRegisterCallbacks` 콜백 루틴 해제 및 원복
+   - `DebugPort` 변조
 
 
 
-### [-] common.h
+## [0x02] Cotrol Debugger
 
-```c
-#pragma once
-#include "callbacks.h"
+드라이버를 로드하고 컨트롤 할 수 있는 유저모드 애플리케이션과 전달받은 컨트롤 코드에 따라 기능이 동작하는 드라이버에 대한 예제입니다. 위에서 설계한대로 만들어봤습니다.
 
-//============================================//
-//======= DriverEntry & Unload Routine =======//
-//============================================//
-
-NTSTATUS DriverEntry(IN PDRIVER_OBJECT pDriver, IN PUNICODE_STRING pRegPath);
-VOID UnloadDriver(IN PDRIVER_OBJECT pDriver);
-```
-
-
-
-### [-] main.c
-
-단순히 현재 `KdDebuggerEnabled` 변수의 값이 존재하면 `KdDisableDebugger`, 반대의 경우 `KdEnableDebugger`를 이용하여 다시 활성화 시켜줍니다.  이 소스코드로 이전에 만든 보호 드라이버는 우회가 가능합니다.
-
-```c
-#include "common.h"
-
-VOID Dummy()
-{
-	
-}
-
-NTSTATUS DriverEntry(PDRIVER_OBJECT pDriver, PUNICODE_STRING pRegPath)
-{
-	UNREFERENCED_PARAMETER(pRegPath);
-	pDriver->DriverUnload = UnloadDriver;
-
-	if (*KdDebuggerEnabled)
-	{
-		DbgPrintEx(DPFLTR_ACPI_ID, DPFLTR_INFO_LEVEL, "[INFO] Debugger Disable\n");
-		KdDisableDebugger();
-	}
-	else
-	{
-		DbgPrintEx(DPFLTR_ACPI_ID, DPFLTR_INFO_LEVEL, "[INFO] Debugger Enable\n");
-		KdEnableDebugger();
-	}
-
-	POBJECT_TYPE *obType = PsProcessType;
-	PCALLBACK_ENTRY_ITEM CallbackEntry = NULL;
-	CallbackEntry = (*obType)->CallbackList.Flink;
-
-	if (MmIsAddressValid(CallbackEntry))
-	{
-		CallbackEntry->PreOperation = &Dummy;
-	}
-	return STATUS_SUCCESS;
-}
-
-VOID UnloadDriver(PDRIVER_OBJECT pDriver)
-{
-	UNREFERENCED_PARAMETER(pDriver);
-
-}
-```
+작성중
 
 
 
