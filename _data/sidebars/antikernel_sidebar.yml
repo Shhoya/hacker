@@ -101,8 +101,8 @@ entries:
           output: web
           subfolderitems:
               
-          - title: KdDebuggerEnabled Bypass
-            url: /antikernel_bypassob.html
+          - title: Anti Kernel Deubgging Bypass
+            url: /antikernel_bypasskd.html
             output: web
           
           - title: KdDebuggerNotPresent Bypass
