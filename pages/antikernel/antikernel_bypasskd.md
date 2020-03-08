@@ -132,7 +132,7 @@ VOID UnloadDriver(PDRIVER_OBJECT pDriver)
 
 
 
-## [0x03] Proof Of Concept
+## [0x02] Proof Of Concept
 
 영상을 확인하면, 보호 드라이버가 로드되어 `notepad.exe`를 보호하고 있으나, 위에서 만든 우회 드라이버를 로드하면 프로세스 디버깅이 가능하고 커널 디버깅을 탐지하지 못하는 것을 알 수 있습니다.
 
@@ -140,7 +140,7 @@ VOID UnloadDriver(PDRIVER_OBJECT pDriver)
 
 
 
-## [0x04] Constraint
+## [0x03] Constraint
 
 하지만 마찬가지로 제약사항이 존재합니다. 우회 드라이버를 로드하고 커널 디버깅을 시도하기 위해 `windbg` 에서 브레이크 포인트 예외를 발생시켜도 디버깅이 불가합니다. `KdDisableDebugger` 함수를 통해 디버거를 비활성화 했기 때문입니다. 뿐만아니라, 기존에 커널 디버깅을 위해 브레이크 포인트를 설정하였더라도 동작하지 않습니다.
 
@@ -165,6 +165,6 @@ void KdCheckForDebugBreak()
 
 
 
-## [0x05] Conclusion
+## [0x04] Conclusion
 
 `Anti Kernel Debugging Bypass` 프로젝트의 소개에서 깊은 곳에서 궁극적으로 디버깅 중임을 알아차리지 못하게 하는 것이 이 프로젝트의 목표라고 이야기 했습니다. 다음 챕터에서는 `Control Debugger` 라고 불리는 디버거를 컨트롤하며 안티 디버깅 기법을 우회하는 기법에 대해 공개하겠습니다.
