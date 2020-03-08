@@ -109,7 +109,7 @@ entries:
     output: web, pdf
     folderitems:
     
-    - title: Introduction
+    - title: Shh0ya Control Debugger
       url: /antikernel_ctrldebugger.html
       output: web, pdf  
 
