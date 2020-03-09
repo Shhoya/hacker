@@ -1,6 +1,7 @@
 ---
 _title: Control Debugger
 keywords: documentation, technique, debugging
+date: 2020-03-09
 tags: [Windows, Reversing, Dev]
 summary: "디버거 제어 드라이버"
 sidebar: antikernel_sidebar
