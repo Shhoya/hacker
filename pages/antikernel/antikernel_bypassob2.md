@@ -13,7 +13,7 @@ folder: antikernel
 
 이전 챕터에서 `ObRegisterCallbacks` 에 대해 깊게 알아봤습니다. 이번에는 소개한대로 ObRegisterCallbacks Bypass 에 대해 알아보겠습니다.  소스코드는 `ControlDebugger` 라는 이름으로 만들어집니다. `ObRegisterCallbacks` 를 포함한 커널 디버깅 방지 우회 기능까지 들어가 있습니다.
 
-- <a href="https://shhoya.github.io/Examples">예제 소스코드</a>
+- <a href="https://github.com/shhoya/Examples">예제 소스코드</a>
 
 
 

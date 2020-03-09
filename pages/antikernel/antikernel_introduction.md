@@ -10,6 +10,8 @@ folder: antikernel
 해당 챕터에서는 커널 디버깅을 탐지하는 기법들과 이를 우회하는 방법에 관한 내용이 포함되어 있습니다.
 기본적으로 유저모드 디버깅에 대한 탐지 기법, 우회 기법을 알고 있다면 좀 더 쉽게 이해할 수 있습니다.
 
+- <a href="https://github.com/shhoya/Examples">예제 소스코드</a>
+
 아래와 같은 챕터로 이루어져 있습니다.
 
 - <a href="https://shhoya.github.io/antikernel_preferences.html">Preferences</a> : 간략한 가상머신 설정에 대한 설명입니다. `VirtualKD`를 이용하여 커널 디버깅을 준비합니다.

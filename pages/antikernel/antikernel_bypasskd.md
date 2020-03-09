@@ -13,7 +13,7 @@ folder: antikernel
 
 기존에 두 가지 전역변수를 이용하여 안티 커널 디버깅을 구현하였습니다. 이번에 우회 기법을 소개하기 앞서 실제 이 전역변수들의 역할을 알아보고, 간단한 소스코드를 통해 확인해보겠습니다.
 
-- <a href="https://shhoya.github.io/Examples">예제 소스코드</a>
+- <a href="https://github.com/shhoya/Examples">예제 소스코드</a>
 
 
 

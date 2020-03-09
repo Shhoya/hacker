@@ -13,7 +13,7 @@ folder: antikernel
 
 이제 이 프로젝트의 최종장입니다. 보호 드라이버를 우회하는 우회 드라이버를 만들었지만 좀 더 완벽하게 디버거를 제어하기 위해 `Control Debugger` 라는 드라이버를 작성했습니다. 예제코드는 아래에서 확인할 수 있습니다.
 
-- <a href="https://shhoya.github.io/Examples">예제 소스코드</a>
+- <a href="https://github.com/shhoya/Examples">예제 소스코드</a>
 
 
 
