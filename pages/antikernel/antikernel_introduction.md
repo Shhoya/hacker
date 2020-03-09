@@ -20,7 +20,7 @@ folder: antikernel
 - <a href="https://shhoya.github.io/antikernel_kerneldebugging.html">Kernel Debugging</a> : 커널 디버깅을 OS에서 어떻게 처리하는지에 관한 내용입니다.
 - <a href="https://shhoya.github.io/antikernel_bypassintro.html">Bypass</a> : 커널 디버깅 중이라는 사실을 숨긴 채 디버깅을 하는 방법에 관한 내용입니다. ObRegisterCallbacks Bypass에 관한 내용이 추가적으로 존재합니다.
 - <a href="https://shhoya.github.io/antikernel_ctrldebugger.html">Control Debugger</a> : 위의 내용들을 토대로 만든 커널 디버거를 제어하는 드라이버 입니다. 실제로 분석할 때 저는 자주 사용합니다.
-- Bonus : 코드 무결성(CI)에 관한 부록입니다.
+- <a href="https://shhoya.github.io/antikernel_codeintegrity.html">Bonus</a> : 코드 무결성(CI)에 관한 부록입니다.
 
 
 
