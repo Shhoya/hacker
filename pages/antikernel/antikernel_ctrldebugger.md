@@ -1,5 +1,5 @@
 ---
-title: Control Debugger
+_title: Control Debugger
 keywords: documentation, technique, debugging
 tags: [Windows, Reversing, Dev]
 summary: "디버거 제어 드라이버"
