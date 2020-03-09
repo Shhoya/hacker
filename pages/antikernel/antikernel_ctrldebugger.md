@@ -242,7 +242,45 @@ NTSTATUS KdDebuggerControl(int mode)
 
 ### [-] Hook_KdReceivePacket
 
-`WKE` 와 같은 커널 메모리 편집 도구를 이용하여 `KdDebuggerNotPresent`의 값을 변조하면 다시 원상복귀 되는 것을 볼 수 있습니다. 이는 커널과 디버거의 통신으로 인해서 입니다. `KdDebuggerNotPresent` 변수에 하드웨어 브레이크 포인트를 설치하여 해당 부분을 찾았고 아래와 같이 후킹으로 값을 변조하였습니다.
+`WKE` 와 같은 커널 메모리 편집 도구를 이용하여 `KdDebuggerNotPresent`의 값을 변조하면 다시 원상복귀 되는 것을 볼 수 있습니다. 이는 커널과 디버거의 통신으로 인해서 입니다.
+
+```
+1: kd> ba w1 KdDebuggerNotPresent
+1: kd> g
+Breakpoint 1 hit
+fffff801`54001863 f6c304          test    bl,4
+
+3: kd> u @rip
+kdcom!KdReceivePacket+0x4a3:
+fffff801`54001863 f6c304          test    bl,4
+fffff801`54001866 740f            je      kdcom!KdReceivePacket+0x4b7 (fffff801`54001877)
+fffff801`54001868 c1eb08          shr     ebx,8
+fffff801`5400186b 0fb6c3          movzx   eax,bl
+fffff801`5400186e a2d402000080f7ffff mov   byte ptr [FFFFF780000002D4h],al
+fffff801`54001877 488d4db7        lea     rcx,[rbp-49h]
+fffff801`5400187b e8cc1a0000      call    kdcom!KdReceivePacket+0x1f8c (fffff801`5400334c)
+fffff801`54001880 f0ff0dbd3b0200  lock dec dword ptr [kdcom!KdReceivePacket+0x24084 (fffff801`54025444)]
+```
+
+위와 같이 디버깅을 통해 확인할 수 있습니다. 또한 중요하게 확인해야 할 부분이 있습니다.
+
+```
+3: kd> lmDvm kdcom
+Browse full module list
+start             end                 module name
+fffff801`54000000 fffff801`5402a000   kdcom      (export symbols)       kdbazis.dll
+    Loaded symbol image file: kdbazis.dll
+    Image path: kdbazis.dll
+    Image name: kdbazis.dll
+    Browse all global symbols  functions  data
+    Timestamp:        Wed Sep 30 11:51:39 2015 (560B4E3B)
+    CheckSum:         00006F45
+    ImageSize:        0002A000
+    Translations:     0000.04b0 0000.04e4 0409.04b0 0409.04e4
+    Information from resource tables:
+```
+
+커널에 올라와있는 실제 이미지 이름이 `kdbazis.dll` 으로 되어있습니다. `VirtualKD`를 사용하면 `kdcom.dll` 을 `kdcom_old.dll`으로 백업하고 `VirtualKD`용 `kdcom.dll`이 적용됩니다. 그리고 이는 `VirtualKD` 디렉토리 내 `kdbazis.dll` 이라는 모듈로 리다이렉트 됩니다. 해당 모듈을 분석하여 `KdReceivePacket` 함수에서 `KdDebuggerNotPresent` 변수에 값을 쓰는 부분을 변조하였습니다.
 
 ```c
 /*
@@ -268,8 +306,6 @@ NTSTATUS Hook_KdReceivePacket()
 	}
 }
 ```
-
-이는 범용적이지 않습니다. `VirtualKD`를 사용하면 `kdcom.dll` 을 `kdcom_old.dll`으로 백업하고 `VirtualKD`용 `kdcom.dll`이 적용됩니다. 그리고 이는 `VirtualKD` 디렉토리 내 `kdbazis.dll` 이라는 모듈로 리다이렉트 됩니다. 해당 모듈을 분석하여 `KdReceivePacket` 함수에서 `KdDebuggerNotPresent` 변수에 값을 쓰는 부분을 변조하였습니다.
 
 
 
@@ -988,11 +1024,16 @@ VOID UnloadDriver(PDRIVER_OBJECT pDriver)
 
 ## [0x05] Proof Of Concept
 
-영상은 `Control Debugger`를 이용하여 `ObRegisterCallbacks` 의 콜백 루틴을 더미 함수로 교체하고, 안티 커널 디버깅 관련 변수를 변조하여 우회하는 영상입니다.
+영상은 `Control Debugger`를 이용하여 `ObRegisterCallbacks` 의 콜백 루틴을 더미 함수로 교체 및 복구 합니다. 그리고 순서대로 `KdDebuggerNotPresent` 를 우회하고 `KdDebuggerEnabled` 를 우회합니다.
 
-<iframe src="https://youtube.com/embed/mCfIzeYHdbM" allowfullscreen="" width="720" height="365"></iframe>
+<iframe src="https://youtube.com/embed/YcTgkXGNNBk" allowfullscreen="" width="720" height="365"></iframe>
 
 
 
 ## [0x06] Conclusion
 
+이로써 모든 프로젝트 과정을 마쳤습니다. 안티 디버깅, 프로세스 보호는 기술의 발전만큼 매우 다양합니다. 새로운 기법이 나타나거나, 아주 오래전에 사용한 기법을 사용하기도 합니다. 더 많은 전역변수나 `RUNTIME_FUNCTION` 내 존재하는 함수들을 이용할 수도 있습니다. 그렇기 때문에 원시적인 방법이 최선이라고 생각합니다.
+
+긴 글을 읽어주셔서 감사합니다. 궁금한 부분이나 필요한 부분이 있다면 상단에 피드백 메뉴를 통해 전달주시면 답변해드리겠습니다.
+
+감사합니다.
