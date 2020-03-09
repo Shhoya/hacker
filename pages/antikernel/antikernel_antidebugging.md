@@ -1,6 +1,7 @@
 ---
 title: Anti Kernel Debugging
 keywords: documentation, technique, debugging
+date: 2020-03-09
 tags: [Windows, Reversing, Dev]
 summary: "안티 디버깅 기법 및 목적"
 sidebar: antikernel_sidebar

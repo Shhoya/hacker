@@ -1,6 +1,7 @@
 ---
 title: Bypass Introduction
 keywords: documentation, technique, debugging
+date: 2020-03-09
 tags: [Windows, Reversing, Dev]
 summary: "Bypass Introduction"
 sidebar: antikernel_sidebar

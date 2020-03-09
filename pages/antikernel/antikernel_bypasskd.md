@@ -1,6 +1,7 @@
 ---
 title: Anti Kernel Debugging Bypass
 keywords: documentation, technique, debugging
+date: 2020-03-09
 tags: [Windows, Reversing, Dev]
 summary: "안티 커널 디버깅 우회(1)"
 sidebar: antikernel_sidebar

@@ -1,6 +1,7 @@
 ---
 title: Preferences
 keywords: documentation, Setup, technique, tools
+date: 2020-03-09
 tags: [Windows, Reversing, Dev]
 summary: "초기 환경설정"
 sidebar: antikernel_sidebar

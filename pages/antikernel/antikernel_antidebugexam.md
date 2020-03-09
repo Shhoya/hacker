@@ -1,6 +1,7 @@
 ---
 title: Anti Kernel Debugging Tutorial
 keywords: documentation, technique, debugging
+date: 2020-03-09
 tags: [Windows, Reversing, Dev]
 summary: "드라이버를 이용한 커널 디버깅 방지"
 sidebar: antikernel_sidebar

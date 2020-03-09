@@ -1,6 +1,7 @@
 ---
 title: ObRegisterCallbacks Debugging
 keywords: documentation, technique, debugging
+date: 2020-03-09
 tags: [Windows, Reversing, Dev]
 summary: "ObRegisterCallbacks Bypass(1)"
 sidebar: antikernel_sidebar

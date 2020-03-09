@@ -1,6 +1,7 @@
 ---
 title: Kernel Global Variable
 keywords: documentation, technique, debugging
+date: 2020-03-09
 tags: [Windows, Reversing, Dev]
 summary: "커널 디버깅의 원리 (4)"
 sidebar: antikernel_sidebar

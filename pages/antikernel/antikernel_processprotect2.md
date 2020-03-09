@@ -1,6 +1,7 @@
 ---
 title: Process Protection
 keywords: documentation, technique, debugging
+date: 2020-03-09
 tags: [Windows, Reversing, Dev]
 summary: "드라이버를 이용한 프로세스 보호(2)"
 sidebar: antikernel_sidebar
