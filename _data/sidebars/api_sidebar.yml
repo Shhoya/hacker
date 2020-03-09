@@ -19,6 +19,15 @@ entries:
       output: pdf
       type: frontmatter
 
+  - title: Overview
+    output: web, pdf
+    folderitems:
+
+    - title: Custom API Introduction
+      url: /api_introduction.html
+      output: web, pdf
+
+
   - title: User Mode
     output: web, pdf
     folderitems:
