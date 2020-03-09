@@ -236,7 +236,7 @@ NTSTATUS KdDebuggerControl(int mode)
 }
 ```
 
-{% include note.html content="브레이크 예외를 넘겨주지 못하는 이유는 KdDisableDebugger 함수 내 KdpSuspendAllBreakpoints 함수로 인한 것으로 보입니다."}
+{% include note.html content="브레이크 예외를 넘겨주지 못하는 이유는 KdDisableDebugger 함수 내 KdpSuspendAllBreakpoints 함수로 인한 것으로 보입니다." %}
 
 
 
