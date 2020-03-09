@@ -24,15 +24,15 @@ entries:
     folderitems:
 
     - title: API_NAME
-      url: /antikernel_introduction.html
+      url: /api_getoffset.html
       output: web, pdf
 
   - title: Kernel Mode
     output: web, pdf
     folderitems:
 
-    - title: API_NAME
-      url: /antikernel_antidebugging.html
+    - title: GetOffset(EPROCESS)
+      url: /api_getoffset.html
       output: web, pdf
 
 
