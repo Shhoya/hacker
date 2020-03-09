@@ -97,11 +97,11 @@ LABEL_4:
 
 `IDA`에서 `ALT+T` 를 통해 `cases 103` 라는 문자열을 검색합니다.
 
-<img src="https://github.com/Shh0ya/shh0ya.github.io/blob/master/rsrc/antikernel/ci_00.png?raw=true">
+<img src="https://github.com/Shhoya/shhoya.github.io/blob/master/rsrc/antikernel/ci_00.png?raw=true">
 
 해당 위치를 확인하면 아래와 같이 `SeCodeIntegrityQueryInformation` 함수를 호출하는 것을 확인할 수 있습니다.
 
-<img src="https://github.com/Shh0ya/shh0ya.github.io/blob/master/rsrc/antikernel/ci_01.png?raw=true">
+<img src="https://github.com/Shhoya/shhoya.github.io/blob/master/rsrc/antikernel/ci_01.png?raw=true">
 
 
 
@@ -128,7 +128,7 @@ __int64 __fastcall SeCodeIntegrityQueryInformation(__int64 a1, __int64 a2, __int
 
 별 특별한 로직없이 `_guard_dispatch_icall` 을 통해 `jmp rax` 명령으로 함수(`qword_14040CEF8`)을 호출합니다. 이 함수의 레퍼런스를 찾아가보면 위에 `SeCiCallbacks`라는 변수를 볼 수 있습니다. 
 
-<img src="https://github.com/Shh0ya/shh0ya.github.io/blob/master/rsrc/antikernel/ci_02.png?raw=true">
+<img src="https://github.com/Shhoya/shhoya.github.io/blob/master/rsrc/antikernel/ci_02.png?raw=true">
 
 이 변수는 `SepInitializeCodeIntegrity` 함수에서 사용되고 내부에서 `CiInitialize` 함수를 호출합니다.
 
@@ -168,7 +168,7 @@ __int64 SepInitializeCodeIntegrity()
 마지막 `CiInitialize` 함수를 호출할 때 3번째 파라미터로 `SeCiCallbacks` 변수의 주소를 전달하는 것을 볼 수 있습니다.
 해당 함수는 IMPORT 되는 함수로 `CI.dll` 이라는 모듈에서 EXPORT 됩니다.
 
-<img src="https://github.com/Shh0ya/shh0ya.github.io/blob/master/rsrc/antikernel/ci_03.png?raw=true">
+<img src="https://github.com/Shhoya/shhoya.github.io/blob/master/rsrc/antikernel/ci_03.png?raw=true">
 
 
 
@@ -246,7 +246,7 @@ LABEL_21:
 
 `LABEL_21`을 확인하면 `SeCiCallbacks` 배열에 각 함수 주소를 저장하는 것을 확인할 수 있습니다. 즉 위의 `SeCodeIntegrityQueryInformation` 함수에서 호출하는 `qword_14040CEF8` 함수는 `CiQueryInformation` 함수라는 것을 알 수 있습니다.
 
-<img src="https://github.com/Shh0ya/shh0ya.github.io/blob/master/rsrc/antikernel/ci_04.png?raw=true">
+<img src="https://github.com/Shhoya/shhoya.github.io/blob/master/rsrc/antikernel/ci_04.png?raw=true">
 
 
 
