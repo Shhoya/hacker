@@ -95,11 +95,11 @@ LABEL_4:
 
  몇 가지 케이스가 존재하지 않으면 `ExpQuerySystemInformation` 함수를 호출하는 것을 확인할 수 있습니다. 해당 함수를 확인하면 100가지가 넘는 케이스로 이루어져 디컴파일이 되지 않습니다. 
 
-`IDA`에서 `ALT+T` 를 통해 `cases 164` 라는 문자열을 검색합니다.
+`IDA`에서 `ALT+T` 를 통해 `cases 103` 라는 문자열을 검색합니다.
 
 <img src="https://github.com/Shh0ya/shh0ya.github.io/blob/master/rsrc/antikernel/ci_00.png?raw=true">
 
-해당 위치를 확인하면 아래와 같이 `SeCodeIntegrityQueryPolicyInformation` 함수를 호출하는 것을 확인할 수 있습니다.
+해당 위치를 확인하면 아래와 같이 `SeCodeIntegrityQueryInformation` 함수를 호출하는 것을 확인할 수 있습니다.
 
 <img src="https://github.com/Shh0ya/shh0ya.github.io/blob/master/rsrc/antikernel/ci_01.png?raw=true">
 
@@ -107,22 +107,206 @@ LABEL_4:
 
 ### [-] SeCodeIntegrityQueryInformation
 
+```c
+__int64 __fastcall SeCodeIntegrityQueryInformation(__int64 a1, __int64 a2, __int64 a3)
+{
+  __int64 v3; // r9
+  __int64 v4; // r10
+  int v5; // ecx
 
+  v3 = a3;
+  v4 = a1;
+  if ( !qword_14040CEF8 )
+    return 0xC0000001i64;
+  v5 = (unsigned __int8)SeILSigningPolicy;
+  if ( !SeILSigningPolicy )
+    v5 = (unsigned __int8)SeILSigningPolicyRuntime;
+  LOBYTE(a3) = v5 != 0;
+  return qword_14040CEF8(v4, a2, a3, v3);
+}
+```
+
+별 특별한 로직없이 `_guard_dispatch_icall` 을 통해 `jmp rax` 명령으로 함수(`qword_14040CEF8`)을 호출합니다. 이 함수의 레퍼런스를 찾아가보면 위에 `SeCiCallbacks`라는 변수를 볼 수 있습니다. 
+
+<img src="https://github.com/Shh0ya/shh0ya.github.io/blob/master/rsrc/antikernel/ci_02.png?raw=true">
+
+이 변수는 `SepInitializeCodeIntegrity` 함수에서 사용되고 내부에서 `CiInitialize` 함수를 호출합니다.
+
+### [-] SepInitializeCodeIntegrity
+
+```c
+__int64 SepInitializeCodeIntegrity()
+{
+  unsigned int v0; // edi
+  __int64 v1; // rbx
+  __int64 v2; // rcx
+  unsigned int *v3; // rdx
+
+  v0 = 6;
+  memset(&SeCiCallbacks, 0, 0xD0ui64);
+  LODWORD(SeCiCallbacks) = 0xD0;
+  v1 = 0i64;
+  qword_14040CFA8 = 0xA000006i64;
+  if ( KeLoaderBlock_0 )
+  {
+    v2 = *(_QWORD *)(KeLoaderBlock_0 + 0xF0);
+    if ( v2 )
+    {
+      v3 = *(unsigned int **)(v2 + 0xB10);
+      if ( v3 )
+        v0 = *v3;
+    }
+    if ( *(_QWORD *)(KeLoaderBlock_0 + 0xD8) && (unsigned int)SepIsOptionPresent() )
+      SeCiDebugOptions |= 1u;
+    if ( KeLoaderBlock_0 )
+      v1 = KeLoaderBlock_0 + 0x30;
+  }
+  return CiInitialize(v0, v1, &SeCiCallbacks, &SeCiPrivateApis);
+}
+```
+
+마지막 `CiInitialize` 함수를 호출할 때 3번째 파라미터로 `SeCiCallbacks` 변수의 주소를 전달하는 것을 볼 수 있습니다.
+해당 함수는 IMPORT 되는 함수로 `CI.dll` 이라는 모듈에서 EXPORT 됩니다.
+
+<img src="https://github.com/Shh0ya/shh0ya.github.io/blob/master/rsrc/antikernel/ci_03.png?raw=true">
+
+
+
+### [-] CiInitialize
+
+`IDA`를 이용하여 `%SystemRoot%\system32\ci.dll` 을 열어 아래와 같이 의사코드를 확인합니다.
+
+```c
+signed __int64 __fastcall CiInitialize(int a1, const UNICODE_STRING **a2, __int64 SeCiCallbacks, __int64 SeCiPrivateApis)
+{
+  __int64 SeCiPrivateApis_1; // rbx
+  __int64 SeCiCallbacks_1; // rdi
+  const UNICODE_STRING **v6; // rsi
+  int v7; // ebp
+
+  SeCiPrivateApis_1 = SeCiPrivateApis;
+  SeCiCallbacks_1 = SeCiCallbacks;
+  v6 = a2;
+  v7 = a1;
+  _security_init_cookie();
+  return CipInitialize(v7, v6, SeCiCallbacks_1, SeCiPrivateApis_1);
+}
+```
+
+파라미터에 대한 간단한 정리 후 `CipInitialize` 함수를 호출합니다.
+
+
+
+### [-] CipInitialize
+
+필요 없는 부분을 제외하고 아래와 같이 의사코드를 확인하겠습니다.
+
+```c
+signed __int64 __fastcall CipInitialize(int a1, const UNICODE_STRING **a2, __int64 a3, __int64 a4)
+{
+ ...
+    if ( v20 >= 0 )
+    {
+LABEL_21:
+      v21 = g_HvciSupported == 0;
+      *(_QWORD *)(SeCiCallbacks + 0x20) = CiValidateImageHeader;
+      *(_QWORD *)(SeCiCallbacks + 0x28) = CiValidateImageData;
+      *(_QWORD *)(SeCiCallbacks + 0x18) = CiQueryInformation;
+      *(_QWORD *)(SeCiCallbacks + 8) = CiSetFileCache;
+      *(_QWORD *)(SeCiCallbacks + 0x10) = CiGetFileCache;
+      *(_QWORD *)(SeCiCallbacks + 0x30) = CiHashMemory;
+      *(_QWORD *)(SeCiCallbacks + 0x38) = KappxIsPackageFile;
+      *(_QWORD *)(SeCiCallbacks + 0x40) = CiCompareSigningLevels;
+      *(_QWORD *)(SeCiCallbacks + 0x48) = &CiValidateFileAsImageType;
+      *(_QWORD *)(SeCiCallbacks + 0x50) = CiRegisterSigningInformation;
+      *(_QWORD *)(SeCiCallbacks + 0x58) = CiUnregisterSigningInformation;
+      *(_QWORD *)(SeCiCallbacks + 0x60) = CiInitializePolicy;
+      *(_QWORD *)(SeCiCallbacks + 0x88) = CipQueryPolicyInformation;
+      *(_QWORD *)(SeCiCallbacks + 0x90) = CiValidateDynamicCodePages;
+      *(_QWORD *)(SeCiCallbacks + 0x98) = CiQuerySecurityPolicy;
+      *(_QWORD *)(SeCiCallbacks + 0xA0) = CiRevalidateImage;
+      *(_QWORD *)(SeCiCallbacks + 0xA8) = &CiSetInformation;
+      *(_QWORD *)(SeCiCallbacks + 0xB0) = CiSetInformationProcess;
+      *(_QWORD *)(SeCiCallbacks + 0xB8) = CiGetBuildExpiryTime;
+      *(_QWORD *)(SeCiCallbacks + 0xC0) = CiCheckProcessDebugAccessPolicy;
+      if ( !v21 )
+      {
+        *(_QWORD *)(SeCiCallbacks + 0x78) = CiGetStrongImageReference;
+        *(_QWORD *)(SeCiCallbacks + 0x68) = CiReleaseContext;
+        *(_QWORD *)(SeCiCallbacks + 0x80) = CiHvciSetImageBaseAddress;
+      }
+      PESetPhase1Initialization(v6);
+      if ( (v19 & 0x80000000) == 0 )
+        return v19;
+      goto LABEL_29;
+    }
+  }
+...
+```
+
+`LABEL_21`을 확인하면 `SeCiCallbacks` 배열에 각 함수 주소를 저장하는 것을 확인할 수 있습니다. 즉 위의 `SeCodeIntegrityQueryInformation` 함수에서 호출하는 `qword_14040CEF8` 함수는 `CiQueryInformation` 함수라는 것을 알 수 있습니다.
+
+<img src="https://github.com/Shh0ya/shh0ya.github.io/blob/master/rsrc/antikernel/ci_04.png?raw=true">
+
+
+
+### [-] CiQueryInformation
+
+의사코드를 확인하기 전에, `SYSTEM_CODEINTEGRITY_INFORMATION` 구조체에 대해 알아보겠습니다. 아래의 마스크 값은 특정 값과 연산한 값입니다.
+
+```c
+typedef struct _SYSTEM_CODEINTEGRITY_INFORMATION{
+    ULONG	Lenght;
+    ULONG	CodeIntegrityOptions;
+}SYSTEM_CODEINTEGRITY_INFORMATION;
+```
+
+| Mask       | Symbolic Name                                         | Versions              |
+| :--------- | :---------------------------------------------------- | :-------------------- |
+| 0x00000001 | **CODEINTEGRITY_OPTION_ENABLED**                      | 6.0 and higher        |
+| 0x00000002 | **CODEINTEGRITY_OPTION_TESTSIGN**                     | 6.0 and higher        |
+| 0x00000004 | **CODEINTEGRITY_OPTION_UMCI_ENABLED**                 | 6.2 and higher        |
+| 0x00000008 | **CODEINTEGRITY_OPTION_UMCI_AUDITMODE_ENABLED**       | 6.2 and higher        |
+| 0x00000010 | **CODEINTEGRITY_OPTION_UMCI_EXCLUSIONPATHS_ENABLED**  | 6.2 and higher        |
+| 0x00000080 | **CODEINTEGRITY_OPTION_DEBUGMODE_ENABLED**            | 6.3 and higher        |
+| 0x00000200 | **CODEINTEGRITY_OPTION_FLIGHTING_ENABLED**            | 10.0 and higher       |
+| 0x00000400 | **CODEINTEGRITY_OPTION_HVCI_KMCI_ENABLED**            | 10.0 and higher (x64) |
+| 0x00000800 | **CODEINTEGRITY_OPTION_HVCI_KMCI_AUDITMODE_ENABLED**  | 10.0 and higher (x64) |
+| 0x00001000 | **CODEINTEGRITY_OPTION_HVCI_KMCI_STRICTMODE_ENABLED** | 10.0 and higher (x64) |
+| 0x00002000 | **CODEINTEGRITY_OPTION_HVCI_IUM_ENABLED**             | 10.0 and higher (x64) |
+
+이제 의사코드를 확인해보겠습니다. 마찬가지로 중요한 부분만 확인하겠습니다.
+
+```c
+__int64 __fastcall CiQueryInformation(_DWORD *a1, unsigned int a2, char a3, _DWORD *a4)
+{
+ 
+ ...
+      if ( g_CiOptions & 8 )
+        v7[1] |= 2u;
+      if ( *KdDebuggerEnabled && *KdDebuggerNotPresent != 1 )
+        v7[1] |= 0x80u;
+...
+  return v8;
+}
+```
+
+`g_CiOptions` 라는 변수와 8을 AND 연산한 값이 참인 경우 `v7[1]` 위치에 2를 더합니다. 또한 익숙한 `KdDebuggerEnabled` 변수와 `KdDebuggerNotPresent` 값을 비교하여 디버그 모드인 경우 `v1[1]` 위치에 0x80을 더합니다. 위의 마스크 값을 확인하면 `CODEINTEGRITY_OPTION_TESTSIGN` 과 `CODEINTEGRITY_OPTION_DEBUGMODE_ENABLED` 로 비트가 설정되는 것입니다.
+
+즉 `v7` 변수는 `SYSTEM_CODEINTEGRITY_INFORMATION` 구조체 변수임을 알 수 있습니다.
 
 
 
 ## [0x05] Proof Of Concept
 
-영상은 `Control Debugger`를 이용하여 `ObRegisterCallbacks` 의 콜백 루틴을 더미 함수로 교체 및 복구 합니다. 그리고 순서대로 `KdDebuggerNotPresent` 를 우회하고 `KdDebuggerEnabled` 를 우회합니다.
+이를 이용해 아래와 같이 재밌는 일들이 가능합니다. 사용한 도구는 `WKE`로 커널 메모리를 확인하고 수정할 수 있습니다.
+영상의 내용은 `DEBUGMODE` 와 `DSE`가 비활성화 된 상태(정상 부팅)에서 테스트 인증서로 서명된 드라이버를 로드하는 내용입니다. 
 
-<iframe src="https://youtube.com/embed/YcTgkXGNNBk" allowfullscreen="" width="720" height="365"></iframe>
+<iframe src="https://youtube.com/embed/u0hs55dwzIA" allowfullscreen="" width="720" height="365"></iframe>
 
 
 
 ## [0x06] Conclusion
 
-이로써 모든 프로젝트 과정을 마쳤습니다. 안티 디버깅, 프로세스 보호는 기술의 발전만큼 매우 다양합니다. 새로운 기법이 나타나거나, 아주 오래전에 사용한 기법을 사용하기도 합니다. 더 많은 전역변수나 `RUNTIME_FUNCTION` 내 존재하는 함수들을 이용할 수도 있습니다. 그렇기 때문에 원시적인 방법이 최선이라고 생각합니다.
+부록의 내용이지만 매우 유용한 내용이라 생각되어 추가하였습니다. 해당 내용과 기존 프로젝트 내용이 합쳐지면 실제 `DEBUGMODE`와 `DSE` 에 대한 상태를 마음대로 제어가 가능하기 때문에 커널 디버깅 중임을 좀 더 확실하게 회피가 가능합니다.
 
-긴 글을 읽어주셔서 감사합니다. 궁금한 부분이나 필요한 부분이 있다면 상단에 피드백 메뉴를 통해 전달주시면 답변해드리겠습니다.
-
-감사합니다.
