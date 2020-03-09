@@ -1,5 +1,5 @@
 ---
-_title: Control Debugger
+title: Control Debugger
 keywords: documentation, technique, debugging
 date: 2020-03-09
 tags: [Windows, Reversing, Dev]
