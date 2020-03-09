@@ -2,7 +2,7 @@
 title: GetOffset
 keywords: documentation, technique, offset, eprocess
 date: 2020-03-09
-tags: [Windows, Reversing, Dev]
+tags: [Windows,Dev]
 summary: "Get EPROCESS Offset"
 sidebar: api_sidebar
 permalink: api_getoffset.html
