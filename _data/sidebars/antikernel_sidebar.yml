@@ -113,6 +113,14 @@ entries:
       url: /antikernel_ctrldebugger.html
       output: web, pdf  
 
+  - title: Bonus(Code Integrity)
+    output: web, pdf
+    folderitems:
+    
+    - title: Code Integrity(Code Signing)
+      url: /antikernel_codeintegrity.html
+      output: web, pdf
+
 #  - title: Tag archives
 #    output: web
 #    folderitems:
