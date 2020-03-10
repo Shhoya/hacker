@@ -5,7 +5,7 @@ date: 2020-03-10
 tags: [Windows, Reversing, Dev]
 summary: "VMP Anti Debugging"
 sidebar: vmp_sidebar
-permalink: vmp_vmpintro.html
+permalink: vmp_vmpantidebug.html
 folder: vmprotct
 ---
 
