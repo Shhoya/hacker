@@ -18,6 +18,8 @@ topnav_dropdowns:
       folderitems:
         - title: Anti Kernel Debugging Bypass
           url: /antikernel_introduction.html
+        - title: VMProtect
+          url: /vmp_vmpintro.html
         - title: Useful Custom API
           url: /api_introduction.html 
 

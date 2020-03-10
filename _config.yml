@@ -103,6 +103,7 @@ sidebars:
 - api_sidebar
 - home_sidebar
 - antikernel_sidebar
+- vmp_sidebar
 - mydoc_sidebar
 - product1_sidebar
 - product2_sidebar
