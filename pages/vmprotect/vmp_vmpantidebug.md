@@ -6,7 +6,7 @@ tags: [Windows, Reversing, Dev]
 summary: "VMP Anti Debugging"
 sidebar: vmp_sidebar
 permalink: vmp_vmpantidebug.html
-folder: vmprotct
+folder: vmprotect
 ---
 
 ## [0x00] Overview

@@ -6,7 +6,7 @@ tags: [Windows, Reversing, Dev]
 summary: "VMP Packer 개요"
 sidebar: vmp_sidebar
 permalink: vmp_vmpintro.html
-folder: vmprotct
+folder: vmprotect
 ---
 
 ## [0x00] Overview

@@ -6,7 +6,7 @@ tags: [Windows, Reversing, Dev]
 summary: "VMP 동적 및 정적분석"
 sidebar: vmp_sidebar
 permalink: vmp_vmpanalysis.html
-folder: vmprotct
+folder: vmprotect
 ---
 
 ## [0x00] Overview
