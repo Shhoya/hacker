@@ -17,9 +17,9 @@ topnav_dropdowns:
     - title: Archive
       folderitems:
         - title: Vulnerability&Bugs
-          url: /api_introduction.html 
+          url: /vuln_introduction.html 
         - title: Anti Kernel Debugging Bypass
-          url: /vuln_introduction.html
+          url: /antikernel_introduction.html
         - title: VMProtect Analysis
           url: /vmp_vmpintro.html
         - title: Useful Custom API
