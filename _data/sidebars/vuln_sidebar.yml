@@ -22,6 +22,10 @@ entries:
   - title: Vulnerability_main
     output: web, pdf
     folderitems:
+    
+    - title: Vulnerability_intro
+      url: /vuln_introduction.html
+      output: web
 
     subfolders:
       - title: Vulenrability_sub
@@ -36,6 +40,10 @@ entries:
     output: web, pdf
     folderitems:
 
+    - title: Bugs_intro
+      url: /bugs_introduction.html
+      output: web
+      
     subfolders:
       - title: Bugs_sub
         output: web
