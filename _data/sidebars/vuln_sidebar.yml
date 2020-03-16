@@ -1,0 +1,88 @@
+# This is your sidebar TOC. The sidebar code loops through sections here and provides the appropriate formatting.
+
+entries:
+- title: sidebar
+  product: Vulnerability & Bug(Incomplete)
+  version: 0.7
+  folders:
+
+  - title:
+    output: pdf
+    type: frontmatter
+    folderitems:
+    - title:
+      url: /titlepage.html
+      output: pdf
+      type: frontmatter
+    - title:
+      url: /tocpage.html
+      output: pdf
+      type: frontmatter
+
+  - title: Vulnerability_main
+    output: web, pdf
+    folderitems:
+
+    subfolders:
+      - title: Vulenrability_sub
+        output: web
+        subfolderitems:
+          
+        - title: Vulnerability_tmp
+          url: /antikernel_kerneldebugging.html
+          output: web
+
+  - title: Bugs_main
+    output: web, pdf
+    folderitems:
+
+    subfolders:
+      - title: Bugs_sub
+        output: web
+        subfolderitems:
+          
+        - title: Bugs_tmp
+          url: /antikernel_kerneldebugging.html
+          output: web
+
+
+#  - title: Tag archives
+#    output: web
+#    folderitems:
+
+#    - title: Tag archives overview
+#      url: /mydoc_tag_archives_overview.html
+#      output: web
+
+#      subfolders:
+#      - title: Tag archive pages
+#        output: web
+#        subfolderitems:
+
+#        - title: Formatting pages
+#          url: /tag_formatting.html
+#          output: web
+
+#        - title: Navigation pages
+#          url: /tag_navigation.html
+#          output: web
+
+#        - title: Content types pages
+#          url: /tag_content_types.html
+#          output: web
+
+#        - title: Publishing pages
+#          url: /tag_publishing.html
+#          output: web
+
+#        - title: Special layout pages
+#          url: /tag_special_layouts.html
+#          output: web
+
+#        - title: Collaboration pages
+#          url: /tag_collaboration.html
+#          output: web
+
+#        - title: Troubleshooting pages
+#          url: /tag_troubleshooting.html
+#          output: web
