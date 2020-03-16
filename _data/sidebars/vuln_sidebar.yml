@@ -27,14 +27,14 @@ entries:
       url: /vuln_introduction.html
       output: web
 
-    subfolders:
-      - title: Vulenrability_sub
-        output: web
-        subfolderitems:
-          
-        - title: Vulnerability_tmp
-          url: /antikernel_kerneldebugging.html
+      subfolders:
+        - title: Vulenrability_sub
           output: web
+          subfolderitems:
+            
+          - title: Vulnerability_tmp
+            url: /antikernel_kerneldebugging.html
+            output: web
 
   - title: Bugs_main
     output: web, pdf
@@ -44,14 +44,14 @@ entries:
       url: /bugs_introduction.html
       output: web
       
-    subfolders:
-      - title: Bugs_sub
-        output: web
-        subfolderitems:
-          
-        - title: Bugs_tmp
-          url: /antikernel_kerneldebugging.html
+      subfolders:
+        - title: Bugs_sub
           output: web
+          subfolderitems:
+              
+          - title: Bugs_tmp
+            url: /antikernel_kerneldebugging.html
+            output: web
 
 
 #  - title: Tag archives
