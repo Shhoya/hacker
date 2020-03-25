@@ -19,7 +19,7 @@ entries:
       output: pdf
       type: frontmatter
 
-  - title: Vulnerability_main
+  - title: Vulnerability
     output: web, pdf
     folderitems:
     
@@ -28,12 +28,16 @@ entries:
       output: web
 
       subfolders:
-        - title: Vulenrability_sub
+        - title: SMBGhost(CVE-2020-0796)
           output: web
           subfolderitems:
             
-          - title: Vulnerability_tmp
-            url: /antikernel_kerneldebugging.html
+          - title: Introduction
+            url: /vuln_smb_introduction.html
+            output: web
+          
+          - title: SMBGhost Analysis
+            url: /vuln_smb_analysis.html
             output: web
 
   - title: Bugs_main
