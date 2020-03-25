@@ -192,8 +192,7 @@ fffff802`7da35ee7 0fb71e          movzx   ebx,word ptr [rsi] ds:00000000`0000000
 
 ## [0x02] Analysis(Details)
 
-실제로 어떻게 동작하는지 확인하기 위해 동적분석을 진행하겠습니다. `srv2!Srv2DecompressData` 함수에 브레이크 포인트를 설치합니다. 우리는 잘못된 오프셋과 길이로 인해 발생하는 Overflow라고 확인하였습니다. 
-그렇다면 이 값이 `srv2!Srv2DecompressData` 에서 참조될 것이라 예상할 수 있습니다.
+실제로 어떻게 동작하는지 확인하기 위해 동적분석을 진행하겠습니다. `srv2!Srv2DecompressData` 함수에 브레이크 포인트를 설치합니다. 우리는 잘못된 오프셋과 길이로 인해 발생하는 Overflow라고 확인하였습니다. 그렇다면 이 값이 `srv2!Srv2DecompressData` 에서 참조될 것이라 예상할 수 있습니다.
 
 ### [-] Srv2DecompressData
 
