@@ -36,8 +36,12 @@ entries:
             url: /vuln_smb_introduction.html
             output: web
           
-          - title: SMBGhost Analysis
+          - title: SMBGhost Analysis(1)
             url: /vuln_smb_analysis.html
+            output: web
+          
+          - title: SMBGhost Analysis(2)
+            url: /vuln_smb_analysis2.html
             output: web
 
   - title: Bugs_main
