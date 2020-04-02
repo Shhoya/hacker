@@ -312,4 +312,160 @@ ffffe50f`417200c0  50 00 03 00 00 00 18 00-18 00 7c 00 00 00 42 01  P.........|.
 
 ### [-] SmbCompressionDecompress
 
-**작성 중**
+다음은 `srvnet!SmbCompressionDecompress` 함수입니다. 
+
+<img src="https://github.com/Shhoya/shhoya.github.io/blob/master/rsrc/smbghost/smb_18.png?raw=true">
+
+`nt!RtlGetCOmpressionWorkSpaceSize` 함수부터 살펴보겠습니다.
+
+```c++
+NT_RTL_COMPRESS_API NTSTATUS RtlGetCompressionWorkSpaceSize(
+ USHORT CompressionFormatAndEngine,
+ PULONG CompressBufferWorkSpaceSize,
+ PULONG CompressFragmentWorkSpaceSize
+);
+```
+
+`CompressionFormatAndEngine` 의 경우, `CompressionAlgorithm` 값으로 넘겨준 `CompType_LZNT1`의 값을 기준으로 결정됩니다. 우리가 전달한 `LZNT1` 값은 아래 비트 마스크에 의해 2로 설정됩니다.
+
+<img src="https://github.com/Shhoya/shhoya.github.io/blob/master/rsrc/smbghost/smb_19.png?raw=true">
+
+다음은 `CompressBufferWorkSpaceSize` 입니다. 버퍼를 압축하는데 필요한 크기를 바이트 단위로 받는 버퍼에 대한 포인터입니다. 이 값은 RtlCompressBuffer의 WorkSpace 버퍼의 정확한 크기를 결정하는데 사용한다고 되어 있습니다.
+
+<img src="https://github.com/Shhoya/shhoya.github.io/blob/master/rsrc/smbghost/smb_20.png?raw=true">
+
+마지막으로 `CompressFragmentWorkSpaceSize` 입니다. 압축 버퍼를 조각 단위(`Fragments`)로 해제하는데 필요한 크기를 바이트 단위로 받는 버퍼에 대한 포인터 입니다. `RtlDecompressFragment` 의 WorkSpace 버퍼의 정확한 크기를 결정하는데 사용되지만 현재는 해당 함수가 존재하지 않는다고 합니다.
+
+<img src="https://github.com/Shhoya/shhoya.github.io/blob/master/rsrc/smbghost/smb_21.png?raw=true">
+
+위의 의사코드를 다시 보면 if문은 or 조건으로 `RtlGetCompressionWorkSpaceSize` 의 반환 값이 `STATUS_SUCCESS` 가 아니거나, `ExAllocatePoolWithTag` 함수로 인해 버퍼가 할당되는 경우로 되어있습니다.
+
+```c++
+if ( RtlGetCompressionWorkSpaceSize(v13, &NumberOfBytes, &v18) < 0
+    || (v6 = ExAllocatePoolWithTag(0x200, NumberOfBytes, '%2SL')) != 0i64 )
+  {
+    v14 = a6;
+    v17 = invalid_packetlength_param;
+    v15 = a5;
+    v10 = RtlDecompressBufferEx2(
+            v13,
+            invalid_compressedData_param,
+            a5,
+            invalid_smb2header_param,
+            v17,
+            0x1000,
+            a6,
+            v6,
+            v18);
+    if ( (v10 & 0x80000000) == 0 )
+      *v14 = v15;
+    if ( v6 )
+      ExFreePoolWithTag(v6, '%2SL');
+  }
+```
+
+디버깅을 해보면 아래와 같이 `RtlGetCompressionWorkSpaceSize` 함수는 `STATUS_SUCCESS` 를 반환하기 때문에 조건에 부합하지 않습니다.
+
+```
+1: kd> p
+srvnet!SmbCompressionDecompress+0x6d:
+fffff804`45c1e04d e84e9524fb   call  nt!RtlGetCompressionWorkSpaceSize (fffff804`40e675a0)
+1: kd> p
+srvnet!SmbCompressionDecompress+0x72:
+fffff804`45c1e052 85c0      test  eax,eax
+1: kd> r @rax
+rax=0000000000000000
+```
+
+`ExAllocatePoolWithTag`의 경우 정상적으로 버퍼를 할당하므로 조건에 부합하므로 `RtlDecompressBufferEx2` 함수를 호출할 수 있습니다.
+
+```
+1: kd> p
+srvnet!SmbCompressionDecompress+0x8c:
+fffff804`45c1e06c e89fbf54fb      call    nt!ExAllocatePoolWithTag (fffff804`4116a010)
+1: kd> p
+srvnet!SmbCompressionDecompress+0x91:
+fffff804`45c1e071 488bf8          mov     rdi,rax
+1: kd> r @rax
+rax=ffff9f021a9ce000
+```
+
+
+
+### [-] RtlDecompressBufferEx2
+
+매우 간략하게 이루어져있습니다. `RtlDecompressBufferProcs` 배열에 저장되어 있는 함수를 호출합니다. 첫 번째 파라미터는 배열의 인덱스 값으로 확인되며 2보다 작거나 4보다 큰 경우 정상적으로 호출되지 않습니다.
+
+{% include warning.html content="변수명의 경우 본인이 알아보기 쉽도록 정의한 것입니다. 특히 PageSize의 경우 0x1000으로 전달되는 것을 유추하여 작명한 것입니다. 실제와 다를 수 있습니다." %} 
+
+<img src="https://github.com/Shhoya/shhoya.github.io/blob/master/rsrc/smbghost/smb_22.png?raw=true">
+
+`RtlDecompressBufferProcs`는 아래와 같이 총 3개의 함수로 이루어져 있습니다. 예상과 같이 해당 부분에서 크래시를 일으키는 `RtlDecompressBufferLZNT1` 함수를 호출합니다.
+
+<img src="https://github.com/Shhoya/shhoya.github.io/blob/master/rsrc/smbghost/smb_23.png?raw=true">
+
+디버깅을 하면 예상한대로 아래와 같이 `RtlDecompressBufferLZNT1` 함수를 호출합니다.
+
+```
+3: kd> p
+nt!RtlDecompressBufferEx2+0x61:
+fffff801`19467661 e89adb1500      call    nt!guard_dispatch_icall (fffff801`195c5200)
+3: kd> u @rax
+nt!RtlDecompressBufferLZNT1:
+fffff801`19a35e90 48895c2418      mov     qword ptr [rsp+18h],rbx
+fffff801`19a35e95 48894c2408      mov     qword ptr [rsp+8],rcx
+fffff801`19a35e9a 55              push    rbp
+fffff801`19a35e9b 56              push    rsi
+fffff801`19a35e9c 57              push    rdi
+fffff801`19a35e9d 4154            push    r12
+fffff801`19a35e9f 4155            push    r13
+fffff801`19a35ea1 4156            push    r14
+```
+
+
+
+### [-] RtlDecompressBufferLZNT1
+
+아래 그림을 확인하면 `PageFault Point` 주석을 작성했습니다. `pSmbHeader`는 아래와 같은 연산을 거쳐 해당 함수에 전달됬습니다.
+
+`pSmbHeader = &Smb2CompressionTransformHeader + Smb2CompressionTransformHeader.Offset(0xffffffff) + 0x10`
+
+어셈블리 코드와 매칭하여 확인하면 잘못된 오프셋과 주소 값의 계산으로 인해 잘못된 메모리 영역임을 알 수 있습니다.
+
+<img src="https://github.com/Shhoya/shhoya.github.io/blob/master/rsrc/smbghost/smb_24.png?raw=true">
+
+노란 박스의 코드에서 확인해보면 아래와 같이 잘못된 메모리 영역임을 확인할 수 있습니다.
+
+```
+nt!RtlDecompressBufferLZNT1+0x57:
+fffff801`19a35ee7 0fb71e          movzx   ebx,word ptr [rsi]
+3: kd> dp @rsi
+ffffa507`d525c05f  ????????`???????? ????????`????????
+ffffa507`d525c06f  ????????`???????? ????????`????????
+ffffa507`d525c07f  ????????`???????? ????????`????????
+ffffa507`d525c08f  ????????`???????? ????????`????????
+ffffa507`d525c09f  ????????`???????? ????????`????????
+ffffa507`d525c0af  ????????`???????? ????????`????????
+ffffa507`d525c0bf  ????????`???????? ????????`????????
+ffffa507`d525c0cf  ????????`???????? ????????`????????
+```
+
+```
+3: kd> p
+KDTARGET: Refreshing KD connection
+
+*** Fatal System Error: 0x00000050
+                       (0xFFFFA507D525C05F,0x0000000000000000,0xFFFFF80119A35EE7,0x0000000000000002)
+
+
+A fatal system error has occurred.
+Debugger entered on first try; Bugcheck callbacks have not been invoked.
+
+A fatal system error has occurred.
+```
+
+
+
+## [0x03] Conclusion
+
+최대한 많은 분석 내용을 담으려고 노력했습니다. 다음 챕터에서는 PoC 코드를 작성하여 실제 악용될 수 있는 사례를 소개하겠습니다.
