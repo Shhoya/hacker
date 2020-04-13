@@ -43,6 +43,10 @@ entries:
           - title: SMBGhost Analysis(2)
             url: /vuln_smb_analysis2.html
             output: web
+          
+          - title: SMBGhost Exloit
+            url: /vuln_smb_exploit.html
+            output: web
 
   - title: Bugs_main
     output: web, pdf
