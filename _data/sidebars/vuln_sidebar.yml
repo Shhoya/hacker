@@ -59,7 +59,7 @@ entries:
             url: /vuln_capcom_analysis.html
             output: web
 
-  - title: Bugs_main
+  - title: Bugs(Not yet)
     output: web, pdf
     folderitems:
 
@@ -73,7 +73,7 @@ entries:
           subfolderitems:
               
           - title: Bugs_tmp
-            url: /antikernel_kerneldebugging.html
+            url: /bugs_introduction.html
             output: web
 
 
