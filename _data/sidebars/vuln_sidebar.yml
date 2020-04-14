@@ -47,6 +47,14 @@ entries:
           - title: SMBGhost Exloit
             url: /vuln_smb_exploit.html
             output: web
+        
+        - title: Capcom Driver Exploit
+          output: web
+          subfolderitems:
+            
+          - title: Introduction
+            url: /vuln_capcom_introduction.html
+            output: web
 
   - title: Bugs_main
     output: web, pdf
