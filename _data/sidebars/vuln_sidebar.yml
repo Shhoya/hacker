@@ -55,6 +55,9 @@ entries:
           - title: Introduction
             url: /vuln_capcom_introduction.html
             output: web
+          - title: Capcome Driver Analysis
+            url: /vuln_capcom_analysis.html
+            output: web
 
   - title: Bugs_main
     output: web, pdf
