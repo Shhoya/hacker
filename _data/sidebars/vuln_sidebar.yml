@@ -23,7 +23,7 @@ entries:
     output: web, pdf
     folderitems:
     
-    - title: Vulnerability_intro
+    - title: Overview
       url: /vuln_introduction.html
       output: web
 
