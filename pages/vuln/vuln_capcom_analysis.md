@@ -7,8 +7,6 @@ summary: "Capcom 커널 드라이버 분석"
 sidebar: vuln_sidebar
 permalink: vuln_capcom_analysis.html
 folder: vuln
-
-
 ---
 
 ## [0x00] Overview
