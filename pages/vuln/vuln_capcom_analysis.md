@@ -229,3 +229,173 @@ NTSTATUS __stdcall DriverEntry(PDRIVER_OBJECT DriverObject, PUNICODE_STRING Regi
 `ImageBase`로 부터 `0x774` 만큼 떨어진 위치에 있는 값을 2바이트씩 `unk_10880` 위치에 복사합니다.
 
 해당 위치를 확인해보면 `UNICODE` 로 이루어진 `\Device\` 라는 문자열입니다. 이는 `IoCreateDevice` 함수를 호출하기 위한 Prefix라고 볼 수 있습니다. 그리고 이렇게 복사한 `unk_10880` 문자열과 `unk_10980` 을 `sub_103AC` 함수에 인자로 전달합니다.
+
+
+
+### [-] Device Initialization
+
+먼저 `sub_103AC` 함수를 확인하기 전, 두 번째 파라미터의 값을 확인해보면 아래와 같습니다.
+
+```
+3: kd> db Capcom+980
+fffff805`03c30980  87 00 ea 00 fd 00 9a 00-4b 00 73 00 54 00 a4 00  ........K.s.T...
+fffff805`03c30990  5c 00 8f 00 00 00 00 00-00 00 00 00 00 00 00 00  \...............
+```
+
+2바이트씩 떨어진 데이터와 첫 번째 파라미터 `\Device\`를 보았을 때, 암호화 되어있는 값으로 예상할 수 있습니다. `IoCreateDevice`에 전달하는 디바이스 명을 숨기기 위한 루틴으로 예상됩니다.
+
+```c++
+_WORD *__fastcall sub_103AC(_WORD *DeviceString, char *UnknownString)
+{
+  // [COLLAPSED LOCAL DECLARATIONS. PRESS KEYPAD CTRL-"+" TO EXPAND]
+
+  v2 = DeviceString;
+  v3 = v17 - UnknownString;
+  do
+  {
+    v4 = *UnknownString;
+    *&UnknownString[v3] = *UnknownString;
+    UnknownString += 2;
+  }
+  while ( v4 );
+  v5 = 0;
+  v6 = v17;
+  v7 = 0x5555;
+  if ( v17[0] )
+  {
+    while ( 1 )
+    {
+      v7 = v5 + 4 * v7;
+      v8 = *v6 >> 6;
+      if ( v8 - 1 > 2 )
+        break;
+      v9 = 0;
+      v10 = ((v7 ^ *v6) - v5 - v8) & 0x3F;
+      if ( v10 >= 0xAu )
+      {
+        if ( v10 >= 0x24u )
+          goto LABEL_10;
+        v9 = v10 + 0x37;
+      }
+      else
+      {
+        v9 = v10 + 0x30;
+      }
+      if ( v10 >= 0x24u )
+      {
+LABEL_10:
+        if ( v10 < 0x3Eu )
+          v9 = v10 + 0x3D;
+      }
+      if ( v10 == 0x3E )
+        v9 = 0x2E;
+      if ( v9 )
+      {
+        *v6 = v9;
+        ++v6;
+        ++v5;
+        if ( *v6 )
+          continue;
+      }
+      break;
+    }
+  }
+  v11 = v2;
+  v12 = 0xFFFFFFFFFFFFFFFFi64;
+  do
+  {
+    if ( !v12 )
+      break;
+    v13 = *v11 == 0;
+    ++v11;
+    --v12;
+  }
+  while ( !v13 );
+  v14 = 0i64;
+  do
+  {
+    v15 = v17[v14];
+    ++v14;
+    v11[v14 - 2] = v15;
+  }
+  while ( v15 );
+  return v2;
+}
+```
+
+해당 함수를 진행한 뒤 첫 번째 파라미터인 `DeviceString(unk_10880)`을 확인하면 예상대로 디바이스 명이 만들어지는 것을 확인할 수 있습니다.
+
+```
+3: kd> du Capcom+880
+fffff805`03c30880  "\Device\Htsysm72FB"
+```
+
+이를 이용하여 `IoCreateDevice` 함수로 유저모드와 소통할 수 있는 디바이스를 생성했습니다. 당연히 다음 동작은 `IoCreateSymbolicLink` 함수로 링크를 생성하는 것입니다.
+
+{% include note.html content="해당 부분에서 이해가 되지 않는 경우에는 DeviceIoControl을 이용한 유저모드 애플리케이션과 커널 드라이버와 통신하는 내용에 대한 선행학습이 필요합니다." %}
+
+디바이스 생성 후에 위와 같은 로직이 존재하며 이 때 prefix로 사용되는 경로는 `\DosDevice\` 입니다.
+
+```
+3: kd> u @rip l1
+Capcom+0x6ea:
+fffff805`03c306ea e8bdfcffff      call    Capcom+0x3ac (fffff805`03c303ac)
+3: kd> du fffff80503c30840
+fffff805`03c30840  "\DosDevices\"
+3: kd> p
+Capcom+0x6ef:
+fffff805`03c306ef 488d4c2450      lea     rcx,[rsp+50h]
+3: kd> du fffff80503c30840
+fffff805`03c30840  "\DosDevices\Htsysm72FB"
+```
+
+`IoCreateSymbolicLink` 를 이용하여 심볼릭 링크를 생성합니다. 올바르게 디바이스와 링크가 생성이 되면 `MajorFunction` 초기화를 진행합니다.
+
+`IRP_MJ_CLOSE`, `IRP_MJ_CREATE`, `IRP_DEVICE_CONTROL` 순으로 초기화를 진행하는 것을 확인할 수 있습니다. 위의 분석 내용을 토대로 의사코드를 정리하면 아래와 같이 정리할 수 있습니다.
+
+```c++
+NTSTATUS __stdcall DriverEntry(PDRIVER_OBJECT DriverObject, PUNICODE_STRING RegistryPath)
+{
+  pDriver = DriverObject;
+  i = 0i64;
+  do
+  {
+    v4 = _ImageBase[i + 0x3BA];
+    *(&DeviceString + i * 2) = v4;
+    ++i;
+  }
+  while ( v4 );
+  DecryptString(&DeviceString, &EncryptString);
+  RtlInitUnicodeString(&DestinationString, String);
+  result = IoCreateDevice(pDriver, 0, &DestinationString, 0xAA01u, 0, 0, &DeviceObject);
+  if ( result >= 0 )
+  {
+    j = 0i64;
+    do
+    {
+      v8 = _ImageBase[j + 0x3AC];
+      *(&LinkNameString + j * 2) = v8;
+      ++j;
+    }
+    while ( v8 );
+    DecryptString(&LinkNameString, &EncryptString);
+    RtlInitUnicodeString(&SymbolicLinkName, String_1);
+    Success = IoCreateSymbolicLink(&SymbolicLinkName, &DestinationString);
+    if ( Success >= 0 )
+    {
+      pDriver->MajorFunction[2] = &sub_104E4;   // IRP_MJ_CLOSE
+      pDriver->MajorFunction[0] = &sub_104E4;   // IRP_MJ_CREATE
+      pDriver->MajorFunction[14] = sub_10590;   // IRP_MJ_DEVICE_CONTROL
+      pDriver->DriverUnload = DriverUnload;
+    }
+    else
+    {
+      IoDeleteDevice(DeviceObject);
+    }
+    result = Success;
+  }
+  return result;
+}
+```
+
+
