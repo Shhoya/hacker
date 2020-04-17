@@ -18,6 +18,6 @@ folder: vuln
 
 - <a href="https://shhoya.github.io/vuln_smb_introduction.html">CVE-2020-0796 (SMB Ghost)</a>
   - SMB 3.1.1 프로토콜에서 발생하는 원격 코드 실행 취약점
-- <a href="">Capcom Device Driver Rootkit</a>
+- <a href="https://shhoya.github.io/vuln_capcom_introduction.html">Capcom Device Driver Rootkit</a>
   - 캡콤 디바이스 드라이버에서 발생하는 취약점
 
