@@ -28,7 +28,7 @@ entries:
       output: web
 
       subfolders:
-        - title: SMBGhost(CVE-2020-0796)
+        - title: [-] SMBGhost(CVE-2020-0796)
           output: web
           subfolderitems:
             
