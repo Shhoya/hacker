@@ -32,19 +32,19 @@ entries:
           output: web
           subfolderitems:
             
-          - title:[-] Introduction
+          - title: [-] Introduction
             url: /vuln_smb_introduction.html
             output: web
           
-          - title:[-] SMBGhost Analysis(1)
+          - title: [-] SMBGhost Analysis(1)
             url: /vuln_smb_analysis.html
             output: web
           
-          - title:[-] SMBGhost Analysis(2)
+          - title: [-] SMBGhost Analysis(2)
             url: /vuln_smb_analysis2.html
             output: web
           
-          - title:[-] SMBGhost Exploit
+          - title: [-] SMBGhost Exploit
             url: /vuln_smb_exploit.html
             output: web
         
@@ -52,13 +52,13 @@ entries:
           output: web
           subfolderitems:
             
-          - title:[-] Introduction
+          - title: [-] Introduction
             url: /vuln_capcom_introduction.html
             output: web
-          - title:[-] Capcom Driver Analysis
+          - title: [-] Capcom Driver Analysis
             url: /vuln_capcom_analysis.html
             output: web
-          - title:[-] Capcom Driver Exploit
+          - title: [-] Capcom Driver Exploit
             url: /vuln_capcom_exploit.html
             output: web
 
