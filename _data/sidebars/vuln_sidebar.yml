@@ -44,7 +44,7 @@ entries:
             url: /vuln_smb_analysis2.html
             output: web
           
-          - title: SMBGhost Exloit
+          - title: SMBGhost Exploit
             url: /vuln_smb_exploit.html
             output: web
         
@@ -55,8 +55,11 @@ entries:
           - title: Introduction
             url: /vuln_capcom_introduction.html
             output: web
-          - title: Capcome Driver Analysis
+          - title: Capcom Driver Analysis
             url: /vuln_capcom_analysis.html
+            output: web
+          - title: Capcom Driver Exploit
+            url: /vuln_capcom_exploit.html
             output: web
 
   - title: Bugs(Not yet)
