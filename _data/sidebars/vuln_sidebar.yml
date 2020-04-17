@@ -32,7 +32,7 @@ entries:
           output: web
           subfolderitems:
             
-          - title: [-] Introduction
+          - title:\[-\]Introduction
             url: /vuln_smb_introduction.html
             output: web
           
