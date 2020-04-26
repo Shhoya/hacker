@@ -23,7 +23,9 @@ topnav_dropdowns:
         - title: VMProtect Analysis
           url: /vmp_vmpintro.html
         - title: Useful Custom API
-          url: /api_introduction.html 
+          url: /api_introduction.html
+        - title: Documentation
+          url: /document_introduction.html 
 
     - title: Reference Link
       folderitems:
