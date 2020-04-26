@@ -2,7 +2,7 @@
 comments: true
 toc: false
 ---
-
+<script>$("#tg-sb-sidebar").toggle();</script>
 <img src="https://github.com/Shh0ya/shh0ya.github.io/blob/master/images/about.png?raw=true">
 
 ## Profile
