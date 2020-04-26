@@ -33,7 +33,7 @@ entries:
           subfolderitems:
             
           - title: Introduction
-            url: /document_introduction.html
+            url: /document_pe_intro.html
             output: web
         
         - title: C and C++ Programming
@@ -41,7 +41,7 @@ entries:
           subfolderitems:
             
           - title: Introduction
-            url: /document_introduction.html
+            url: /document_programming_intro.html
             output: web
 
 

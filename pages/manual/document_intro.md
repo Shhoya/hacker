@@ -2,7 +2,7 @@
 title: Documentation Overview
 keywords: documentation
 tags: [Windows, Reversing, Kernel]
-summary: ""
+summary: "섹션 개요"
 sidebar: manual_sidebar
 permalink: document_introduction.html
 folder: manual
