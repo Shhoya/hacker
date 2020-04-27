@@ -13,7 +13,7 @@ folder: manual
 ## [0x00] Overview
 
 PE 포맷에 관한 설명입니다. 가장 기본이 되지만 가장 쉽게 잊어버리는 내용이기도 합니다.
-주로 코드와 주석내용으로 작성됩니다.
+주로 코드와 주석내용으로 작성됩니다. MSDN 내용과 대부분 동일합니다.
 
 ## [0x01] IMAGE_DOS_HEADER
 주로 `e_lfanew` 멤버 또는 `e_magic` 멤버를 사용하는 일이 많습니다.
@@ -364,3 +364,168 @@ typedef struct _IMAGE_OPTIONAL_HEADER64 {
 **`DataDirectory`**
 
 데이터 디렉토리의 첫 번째 `IMAGE_DATA_DIRECTORY` 구조체에 대한 포인터입니다.
+
+
+
+## [0x05] IMAGE_DATA_DIRECTORY
+
+`ntimagebase.h` 내 존재합니다.
+
+```c++
+typedef struct _IMAGE_DATA_DIRECTORY {
+  DWORD VirtualAddress;
+  DWORD Size;
+} IMAGE_DATA_DIRECTORY, *PIMAGE_DATA_DIRECTORY;
+```
+
+**`VirtualAddress`**
+
+테이블의 상대 가상 주소를 의미합니다.
+
+**`Size`**
+
+테이블의 사이즈를 의미합니다.
+
+데이터 디렉토리 내 항목별 오프셋은 `OptionalHeader` 위치로부터 다음과 같은 오프셋으로 이루어져 있습니다.
+
+| Offset (PE/PE32+) | Description                                       |
+| :---------------- | :------------------------------------------------ |
+| 0x60/0x70         | Export table address and size                     |
+| 0x68/0x78         | Import table address and size                     |
+| 0x70/0x80         | Resource table address and size                   |
+| 0x78/0x88         | Exception table address and size                  |
+| 0x80/0x90         | Certificate table address and size                |
+| 0x88/0x98         | Base relocation table address and size            |
+| 0x90/0xA0         | Debugging information starting address and size   |
+| 0x98/0xA8         | Architecture-specific data address and size       |
+| 0xA0/0xB0         | Global pointer register relative virtual address  |
+| 0xA8/0xB8         | Thread local storage (TLS) table address and size |
+| 0xB0/0xC0         | Load configuration table address and size         |
+| 0xB8/0xC8         | Bound import table address and size               |
+| 0xC0/0xD0         | Import address table address and size             |
+| 0xC8/0xD8         | Delay import descriptor address and size          |
+| 0xD0/0xE0         | The CLR header address and size                   |
+| 0xD8/0xE8         | Reserved                                          |
+
+각 항목별 정의는 아래와 같습니다. `DataDirectory[n]` 형식과 같이 배열 형태로 존재합니다.
+
+```c++
+// Directory Entries
+
+#define IMAGE_DIRECTORY_ENTRY_EXPORT          0   // Export Directory
+#define IMAGE_DIRECTORY_ENTRY_IMPORT          1   // Import Directory
+#define IMAGE_DIRECTORY_ENTRY_RESOURCE        2   // Resource Directory
+#define IMAGE_DIRECTORY_ENTRY_EXCEPTION       3   // Exception Directory
+#define IMAGE_DIRECTORY_ENTRY_SECURITY        4   // Security Directory
+#define IMAGE_DIRECTORY_ENTRY_BASERELOC       5   // Base Relocation Table
+#define IMAGE_DIRECTORY_ENTRY_DEBUG           6   // Debug Directory
+//      IMAGE_DIRECTORY_ENTRY_COPYRIGHT       7   // (X86 usage)
+#define IMAGE_DIRECTORY_ENTRY_ARCHITECTURE    7   // Architecture Specific Data
+#define IMAGE_DIRECTORY_ENTRY_GLOBALPTR       8   // RVA of GP
+#define IMAGE_DIRECTORY_ENTRY_TLS             9   // TLS Directory
+#define IMAGE_DIRECTORY_ENTRY_LOAD_CONFIG    10   // Load Configuration Directory
+#define IMAGE_DIRECTORY_ENTRY_BOUND_IMPORT   11   // Bound Import Directory in headers
+#define IMAGE_DIRECTORY_ENTRY_IAT            12   // Import Address Table
+#define IMAGE_DIRECTORY_ENTRY_DELAY_IMPORT   13   // Delay Load Import Descriptors
+#define IMAGE_DIRECTORY_ENTRY_COM_DESCRIPTOR 14   // COM Runtime descriptor
+```
+
+몇 가지 중요 항목들에 대한 자세한 내용을 알아보겠습니다.
+
+### [-] IMAGE_EXPORT_DIRECTORY
+
+주로 `Export Address Table`이라고도 부르는 Export 함수에 접근하기 위해 먼저 접근해야 하는 디렉토리입니다.
+
+```c++
+typedef struct _IMAGE_EXPORT_DIRECTORY {
+    ULONG   Characteristics;
+    ULONG   TimeDateStamp;
+    USHORT  MajorVersion;
+    USHORT  MinorVersion;
+    ULONG   Name;
+    ULONG   Base;
+    ULONG   NumberOfFunctions;
+    ULONG   NumberOfNames;
+    ULONG   AddressOfFunctions;     // RVA from base of image
+    ULONG   AddressOfNames;         // RVA from base of image
+    ULONG   AddressOfNameOrdinals;  // RVA from base of image
+} IMAGE_EXPORT_DIRECTORY, *PIMAGE_EXPORT_DIRECTORY;
+```
+
+**`Name`**
+
+해당 라이브러리의 이름이 저장되어 있는 `RVA` 값을 의미합니다.
+
+**`Base`**
+
+`Ordinal`, 서수의 시작 값을 의미합니다. 0인 경우 0부터 서수가 시작됩니다. 이 값은 고정적이지 않습니다. 라이브러리마다 다른 값을 가지고 있습니다.
+
+**`NumberOfFunctions`**
+
+Export 하는 함수들의 수를 의미합니다.
+
+**`NumberOfNames`**
+
+Export 하는 함수들의 이름 수를 의미합니다. 대부분 `NumberOfFunctions`와 동일하지만 그렇지 않은 경우도 존재합니다.
+
+**`AddressOfFunctions`**
+
+Export하는 첫 번째 함수의 오프셋을 가지고 있는 포인터의 RVA 값을 의미합니다. 즉 `ImageBase + *(ImageBase+AddressOfFunctions) == Export 첫 번째 함수 주소` 가 됩니다.
+
+**`AddressOfNames`**
+
+Export하는 첫 번째 함수 이름의 오프셋을 가지고 있는 포인터의 RVA 값을 의미합니다. 마찬가지로 `ImageBase+ *(ImageBase+AddressOfNames) == Export 첫 번째 함수 이름`이 됩니다.
+
+**`AddressOfNameOrdinals`**
+
+Name Ordinal에 대한 포인터입니다.
+
+{%include tip.html content="Ordinal, 서수는 인덱스라고 생각하면 이해하기 쉽습니다. 배열로 이루어져 있기 때문이기도 하고 이 서수 값으로 함수를 호출할 수 있습니다." %}
+
+
+
+### [-] IMAGE_IMPORT_DESCRIPTOR
+
+```c++
+typedef struct _IMAGE_IMPORT_DESCRIPTOR {
+    union {
+        ULONG   Characteristics;            // 0 for terminating null import descriptor
+        ULONG   OriginalFirstThunk;         // RVA to original unbound IAT (PIMAGE_THUNK_DATA)
+    } DUMMYUNIONNAME;
+    ULONG   TimeDateStamp;                  // 0 if not bound,
+                                            // -1 if bound, and real date\time stamp
+                                            //     in IMAGE_DIRECTORY_ENTRY_BOUND_IMPORT (new BIND)
+                                            // O.W. date/time stamp of DLL bound to (Old BIND)
+
+    ULONG   ForwarderChain;                 // -1 if no forwarders
+    ULONG   Name;
+    ULONG   FirstThunk;                     // RVA to IAT (if bound this IAT has actual addresses)
+} IMAGE_IMPORT_DESCRIPTOR;
+```
+
+
+
+
+
+## [0x06] IMAGE_SECTION_HEADER
+
+```c++
+#define IMAGE_SIZEOF_SHORT_NAME              8
+
+typedef struct _IMAGE_SECTION_HEADER {
+    UCHAR   Name[IMAGE_SIZEOF_SHORT_NAME];
+    union {
+            ULONG   PhysicalAddress;
+            ULONG   VirtualSize;
+    } Misc;
+    ULONG   VirtualAddress;
+    ULONG   SizeOfRawData;
+    ULONG   PointerToRawData;
+    ULONG   PointerToRelocations;
+    ULONG   PointerToLinenumbers;
+    USHORT  NumberOfRelocations;
+    USHORT  NumberOfLinenumbers;
+    ULONG   Characteristics;
+} IMAGE_SECTION_HEADER, *PIMAGE_SECTION_HEADER;
+```
+
