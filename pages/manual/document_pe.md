@@ -2,7 +2,7 @@
 title: PE Header inside
 keywords: documentation, Windows, PE
 date: 2020-04-27
-tags: [Windows, Reversing, Kernel]
+tags: [Windows, Reversing]
 summary: "PE 헤더 구조"
 sidebar: manual_sidebar
 permalink: document_pe.html
