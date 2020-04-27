@@ -10,12 +10,7 @@ folder: manual
 
 ---
 
-## [0x00] Overview
-
-PE 포맷에 관한 설명입니다. 가장 기본이 되지만 가장 쉽게 잊어버리는 내용이기도 합니다.
-주로 코드와 주석내용으로 작성됩니다. MSDN 내용과 대부분 동일합니다.
-
-## [0x01] IMAGE_DOS_HEADER
+## [0x00] IMAGE_DOS_HEADER
 주로 `e_lfanew` 멤버 또는 `e_magic` 멤버를 사용하는 일이 많습니다.
 ```c++
 typedef struct _IMAGE_DOS_HEADER {      // DOS .EXE header
@@ -42,7 +37,7 @@ typedef struct _IMAGE_DOS_HEADER {      // DOS .EXE header
 ```
 
 
-## [0x02] IMAGE_NT_HEADERS
+## [0x01] IMAGE_NT_HEADERS
 
 ```c++
 typedef struct _IMAGE_NT_HEADERS64 {
@@ -70,7 +65,7 @@ typedef struct _IMAGE_NT_HEADERS {
 
   마찬가지로 파일 헤더지만 좀 더 세분화 된 내용들을 의미하는 멤버로 이루어진 `IMAGE_OPTIONAL_HEADER` 구조체입니다.
 
-## [0x03] IMAGE_FILE_HEADER
+## [0x02] IMAGE_FILE_HEADER
 
 COFF 헤더라고도 합니다.
 
@@ -166,7 +161,7 @@ typedef struct _IMAGE_FILE_HEADER {
 
 
 
-## [0x04] IMAGE_OPTIONAL_HEADER
+## [0x03] IMAGE_OPTIONAL_HEADER
 
 ```c++
 typedef struct _IMAGE_OPTIONAL_HEADER {
@@ -425,7 +420,7 @@ typedef struct _IMAGE_OPTIONAL_HEADER64 {
 
 
 
-## [0x05] IMAGE_DATA_DIRECTORY
+## [0x04] IMAGE_DATA_DIRECTORY
 
 `ntimagebase.h` 내 존재합니다.
 
@@ -583,7 +578,7 @@ typedef struct _IMAGE_IMPORT_DESCRIPTOR {
 
 
 
-## [0x06] IMAGE_SECTION_HEADER
+## [0x05] IMAGE_SECTION_HEADER
 
 ```c++
 #define IMAGE_SIZEOF_SHORT_NAME              8
