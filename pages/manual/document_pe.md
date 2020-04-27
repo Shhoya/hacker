@@ -58,21 +58,17 @@ typedef struct _IMAGE_NT_HEADERS {
 } IMAGE_NT_HEADERS32, *PIMAGE_NT_HEADERS32;
 ```
 
-**`Signature`**
+- **`Signature`**
 
-PE 이미지를 의미하는 식별 값입니다. 해당 바이트는 `PE\0\0(0x50450000)` 값을 가집니다.
+  PE 이미지를 의미하는 식별 값입니다. 해당 바이트는 `PE\0\0(0x50450000)` 값을 가집니다.
 
+- **`FileHeader`**
 
+  파일의 헤더를 의미하는 `IMAGE_FILE_HEADER` 구조체입니다.
 
-**`FileHeader`**
+- **`OptionalHeader`**
 
-파일의 헤더를 의미하는 `IMAGE_FILE_HEADER` 구조체입니다.
-
-
-
-**`OptionalHeader`**
-
-마찬가지로 파일 헤더지만 좀 더 세분화 된 내용들을 의미하는 멤버로 이루어진 `IMAGE_OPTIONAL_HEADER` 구조체입니다.
+  마찬가지로 파일 헤더지만 좀 더 세분화 된 내용들을 의미하는 멤버로 이루어진 `IMAGE_OPTIONAL_HEADER` 구조체입니다.
 
 ## [0x03] IMAGE_FILE_HEADER
 
@@ -92,81 +88,81 @@ typedef struct _IMAGE_FILE_HEADER {
 
 
 
-**`Machine`**
+- **`Machine`**
 
-컴퓨터의 아키텍처 유형을 의미합니다. 해당 멤버는 아래와 같은 값을 가질 수 있습니다.
+  컴퓨터의 아키텍처 유형을 의미합니다. 해당 멤버는 아래와 같은 값을 가질 수 있습니다.
 
-- `IMAGE_FILE_MACHINE_I386`  (0x014C) ; x86
-- `IMAGE_FILE_MACHINE_IA64`  (0x0200) ; Intel Itanium
-- `IMAGE_FILE_MACHINE_AMD64` (0x8664) ; x64
-
-
-
-**`NumberOfSections`**
-
-섹션의 수를 의미합니다. Windows 로더는 섹션의 수를 96개로 제한하고 있습니다.
+  - `IMAGE_FILE_MACHINE_I386`  (0x014C) ; x86
+  - `IMAGE_FILE_MACHINE_IA64`  (0x0200) ; Intel Itanium
+  - `IMAGE_FILE_MACHINE_AMD64` (0x8664) ; x64
 
 
 
-**`TimeDateStamp`**
+- **`NumberOfSections`**
 
-링커가 이미지를 생성한 날짜와 시간을 나타내며, 하위 32비트의 타임 스탬프로 구성됩니다.
-
-
-
-**`PointerToSymbolTable`**
-
-바이트 단위로 이루어진 심볼 테이블의 오프셋입니다.
+  섹션의 수를 의미합니다. Windows 로더는 섹션의 수를 96개로 제한하고 있습니다.
 
 
 
-**`NumberOfSymbols`**
+- **`TimeDateStamp`**
 
-심볼 테이블 내 심볼의 수 입니다.
-
-
-
-**`SizeOfOptionalHeader`**
-
-`OptionalHEader`의 크기입니다. 오브젝트 파일의 경우 반드시 이 값은 0 이어야 합니다.
+  링커가 이미지를 생성한 날짜와 시간을 나타내며, 하위 32비트의 타임 스탬프로 구성됩니다.
 
 
 
-**`Characteristics`**
+- **`PointerToSymbolTable`**
 
-이미지의 특성을 의미합니다. 아래와 같은 값을 가질 수 있습니다.
+  바이트 단위로 이루어진 심볼 테이블의 오프셋입니다.
 
-- `IMAGE_FILE_RELOCS_STRIPPED`(0x0001)  
-    - 재배치 정보가 제거되었음을 의미합니다. BaseAddress에 로드되며 사용 불가한 주소인 경우 오류가 발생합니다.
-- `IMAGE_FILE_EXECUTABLE_IMAGE`(0x0002)
-    - 실행 가능한 파일을 의미합니다.
-    
-- `IMAGE_FILE_LINE_NUMBS_STRIPPED`(0x0004)
-    - 라인 숫자가 파일에서 제거되었음을 의미합니다.
-- `IMAGE_FILE_LOCAL_SYSM_STRIPPED`(0x0008)
-    - 심볼 테이블이 파일에서 제거되었음을 의미합니다.
-- `IMAGE_FILE_AGGRESIVE_WS_TRIM`(0x0010)
-    - 해당 값은 더 이상 사용되지 않습니다.
-- `IMAGE_FILE_LARGE_ADDRESS_AWARE`(0x0020)
-    - 2GB 이상의 메모리 공간을 이용할 수 있음을 의미합니다.
-- `IMAGE_FILE_BYTES_REVERSED_LO`(0x0x0080)
-    - 해당 값은 더 이상 사용되지 않습니다.
-- `IMAGE_FILE_32BIT_MACHINE`(0x0100)
-    - 32비트를 지원합니다.
-- `IMAGE_FILE_DEBUG_STRIPPED`(0x0200)
-    - 디버깅 정보가 제거되어 다른 파일에 별도로 저장되어 있음을 의미합니다.
-- `IMAGE_FILE_REMOVABLE_RUN_FROM_SWAP`(0x0400)
-    - 만약 이미지가 이동식 저장 장치에 있는 경우, 복사하여 스왑 파일에서 실행해야 합니다.
-- `IMAGE_FILE_NET_RUN_FROM_SWAP`(0x0800)
-    - 만약 이미지가 네트워크에 존재하는 경우 이미지를 복사하여 스왑 파일에서 실행해야 합니다.
-- `IMAGE_FILE_SYSTEM`(0x1000)
-    - 시스템 파일입니다.
-- `IMAGE_FILE_DLL`(0x2000)
-    - DLL 파일입니다. 실행 가능한 파일이지만 직접 실행은 불가능합니다.
-- `IMAGE_FILE_UP_SYSTEM_ONLY`(0x4000)
-    - 해당 파일은 단일 프로세서 컴퓨터에서만 실행해야 합니다.
-- `IMAGE_FILE_BYTES_REVERSED_HI`(0x8000)
-    - 더 이상 사용되지 않습니다.
+
+
+- **`NumberOfSymbols`**
+
+  심볼 테이블 내 심볼의 수 입니다.
+
+
+
+- **`SizeOfOptionalHeader`**
+
+  `OptionalHEader`의 크기입니다. 오브젝트 파일의 경우 반드시 이 값은 0 이어야 합니다.
+
+
+
+- **`Characteristics`**
+
+  이미지의 특성을 의미합니다. 아래와 같은 값을 가질 수 있습니다.
+
+  - `IMAGE_FILE_RELOCS_STRIPPED`(0x0001)  
+      - 재배치 정보가 제거되었음을 의미합니다. BaseAddress에 로드되며 사용 불가한 주소인 경우 오류가 발생합니다.
+  - `IMAGE_FILE_EXECUTABLE_IMAGE`(0x0002)
+      - 실행 가능한 파일을 의미합니다.
+
+  - `IMAGE_FILE_LINE_NUMBS_STRIPPED`(0x0004)
+      - 라인 숫자가 파일에서 제거되었음을 의미합니다.
+  - `IMAGE_FILE_LOCAL_SYSM_STRIPPED`(0x0008)
+      - 심볼 테이블이 파일에서 제거되었음을 의미합니다.
+  - `IMAGE_FILE_AGGRESIVE_WS_TRIM`(0x0010)
+      - 해당 값은 더 이상 사용되지 않습니다.
+  - `IMAGE_FILE_LARGE_ADDRESS_AWARE`(0x0020)
+      - 2GB 이상의 메모리 공간을 이용할 수 있음을 의미합니다.
+  - `IMAGE_FILE_BYTES_REVERSED_LO`(0x0x0080)
+      - 해당 값은 더 이상 사용되지 않습니다.
+  - `IMAGE_FILE_32BIT_MACHINE`(0x0100)
+      - 32비트를 지원합니다.
+  - `IMAGE_FILE_DEBUG_STRIPPED`(0x0200)
+      - 디버깅 정보가 제거되어 다른 파일에 별도로 저장되어 있음을 의미합니다.
+  - `IMAGE_FILE_REMOVABLE_RUN_FROM_SWAP`(0x0400)
+      - 만약 이미지가 이동식 저장 장치에 있는 경우, 복사하여 스왑 파일에서 실행해야 합니다.
+  - `IMAGE_FILE_NET_RUN_FROM_SWAP`(0x0800)
+      - 만약 이미지가 네트워크에 존재하는 경우 이미지를 복사하여 스왑 파일에서 실행해야 합니다.
+  - `IMAGE_FILE_SYSTEM`(0x1000)
+      - 시스템 파일입니다.
+  - `IMAGE_FILE_DLL`(0x2000)
+      - DLL 파일입니다. 실행 가능한 파일이지만 직접 실행은 불가능합니다.
+  - `IMAGE_FILE_UP_SYSTEM_ONLY`(0x4000)
+      - 해당 파일은 단일 프로세서 컴퓨터에서만 실행해야 합니다.
+  - `IMAGE_FILE_BYTES_REVERSED_HI`(0x8000)
+      - 더 이상 사용되지 않습니다.
 
 
 
@@ -243,108 +239,108 @@ typedef struct _IMAGE_OPTIONAL_HEADER64 {
 
 
 
-**`Magic`**
+- **`Magic`**
 
-이미지 파일의 상태를 의미합니다. 아래의 값을 가질 수 있습니다.
+  이미지 파일의 상태를 의미합니다. 아래의 값을 가질 수 있습니다.
 
-- `IMAGE_NT_OPTIONAL_HDR32_MAGIC`(0x010B)
-  - 실행 가능한 32-bit 애플리케이션
-- `IMAGE_NT_OPTIONAL_HDR64_MAGIC`(0x020B)
-  - 실행 가능한 64-bit 애플리케이션
-- `IMAGE_ROM_OPTIONAL_HDR_MAGIC`(0x0107)
-  - ROM 이미지 파일
-
-
-
-**`MajorLinkerVersion`**
-
-링커의 메이저 버전 숫자를 의미합니다.
+  - `IMAGE_NT_OPTIONAL_HDR32_MAGIC`(0x010B)
+    - 실행 가능한 32-bit 애플리케이션
+  - `IMAGE_NT_OPTIONAL_HDR64_MAGIC`(0x020B)
+    - 실행 가능한 64-bit 애플리케이션
+  - `IMAGE_ROM_OPTIONAL_HDR_MAGIC`(0x0107)
+    - ROM 이미지 파일
 
 
 
-**`MinorLinkerVersion`**
+- **`MajorLinkerVersion`**
 
-링커의 마이너 버전 숫자를 의미합니다.
-
-
-
-**`SizeOfCode`**
-
-코드 섹션의 크기를 의미하거나 코드 섹션이 여러 개인 경우 모든 코드 섹션의 합을 의미합니다.
+  링커의 메이저 버전 숫자를 의미합니다.
 
 
 
-**`SizeOfInitializedData`**
+- **`MinorLinkerVersion`**
 
-초기화 된 데이터 섹션의 크기 또는 여러 개인 경우 모든 초기화 된 데이터 섹션의 합을 의미합니다.
-
-
-
-**`SizeOfUninitializedData`**
-
-초기화 되지 않은 데이터 섹션의 크기 또는 여러 개인 경우 모든 초기화 되지 않은 데이터 섹션의 합을 의미합니다.
+  링커의 마이너 버전 숫자를 의미합니다.
 
 
 
-**`AddressOfEntryPoint`**
+- **`SizeOfCode`**
 
-이미지 베이스 기준으로 진입점 함수에 대한 포인터를 의미합니다. 
-
-
-
-**`BaseOfCode`**
-
-이미지 베이스 기준으로 코드 섹션의 시작에 대한 포인터를 의미합니다.
+  코드 섹션의 크기를 의미하거나 코드 섹션이 여러 개인 경우 모든 코드 섹션의 합을 의미합니다.
 
 
 
-**`BaseOfData`**
+- **`SizeOfInitializedData`**
 
-이미지 베이스 기준으로 데이터 섹션의 시작에 대한 포인터를 의미합니다.
-
-
-
-**`ImageBase`**
-
-이미지가 메모리에 로드 될 때 첫 바이트의 주소를 의미합니다.
+  초기화 된 데이터 섹션의 크기 또는 여러 개인 경우 모든 초기화 된 데이터 섹션의 합을 의미합니다.
 
 
 
-**`SectionAlignment`**
+- **`SizeOfUninitializedData`**
 
-메모리에 로드 되는 각 섹션의 최소 할당 단위를 의미합니다. 기본 값은 페이지 크기로 0x1000 을 가지며 이 값은 `FileAlignment` 멤버보다 크거나 같아야 합니다.
+  초기화 되지 않은 데이터 섹션의 크기 또는 여러 개인 경우 모든 초기화 되지 않은 데이터 섹션의 합을 의미합니다.
 
 
 
-**`FileAlignment`** 
+- **`AddressOfEntryPoint`**
 
-각 섹션 로우 데이터의 최소 할당 단위를 의미합니다. 기본 값은 0x200을 가집니다. `SectionAlignment` 멤버가 페이지 크기보다 작은 경우, `SectionAlignment` 값과 같아야 합니다.
+  이미지 베이스 기준으로 진입점 함수에 대한 포인터를 의미합니다. 
+
+
+
+- **`BaseOfCode`**
+
+  이미지 베이스 기준으로 코드 섹션의 시작에 대한 포인터를 의미합니다.
+
+
+
+- **`BaseOfData`**
+
+  이미지 베이스 기준으로 데이터 섹션의 시작에 대한 포인터를 의미합니다.
+
+
+
+- **`ImageBase`**
+
+  이미지가 메모리에 로드 될 때 첫 바이트의 주소를 의미합니다.
+
+
+
+- **`SectionAlignment`**
+
+  메모리에 로드 되는 각 섹션의 최소 할당 단위를 의미합니다. 기본 값은 페이지 크기로 0x1000 을 가지며 이 값은 `FileAlignment` 멤버보다 크거나 같아야 합니다.
+
+
+
+- **`FileAlignment`** 
+
+  각 섹션 로우 데이터의 최소 할당 단위를 의미합니다. 기본 값은 0x200을 가집니다. `SectionAlignment` 멤버가 페이지 크기보다 작은 경우, `SectionAlignment` 값과 같아야 합니다.
 
 **메이저 버전과 마이너 버전은 생략합니다.**
 
 
 
-**`SizeOfImage`**
+- **`SizeOfImage`**
 
-모든 헤더를 포함한 이미지의 크기를 의미합니다. `SectionAlignment`의 배수 여야합니다.
-
-
-
-**`SizeOfHeaders`**
-
-헤더들 크기의 합입니다. `FileAlignment` 멤버의 값의 배수로 반올림됩니다.
+  모든 헤더를 포함한 이미지의 크기를 의미합니다. `SectionAlignment`의 배수 여야합니다.
 
 
 
-**`Checksum`**
+- **`SizeOfHeaders`**
 
-이미지 파일의 체크섬 값입니다. 유효성 검사에 사용됩니다.
+  헤더들 크기의 합입니다. `FileAlignment` 멤버의 값의 배수로 반올림됩니다.
 
 
 
-**`Subsystem`**
+- **`Checksum`**
 
-해당 이미지를 실행하는 데 필요한 서브 시스템을 의미합니다. 아래와 같은 값으로 정의됩니다.
+  이미지 파일의 체크섬 값입니다. 유효성 검사에 사용됩니다.
+
+
+
+- **`Subsystem`**
+
+  해당 이미지를 실행하는 데 필요한 서브 시스템을 의미합니다. 아래와 같은 값으로 정의됩니다.
 
 | Value                                            | Meaning                                                      |
 | :----------------------------------------------- | :----------------------------------------------------------- |
@@ -364,9 +360,9 @@ typedef struct _IMAGE_OPTIONAL_HEADER64 {
 
 
 
-**`DllCharacteristics`**
+- **`DllCharacteristics`**
 
-이미지의 DLL 특성을 의미합니다. 아래와 같은 값으로 정의됩니다.
+  이미지의 DLL 특성을 의미합니다. 아래와 같은 값으로 정의됩니다.
 
 | Value                                                      | Meaning                                                      |
 | :--------------------------------------------------------- | :----------------------------------------------------------- |
@@ -387,45 +383,45 @@ typedef struct _IMAGE_OPTIONAL_HEADER64 {
 
 
 
-**`SizeOfStackReserver`**
+- **`SizeOfStackReserver`**
 
-스택에 예약 할 바이트 수를 의미합니다. 로드 시 `SizeOfStackCommit` 멤버가 지정한 메모리만 커밋됩니다. 나머지는 예약 크기에 도달 할 때까지 한 번에 한 페이지 씩 사용할 수 있습니다.
-
-
-
-**`SizeOfStackCommit`**
-
-스택에 커밋 할 바이트 수입니다.
+  스택에 예약 할 바이트 수를 의미합니다. 로드 시 `SizeOfStackCommit` 멤버가 지정한 메모리만 커밋됩니다. 나머지는 예약 크기에 도달 할 때까지 한 번에 한 페이지 씩 사용할 수 있습니다.
 
 
 
-**`SizeOfHeapReserve`**
+- **`SizeOfStackCommit`**
 
-로컬 힙에 예약 할 바이트 수를 의미합니다. 마찬가지로 `SizeOfHeapCommit` 멤버가 지정한 메모리만 커밋됩니다.
-
-
-
-**`SizeOfHeapCommit`**
-
-힙에 커밋 할 바이트 수입니다.
+  스택에 커밋 할 바이트 수입니다.
 
 
 
-**`LoaderFlags`**
+- **`SizeOfHeapReserve`**
 
-사용되지 않습니다.
-
-
-
-**`NumberOfRvaAndSizes`**
-
-`OptionalHeader`의 나머지 디렉토리 항목(ex Export, Import, Resource 등)들의 수를 의미합니다. 
+  로컬 힙에 예약 할 바이트 수를 의미합니다. 마찬가지로 `SizeOfHeapCommit` 멤버가 지정한 메모리만 커밋됩니다.
 
 
 
-**`DataDirectory`**
+- **`SizeOfHeapCommit`**
 
-데이터 디렉토리의 첫 번째 `IMAGE_DATA_DIRECTORY` 구조체에 대한 포인터입니다.
+  힙에 커밋 할 바이트 수입니다.
+
+
+
+- **`LoaderFlags`**
+
+  사용되지 않습니다.
+
+
+
+- **`NumberOfRvaAndSizes`**
+
+  `OptionalHeader`의 나머지 디렉토리 항목(ex Export, Import, Resource 등)들의 수를 의미합니다. 
+
+
+
+- **`DataDirectory`**
+
+  데이터 디렉토리의 첫 번째 `IMAGE_DATA_DIRECTORY` 구조체에 대한 포인터입니다.
 
 
 
@@ -442,15 +438,15 @@ typedef struct _IMAGE_DATA_DIRECTORY {
 
 
 
-**`VirtualAddress`**
+- **`VirtualAddress`**
 
-테이블의 상대 가상 주소를 의미합니다.
+  테이블의 상대 가상 주소를 의미합니다.
 
 
 
-**`Size`**
+- **`Size`**
 
-테이블의 사이즈를 의미합니다.
+  테이블의 사이즈를 의미합니다.
 
 데이터 디렉토리 내 항목별 오프셋은 `OptionalHeader` 위치로부터 다음과 같은 오프셋으로 이루어져 있습니다.
 
@@ -520,45 +516,45 @@ typedef struct _IMAGE_EXPORT_DIRECTORY {
 
 
 
-**`Name`**
+- **`Name`**
 
-해당 라이브러리의 이름이 저장되어 있는 `RVA` 값을 의미합니다.
-
-
-
-**`Base`**
-
-`Ordinal`, 서수의 시작 값을 의미합니다. 0인 경우 0부터 서수가 시작됩니다. 이 값은 고정적이지 않습니다. 라이브러리마다 다른 값을 가지고 있습니다.
+  해당 라이브러리의 이름이 저장되어 있는 `RVA` 값을 의미합니다.
 
 
 
-**`NumberOfFunctions`**
+- **`Base`**
 
-Export 하는 함수들의 수를 의미합니다.
-
-
-
-**`NumberOfNames`**
-
-Export 하는 함수들의 이름 수를 의미합니다. 대부분 `NumberOfFunctions`와 동일하지만 그렇지 않은 경우도 존재합니다.
+  `Ordinal`, 서수의 시작 값을 의미합니다. 0인 경우 0부터 서수가 시작됩니다. 이 값은 고정적이지 않습니다. 라이브러리마다 다른 값을 가지고 있습니다.
 
 
 
-**`AddressOfFunctions`**
+- **`NumberOfFunctions`**
 
-Export하는 첫 번째 함수의 오프셋을 가지고 있는 포인터의 RVA 값을 의미합니다. 즉 `ImageBase + *(ImageBase+AddressOfFunctions) == Export 첫 번째 함수 주소` 가 됩니다.
-
-
-
-**`AddressOfNames`**
-
-Export하는 첫 번째 함수 이름의 오프셋을 가지고 있는 포인터의 RVA 값을 의미합니다. 마찬가지로 `ImageBase+ *(ImageBase+AddressOfNames) == Export 첫 번째 함수 이름`이 됩니다.
+  Export 하는 함수들의 수를 의미합니다.
 
 
 
-**`AddressOfNameOrdinals`**
+- **`NumberOfNames`**
 
-Name Ordinal에 대한 포인터입니다.
+  Export 하는 함수들의 이름 수를 의미합니다. 대부분 `NumberOfFunctions`와 동일하지만 그렇지 않은 경우도 존재합니다.
+
+
+
+- **`AddressOfFunctions`**
+
+  Export하는 첫 번째 함수의 오프셋을 가지고 있는 포인터의 RVA 값을 의미합니다. 즉 `ImageBase + *(ImageBase+AddressOfFunctions) == Export 첫 번째 함수 주소` 가 됩니다.
+
+
+
+- **`AddressOfNames`**
+
+  Export하는 첫 번째 함수 이름의 오프셋을 가지고 있는 포인터의 RVA 값을 의미합니다. 마찬가지로 `ImageBase+ *(ImageBase+AddressOfNames) == Export 첫 번째 함수 이름`이 됩니다.
+
+
+
+- **`AddressOfNameOrdinals`**
+
+  Name Ordinal에 대한 포인터입니다.
 
 {%include tip.html content="Ordinal, 서수는 인덱스라고 생각하면 이해하기 쉽습니다. 배열로 이루어져 있기 때문이기도 하고 이 서수 값으로 함수를 호출할 수 있습니다." %}
 
