@@ -35,6 +35,9 @@ entries:
           - title: Introduction
             url: /document_pe_intro.html
             output: web
+          - title: PE Header
+            url: /document_pe.html
+            output: web
         
         - title: C and C++ Programming
           output: web
