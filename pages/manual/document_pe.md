@@ -5,7 +5,7 @@ date: 2020-04-27
 tags: [Windows, Reversing, Kernel]
 summary: "PE 헤더 구조"
 sidebar: manual_sidebar
-permalink: document_pe_intro.html
+permalink: document_pe.html
 folder: manual
 
 ---
