@@ -41,28 +41,6 @@ typedef struct _IMAGE_DOS_HEADER {      // DOS .EXE header
   } IMAGE_DOS_HEADER, *PIMAGE_DOS_HEADER;
   ```
 
-```
-ntdll!_IMAGE_DOS_HEADER
-   +0x000 e_magic          : Uint2B
-   +0x002 e_cblp           : Uint2B
-   +0x004 e_cp             : Uint2B
-   +0x006 e_crlc           : Uint2B
-   +0x008 e_cparhdr        : Uint2B
-   +0x00a e_minalloc       : Uint2B
-   +0x00c e_maxalloc       : Uint2B
-   +0x00e e_ss             : Uint2B
-   +0x010 e_sp             : Uint2B
-   +0x012 e_csum           : Uint2B
-   +0x014 e_ip             : Uint2B
-   +0x016 e_cs             : Uint2B
-   +0x018 e_lfarlc         : Uint2B
-   +0x01a e_ovno           : Uint2B
-   +0x01c e_res            : [4] Uint2B
-   +0x024 e_oemid          : Uint2B
-   +0x026 e_oeminfo        : Uint2B
-   +0x028 e_res2           : [10] Uint2B
-   +0x03c e_lfanew         : Int4B
-```
 
 ## [0x02] IMAGE_NT_HEADERS
 
@@ -79,4 +57,40 @@ typedef struct _IMAGE_NT_HEADERS {
     IMAGE_OPTIONAL_HEADER32 OptionalHeader;
 } IMAGE_NT_HEADERS32, *PIMAGE_NT_HEADERS32;
 ```
+
+`Signature`
+
+PE 이미지를 의미하는 식별 값입니다. 해당 바이트는 `PE\0\0(0x50450000)` 값을 가집니다.
+
+`FileHeader`
+
+파일의 헤더를 의미하는 `IMAGE_FILE_HEADER` 구조체입니다.
+
+`OptionalHeader`
+
+마찬가지로 파일 헤더지만 좀 더 세분화 된 내용들을 의미하는 멤버로 이루어진 `IMAGE_OPTIONAL_HEADER` 구조체입니다.
+
+
+## [0x03] IMAGE_FILE_HEADER
+
+```c++
+typedef struct _IMAGE_FILE_HEADER {
+    WORD    Machine;
+    WORD    NumberOfSections;
+    DWORD   TimeDateStamp;
+    DWORD   PointerToSymbolTable;
+    DWORD   NumberOfSymbols;
+    WORD    SizeOfOptionalHeader;
+    WORD    Characteristics;
+} IMAGE_FILE_HEADER, *PIMAGE_FILE_HEADER;
+```
+
+`Machine`
+
+컴퓨터의 아키텍처 유형을 의미합니다. 해당 멤버는 아래와 같은 값을 가질 수 있습니다.
+
+- IMAGE_FILE_MACHINE_I386  (0x014C) ; x86
+- IMAGE_FILE_MACHINE_IA64  (0x0200) ; Intel Itanium
+- IMAGE_FILE_MACHINE_AMD64 (0x8664) ; x64
+
 
