@@ -62,9 +62,13 @@ typedef struct _IMAGE_NT_HEADERS {
 
 PE 이미지를 의미하는 식별 값입니다. 해당 바이트는 `PE\0\0(0x50450000)` 값을 가집니다.
 
+
+
 **`FileHeader`**
 
 파일의 헤더를 의미하는 `IMAGE_FILE_HEADER` 구조체입니다.
+
+
 
 **`OptionalHeader`**
 
@@ -86,6 +90,8 @@ typedef struct _IMAGE_FILE_HEADER {
 } IMAGE_FILE_HEADER, *PIMAGE_FILE_HEADER;
 ```
 
+
+
 **`Machine`**
 
 컴퓨터의 아키텍처 유형을 의미합니다. 해당 멤버는 아래와 같은 값을 가질 수 있습니다.
@@ -94,25 +100,37 @@ typedef struct _IMAGE_FILE_HEADER {
 - `IMAGE_FILE_MACHINE_IA64`  (0x0200) ; Intel Itanium
 - `IMAGE_FILE_MACHINE_AMD64` (0x8664) ; x64
 
+
+
 **`NumberOfSections`**
 
 섹션의 수를 의미합니다. Windows 로더는 섹션의 수를 96개로 제한하고 있습니다.
+
+
 
 **`TimeDateStamp`**
 
 링커가 이미지를 생성한 날짜와 시간을 나타내며, 하위 32비트의 타임 스탬프로 구성됩니다.
 
+
+
 **`PointerToSymbolTable`**
 
 바이트 단위로 이루어진 심볼 테이블의 오프셋입니다.
+
+
 
 **`NumberOfSymbols`**
 
 심볼 테이블 내 심볼의 수 입니다.
 
+
+
 **`SizeOfOptionalHeader`**
 
 `OptionalHEader`의 크기입니다. 오브젝트 파일의 경우 반드시 이 값은 0 이어야 합니다.
+
+
 
 **`Characteristics`**
 
@@ -223,6 +241,8 @@ typedef struct _IMAGE_OPTIONAL_HEADER64 {
 } IMAGE_OPTIONAL_HEADER64, *PIMAGE_OPTIONAL_HEADER64;
 ```
 
+
+
 **`Magic`**
 
 이미지 파일의 상태를 의미합니다. 아래의 값을 가질 수 있습니다.
@@ -234,45 +254,67 @@ typedef struct _IMAGE_OPTIONAL_HEADER64 {
 - `IMAGE_ROM_OPTIONAL_HDR_MAGIC`(0x0107)
   - ROM 이미지 파일
 
+
+
 **`MajorLinkerVersion`**
 
 링커의 메이저 버전 숫자를 의미합니다.
+
+
 
 **`MinorLinkerVersion`**
 
 링커의 마이너 버전 숫자를 의미합니다.
 
+
+
 **`SizeOfCode`**
 
 코드 섹션의 크기를 의미하거나 코드 섹션이 여러 개인 경우 모든 코드 섹션의 합을 의미합니다.
+
+
 
 **`SizeOfInitializedData`**
 
 초기화 된 데이터 섹션의 크기 또는 여러 개인 경우 모든 초기화 된 데이터 섹션의 합을 의미합니다.
 
+
+
 **`SizeOfUninitializedData`**
 
 초기화 되지 않은 데이터 섹션의 크기 또는 여러 개인 경우 모든 초기화 되지 않은 데이터 섹션의 합을 의미합니다.
 
+
+
 **`AddressOfEntryPoint`**
 
-`ImageBase` 기준으로 진입점 함수에 대한 포인터를 의미합니다. 
+이미지 베이스 기준으로 진입점 함수에 대한 포인터를 의미합니다. 
+
+
 
 **`BaseOfCode`**
 
 이미지 베이스 기준으로 코드 섹션의 시작에 대한 포인터를 의미합니다.
 
+
+
 **`BaseOfData`**
 
 이미지 베이스 기준으로 데이터 섹션의 시작에 대한 포인터를 의미합니다.
+
+
 
 **`ImageBase`**
 
 이미지가 메모리에 로드 될 때 첫 바이트의 주소를 의미합니다.
 
+
+
 **`SectionAlignment`**
 
 메모리에 로드 되는 각 섹션의 최소 할당 단위를 의미합니다. 기본 값은 페이지 크기로 0x1000 을 가지며 이 값은 `FileAlignment` 멤버보다 크거나 같아야 합니다.
+
+
 
 **`FileAlignment`** 
 
@@ -280,17 +322,25 @@ typedef struct _IMAGE_OPTIONAL_HEADER64 {
 
 **메이저 버전과 마이너 버전은 생략합니다.**
 
+
+
 **`SizeOfImage`**
 
 모든 헤더를 포함한 이미지의 크기를 의미합니다. `SectionAlignment`의 배수 여야합니다.
+
+
 
 **`SizeOfHeaders`**
 
 헤더들 크기의 합입니다. `FileAlignment` 멤버의 값의 배수로 반올림됩니다.
 
+
+
 **`Checksum`**
 
 이미지 파일의 체크섬 값입니다. 유효성 검사에 사용됩니다.
+
+
 
 **`Subsystem`**
 
@@ -341,25 +391,37 @@ typedef struct _IMAGE_OPTIONAL_HEADER64 {
 
 스택에 예약 할 바이트 수를 의미합니다. 로드 시 `SizeOfStackCommit` 멤버가 지정한 메모리만 커밋됩니다. 나머지는 예약 크기에 도달 할 때까지 한 번에 한 페이지 씩 사용할 수 있습니다.
 
+
+
 **`SizeOfStackCommit`**
 
 스택에 커밋 할 바이트 수입니다.
+
+
 
 **`SizeOfHeapReserve`**
 
 로컬 힙에 예약 할 바이트 수를 의미합니다. 마찬가지로 `SizeOfHeapCommit` 멤버가 지정한 메모리만 커밋됩니다.
 
+
+
 **`SizeOfHeapCommit`**
 
 힙에 커밋 할 바이트 수입니다.
+
+
 
 **`LoaderFlags`**
 
 사용되지 않습니다.
 
+
+
 **`NumberOfRvaAndSizes`**
 
 `OptionalHeader`의 나머지 디렉토리 항목(ex Export, Import, Resource 등)들의 수를 의미합니다. 
+
+
 
 **`DataDirectory`**
 
@@ -378,9 +440,13 @@ typedef struct _IMAGE_DATA_DIRECTORY {
 } IMAGE_DATA_DIRECTORY, *PIMAGE_DATA_DIRECTORY;
 ```
 
+
+
 **`VirtualAddress`**
 
 테이블의 상대 가상 주소를 의미합니다.
+
+
 
 **`Size`**
 
@@ -452,29 +518,43 @@ typedef struct _IMAGE_EXPORT_DIRECTORY {
 } IMAGE_EXPORT_DIRECTORY, *PIMAGE_EXPORT_DIRECTORY;
 ```
 
+
+
 **`Name`**
 
 해당 라이브러리의 이름이 저장되어 있는 `RVA` 값을 의미합니다.
+
+
 
 **`Base`**
 
 `Ordinal`, 서수의 시작 값을 의미합니다. 0인 경우 0부터 서수가 시작됩니다. 이 값은 고정적이지 않습니다. 라이브러리마다 다른 값을 가지고 있습니다.
 
+
+
 **`NumberOfFunctions`**
 
 Export 하는 함수들의 수를 의미합니다.
+
+
 
 **`NumberOfNames`**
 
 Export 하는 함수들의 이름 수를 의미합니다. 대부분 `NumberOfFunctions`와 동일하지만 그렇지 않은 경우도 존재합니다.
 
+
+
 **`AddressOfFunctions`**
 
 Export하는 첫 번째 함수의 오프셋을 가지고 있는 포인터의 RVA 값을 의미합니다. 즉 `ImageBase + *(ImageBase+AddressOfFunctions) == Export 첫 번째 함수 주소` 가 됩니다.
 
+
+
 **`AddressOfNames`**
 
 Export하는 첫 번째 함수 이름의 오프셋을 가지고 있는 포인터의 RVA 값을 의미합니다. 마찬가지로 `ImageBase+ *(ImageBase+AddressOfNames) == Export 첫 번째 함수 이름`이 됩니다.
+
+
 
 **`AddressOfNameOrdinals`**
 
