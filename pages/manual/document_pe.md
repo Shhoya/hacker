@@ -509,43 +509,29 @@ typedef struct _IMAGE_EXPORT_DIRECTORY {
 } IMAGE_EXPORT_DIRECTORY, *PIMAGE_EXPORT_DIRECTORY;
 ```
 
-
-
 - **`Name`**
 
   해당 라이브러리의 이름이 저장되어 있는 `RVA` 값을 의미합니다.
-
-
 
 - **`Base`**
 
   `Ordinal`, 서수의 시작 값을 의미합니다. 0인 경우 0부터 서수가 시작됩니다. 이 값은 고정적이지 않습니다. 라이브러리마다 다른 값을 가지고 있습니다.
 
-
-
 - **`NumberOfFunctions`**
 
   Export 하는 함수들의 수를 의미합니다.
-
-
 
 - **`NumberOfNames`**
 
   Export 하는 함수들의 이름 수를 의미합니다. 대부분 `NumberOfFunctions`와 동일하지만 그렇지 않은 경우도 존재합니다.
 
-
-
 - **`AddressOfFunctions`**
 
   Export하는 첫 번째 함수의 오프셋을 가지고 있는 포인터의 RVA 값을 의미합니다. 즉 `ImageBase + *(ImageBase+AddressOfFunctions) == Export 첫 번째 함수 주소` 가 됩니다.
 
-
-
 - **`AddressOfNames`**
 
   Export하는 첫 번째 함수 이름의 오프셋을 가지고 있는 포인터의 RVA 값을 의미합니다. 마찬가지로 `ImageBase+ *(ImageBase+AddressOfNames) == Export 첫 번째 함수 이름`이 됩니다.
-
-
 
 - **`AddressOfNameOrdinals`**
 
@@ -555,7 +541,7 @@ typedef struct _IMAGE_EXPORT_DIRECTORY {
 
 
 
-### [-] IMAGE_IMPORT_DESCRIPTOR
+### [-] IMAGE_IMPORT_DESCRIPTOR & IMPORT_BY_NAME
 
 ```c++
 typedef struct _IMAGE_IMPORT_DESCRIPTOR {
@@ -572,9 +558,36 @@ typedef struct _IMAGE_IMPORT_DESCRIPTOR {
     ULONG   Name;
     ULONG   FirstThunk;                     // RVA to IAT (if bound this IAT has actual addresses)
 } IMAGE_IMPORT_DESCRIPTOR;
+
+typedef struct _IMAGE_IMPORT_BY_NAME {
+    WORD    Hint;
+    CHAR   Name[1];
+} IMAGE_IMPORT_BY_NAME, *PIMAGE_IMPORT_BY_NAME;
 ```
 
+- **`Characteristics`**
 
+  특성을 지칭합니다. 다만 현재 정보가 존재하지 않습니다.
+
+- **`OriginalFirstThunk`**
+
+  `IMAGE_IMPORT_BY_NAME` 구조체 포인터의 값이 저장되어 있습니다. 이를 Import Name Table이라고 부르기도 합니다. `ImageBase + *(ImageBase + OriginalFirstThunk) == Import 첫 번째 함수 이름`이 됩니다.
+
+- **`TimeDataStamp`**
+
+  마찬가지로 타임 스탬프를 의미합니다.
+
+- **`ForwarderChain`**
+
+  Import 함수 목록에서 첫 번째 forwarder의 32비트 인덱스를 의미합니다.
+
+- **`Name`**
+
+  Export 하는 라이브러리(Import 되는)의 이름이 저장되는 주소의 RVA 값입니다.
+
+- **`FirstThunk`**
+
+  흔히 알고 있는 `IAT`를 의미합니다. 
 
 
 
@@ -600,3 +613,100 @@ typedef struct _IMAGE_SECTION_HEADER {
 } IMAGE_SECTION_HEADER, *PIMAGE_SECTION_HEADER;
 ```
 
+- **`Name`**
+
+  섹션의 이름을 의미합니다.(.text, .data ...)
+
+- **`Misc`**
+
+  PhysicalAddress와 VirtualSize로 이루어진 공용체입니다. 실제 자주 사용하는 멤버는 VirtualSize로 `SizeOfRawData`보다 큰 경우 0으로 채워집니다. 말 그대로 메모리에 할당되는 섹션의 크기를 의미합니다.
+
+- **`VirtualAddress`**
+
+  메모리 내 섹션 시작 주소의 RVA 값을 의미합니다.
+
+- **`SizeOfRawData`**
+
+  파일 내에서 해당 섹션의 크기를 의미합니다. `VirtualSize`의 경우 `SectionAlignment`를 최소 단위로 하기 때문에 해당 멤버와 차이가 나게 됩니다. 마찬가지로 해당 멤버는 `FileAlignment` 값의 배수가 됩니다.
+
+- **`PointerToRawData`**
+
+  파일 내에서 해당 섹션 시작 주소의 RVA 값을 의미합니다. 역시 `FileAlignment` 값의 배수가 됩니다.
+
+- **`PointerToRelocations`**
+
+  섹션의 재배치 엔트리의 시작 부분에 대한 포인터 입니다. 재배치가 필요하지 않으면 0입니다.
+
+- **`PointerToLineNumber`**
+
+  섹션의 줄 번호 엔트리의 시작 부분에 대한 포인터 입니다. COFF 줄 번호가 존재하지 않으면 0입니다.
+
+- **`NumberOfRelocations`**
+
+  섹션의 재배치 엔트리의 수입니다. 실행 가능 이미지의 경우 0입니다.
+
+- **`NumberOfLineNumbers`**
+
+  섹션의 줄 번호 엔트리의 수입니다. 실행 가능 이미지의 경우 0입니다.
+
+- **`Characteristics`**
+
+  이미지의 특성에 대한 내용입니다. 아래와 같은 값을 가질 수 있습니다.
+
+  | Flag                                           | Meaning                                                      |
+  | :--------------------------------------------- | :----------------------------------------------------------- |
+  | 0x00000000                                     | Reserved.                                                    |
+  | 0x00000001                                     | Reserved.                                                    |
+  | 0x00000002                                     | Reserved.                                                    |
+  | 0x00000004                                     | Reserved.                                                    |
+  | **IMAGE_SCN_TYPE_NO_PAD**0x00000008            | The section should not be padded to the next boundary. This flag is obsolete and is replaced by IMAGE_SCN_ALIGN_1BYTES. |
+  | 0x00000010                                     | Reserved.                                                    |
+  | **IMAGE_SCN_CNT_CODE**0x00000020               | The section contains executable code.                        |
+  | **IMAGE_SCN_CNT_INITIALIZED_DATA**0x00000040   | The section contains initialized data.                       |
+  | **IMAGE_SCN_CNT_UNINITIALIZED_DATA**0x00000080 | The section contains uninitialized data.                     |
+  | **IMAGE_SCN_LNK_OTHER**0x00000100              | Reserved.                                                    |
+  | **IMAGE_SCN_LNK_INFO**0x00000200               | The section contains comments or other information. This is valid only for object files. |
+  | 0x00000400                                     | Reserved.                                                    |
+  | **IMAGE_SCN_LNK_REMOVE**0x00000800             | The section will not become part of the image. This is valid only for object files. |
+  | **IMAGE_SCN_LNK_COMDAT**0x00001000             | The section contains COMDAT data. This is valid only for object files. |
+  | 0x00002000                                     | Reserved.                                                    |
+  | **IMAGE_SCN_NO_DEFER_SPEC_EXC**0x00004000      | Reset speculative exceptions handling bits in the TLB entries for this section. |
+  | **IMAGE_SCN_GPREL**0x00008000                  | The section contains data referenced through the global pointer. |
+  | 0x00010000                                     | Reserved.                                                    |
+  | **IMAGE_SCN_MEM_PURGEABLE**0x00020000          | Reserved.                                                    |
+  | **IMAGE_SCN_MEM_LOCKED**0x00040000             | Reserved.                                                    |
+  | **IMAGE_SCN_MEM_PRELOAD**0x00080000            | Reserved.                                                    |
+  | **IMAGE_SCN_ALIGN_1BYTES**0x00100000           | Align data on a 1-byte boundary. This is valid only for object files. |
+  | **IMAGE_SCN_ALIGN_2BYTES**0x00200000           | Align data on a 2-byte boundary. This is valid only for object files. |
+  | **IMAGE_SCN_ALIGN_4BYTES**0x00300000           | Align data on a 4-byte boundary. This is valid only for object files. |
+  | **IMAGE_SCN_ALIGN_8BYTES**0x00400000           | Align data on a 8-byte boundary. This is valid only for object files. |
+  | **IMAGE_SCN_ALIGN_16BYTES**0x00500000          | Align data on a 16-byte boundary. This is valid only for object files. |
+  | **IMAGE_SCN_ALIGN_32BYTES**0x00600000          | Align data on a 32-byte boundary. This is valid only for object files. |
+  | **IMAGE_SCN_ALIGN_64BYTES**0x00700000          | Align data on a 64-byte boundary. This is valid only for object files. |
+  | **IMAGE_SCN_ALIGN_128BYTES**0x00800000         | Align data on a 128-byte boundary. This is valid only for object files. |
+  | **IMAGE_SCN_ALIGN_256BYTES**0x00900000         | Align data on a 256-byte boundary. This is valid only for object files. |
+  | **IMAGE_SCN_ALIGN_512BYTES**0x00A00000         | Align data on a 512-byte boundary. This is valid only for object files. |
+  | **IMAGE_SCN_ALIGN_1024BYTES**0x00B00000        | Align data on a 1024-byte boundary. This is valid only for object files. |
+  | **IMAGE_SCN_ALIGN_2048BYTES**0x00C00000        | Align data on a 2048-byte boundary. This is valid only for object files. |
+  | **IMAGE_SCN_ALIGN_4096BYTES**0x00D00000        | Align data on a 4096-byte boundary. This is valid only for object files. |
+  | **IMAGE_SCN_ALIGN_8192BYTES**0x00E00000        | Align data on a 8192-byte boundary. This is valid only for object files. |
+  | **IMAGE_SCN_LNK_NRELOC_OVFL**0x01000000        | The section contains extended relocations. The count of relocations for the section exceeds the 16 bits that is reserved for it in the section header. If the **NumberOfRelocations** field in the section header is 0xffff, the actual relocation count is stored in the **VirtualAddress** field of the first relocation. It is an error if IMAGE_SCN_LNK_NRELOC_OVFL is set and there are fewer than 0xffff relocations in the section. |
+  | **IMAGE_SCN_MEM_DISCARDABLE**0x02000000        | The section can be discarded as needed.                      |
+  | **IMAGE_SCN_MEM_NOT_CACHED**0x04000000         | The section cannot be cached.                                |
+  | **IMAGE_SCN_MEM_NOT_PAGED**0x08000000          | The section cannot be paged.                                 |
+  | **IMAGE_SCN_MEM_SHARED**0x10000000             | The section can be shared in memory.                         |
+  | **IMAGE_SCN_MEM_EXECUTE**0x20000000            | The section can be executed as code.                         |
+  | **IMAGE_SCN_MEM_READ**0x40000000               | The section can be read.                                     |
+  | **IMAGE_SCN_MEM_WRITE**0x80000000              | The section can be written to.                               |
+
+
+
+## [0x06] Conclusion
+
+이전 블로그에서 정리한 내용에 약간 좀 더 설명을 보태 작성하였습니다. 실제 이런 PE를 활용한 각종 내용들은 여기 PE Header Inside 섹션 내에 정리해보겠습니다. 음 제목은 `How to use PE Format` 정도가 좋을 것 같습니다.
+
+
+
+## [0x07] Reference
+
+1. [https://docs.microsoft.com/en-us/windows/win32/debug/pe-format](https://docs.microsoft.com/en-us/windows/win32/debug/pe-format)
