@@ -38,6 +38,10 @@ entries:
     - title: VMProtect Analysis
       url: /vmp_vmpanalysis.html
       output: web, pdf
+    
+    - title: VMP Kernel Driver Analysis using pykd
+      url: /vmp_vmpanalysis.html
+      output: web, pdf
 
 
 #  - title: Tag archives
