@@ -40,7 +40,7 @@ entries:
       output: web, pdf
     
     - title: VMP Kernel Driver Analysis using pykd
-      url: /vmp_vmpanalysis.html
+      url: /vmp_vmppykd.html
       output: web, pdf
 
 
