@@ -703,7 +703,7 @@ typedef struct _IMAGE_SECTION_HEADER {
 
 ## [0x06] Conclusion
 
-이전 블로그에서 정리한 내용에 약간 좀 더 설명을 보태 작성하였습니다. 실제 이런 PE를 활용한 각종 내용들은 여기 PE Header Inside 섹션 내에 정리해보겠습니다. 음 제목은 `How to use PE Format` 정도가 좋을 것 같습니다.
+이전 블로그에서 정리한 내용에 약간 좀 더 설명을 보태 작성하였습니다. 실제 이런 PE를 활용한 각종 내용들은 여기 PE Header Inside 섹션 내에 정리해보겠습니다.
 
 
 

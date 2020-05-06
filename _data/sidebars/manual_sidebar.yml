@@ -38,9 +38,6 @@ entries:
           - title: PE Header
             url: /document_pe.html
             output: web
-          - title: Tips for PE Format
-            url: /document_pe_use.html
-            output: web
         
         - title: C and C++ Programming
           output: web
