@@ -13,6 +13,8 @@ folder: vmprotect
 
 악성코드, 게임 치트, 안티 치트 솔루션 등 커널 드라이버를 사용하는 제품이나 도구가 많이 있습니다. 트레이싱을 하기 위해서는 간결하고 적절한 해결책이 필요합니다. 저는 이를 해결하기 위해 windbg 플러그인 중 pykd 를 이용하였습니다. windbg와 파이썬을 함께 사용할 수 있는 매우 유용한 플러그인입니다.
 
+**예제로 필요한 VMP Driver는 [여기](https://github.com/Shhoya/Examples/tree/master/0x01_VMPDriver)에서 다운로드 가능합니다.**
+
 ## [0x01] Requirements
 
 먼저 [여기](https://shhoya.github.io/vmp_vmpanalysis.html) 에서 선행학습을 통해 간략한 코드 가상화의 내용을 숙지해야 합니다. 아래와 같이 정의한 용어들을 확인하십시오.
