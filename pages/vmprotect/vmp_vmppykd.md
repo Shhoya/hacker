@@ -85,7 +85,7 @@ hello
 
 ## [0x03] Prepare for analysis
 
-먼저 목표한 바와 같이 VMP로 드라이버를 패킹해야합니다. 코드 가상화에 대한 분석이 목적입니다. 또한 드라이버의 경우 실행압축을 제대로 하지 못하는 이슈가 존재합니다. 아마 드라이버 진입점 자체가 `.INIT` 섹션에 존재해야 하는데 실행압축을 하면 이를 인지하지 못하고 드라이버가 로드되지 못하는 것 같습니다.(이건 저의 단순한 추측입니다.)
+먼저 목표한 바와 같이 VMP로 드라이버를 패킹해야합니다. 코드 가상화에 대한 분석이 목적입니다. 또한 드라이버의 경우 실행압축을 제대로 하지 못하는 이슈가 존재합니다.
 
 ### [-] VmpDriver(Dummy)
 
@@ -153,9 +153,26 @@ NTSTATUS DriverEntry(PDRIVER_OBJECT pDriver, PUNICODE_STRING pRegPath)
 
 위와 같은 문제점을 해결할 수 있는 방법이 무엇일지 생각해봤습니다. 먼저 디버깅 방지 기능의 경우 제가 만든 `ControlDebugger`를 이용하여 우회할 수 있습니다. 또한 드라이버 진입점의 경우 수동으로 드라이버가 로드되는 시점을 확인하고 해당 경로의 이름을 구분하여 드라이버 진입점을 확인할 수 있습니다.
 
-위의 두 가지 해결책은 각각 [Control Debugger](https://shhoya.github.io/antikernel_ctrldebugger.html) 와 [Manually Find DriverEntry](https://shhoya.github.io/driverentry.html) 에서 원리를 확인할 수 있습니다.
+위의 두 가지 해결책은 각각 [Control Debugger](https://shhoya.github.io/antikernel_ctrldebugger.html) 와 [Manually Find DriverEntry](https://shhoya.github.io/driverentry.html) 에서 원리를 확인할 수 있으며, 이 두 가지 방법을 통해 아래와 같이 패킹 된 드라이버의 드라이버 진입점에서의 실행 흐름을 가져올 수 있습니다.
 
-패킹한 드라이버는 여기서 다운로드 할 수 있습니다. IDA로 열어두면 아주 오랜시간 코드를 정리합니다.
+1. 디버그 모드 탐지 우회
 
-**작성중**
+   <img src="https://github.com/Shhoya/shhoya.github.io/blob/master/rsrc/vmp/vmp_01.gif?raw=true">
+
+2. 드라이버 진입점
+
+   <img src="https://github.com/Shhoya/shhoya.github.io/blob/master/rsrc/vmp/vmp_02.gif?raw=true">
+
+코드 가상화(Code Virtualization)와 코드 변형(Mutation)이 함께 적용되어 있는 경우, 분석이 매우 어려워지며 쓰레기 코드가 굉장히 많이 존재합니다. 최대한 분석 시간을 단축하고자 한다면 몇 가지 특성을 기억해야 합니다.
+
+1. `.vmp1` 섹션은 초기화 코드(`VmpEntryPoint`)가 존재합니다.
+2. `.vmp0` 섹션은 원본 코드를 실행할 수 있는 가상 CPU 명령들이 존재합니다.
+
+우리는 `vmpmacro_hanlder` 를 통해 `vmpmacro`를 호출하고 리턴 명령을 통해 원본 코드를 호출하는 것을 알고 있습니다. 이러한 여러가지 알고있는 특성을 토대로 자동으로 각 명령들을 실행하며 분석하고 로그로 남기는 스크립트를 `pykd`를 이용하여 작성해보겠습니다.
+
+## [0x04] PYKD Script
+
+**작성중입니다. 기존에 사용하던 코드에 불필요한 코드들이 많아서 정리하느라 시간이 조금 소요됩니다.**
+
+
 
