@@ -165,6 +165,8 @@ NTSTATUS DriverEntry(PDRIVER_OBJECT pDriver, PUNICODE_STRING pRegPath)
 
    <img src="https://github.com/Shhoya/shhoya.github.io/blob/master/rsrc/vmp/vmp_02.gif?raw=true">
 
+{% include note.html content="그림이 잘 보이지 않는 경우 브라우저를 확대하여 볼 수 있습니다." %}
+
 코드 가상화(Code Virtualization)와 코드 변형(Mutation)이 함께 적용되어 있는 경우, 분석이 매우 어려워지며 쓰레기 코드가 굉장히 많이 존재합니다. 최대한 분석 시간을 단축하고자 한다면 몇 가지 특성을 기억해야 합니다.
 
 1. `.vmp1` 섹션은 초기화 코드(`VmpEntryPoint`)가 존재합니다.
