@@ -13,7 +13,9 @@ folder: vmprotect
 
 악성코드, 게임 치트, 안티 치트 솔루션 등 커널 드라이버를 사용하는 제품이나 도구가 많이 있습니다. 트레이싱을 하기 위해서는 간결하고 적절한 해결책이 필요합니다. 저는 이를 해결하기 위해 windbg 플러그인 중 pykd 를 이용하였습니다. windbg와 파이썬을 함께 사용할 수 있는 매우 유용한 플러그인입니다.
 
-**예제로 필요한 VMP Driver는 [여기](https://github.com/Shhoya/Examples/tree/master/0x01_VMPDriver)에서 다운로드 가능합니다.**
+**예제로 필요한 VMP Driver와 스크립트는 [여기](https://github.com/Shhoya/Examples/tree/master/0x01_VMPDriver)에서 다운로드 가능합니다.**
+
+{% include warning.html content="본 저자는 VMP로 보호된 프로그램 해제에 대한 막연한 질문 또는 의뢰를 받지 않습니다." %}
 
 ## [0x01] Requirements
 
@@ -21,7 +23,7 @@ folder: vmprotect
 
 - `vmmacro` : 여러 개의 매크로 함수가 존재, 특정 패턴으로 이루어져 있음
 - `vmmacro_handler` : vmmacro를 호출하는 `push` 와 `call`명령어 세트
-- `vmtable` : vmmacro의 집합
+- `vmtable` : vmmacro_handler 의 집합
 
 ### [-] Virtual Machine
 
@@ -176,7 +178,177 @@ NTSTATUS DriverEntry(PDRIVER_OBJECT pDriver, PUNICODE_STRING pRegPath)
 
 ## [0x04] PYKD Script
 
-**작성중입니다. 기존에 사용하던 코드에 불필요한 코드들이 많아서 정리하느라 시간이 조금 소요됩니다.**
+스크립트가 조금 긴 관계로 **[여기](https://github.com/Shhoya/Examples/tree/master/0x01_VMPDriver)**에서 확인하길 바랍니다.
+간략하게 주요 기능에 대해서만 설명하겠습니다.
+
+### [-] InitTracer
+
+```python
+def InitTracer():
+    global DriverObject
+    global ImageBase
+    global NtImageEnd
+
+    NtModule    = pykd.module("nt")
+    NtImageBase = NtModule.begin()
+    NtImageEnd  = NtModule.end()
+    pykd.dbgCommand("ba e1 IopLoadDriver+4bd")
+    pykd.dbgCommand("ba e1 IopLoadDriver+4c2")
+    pykd.go()
+
+    while(1):
+        regPath = pykd.dbgCommand("du /c40 @rdx+10")
+        if "VmpDriver.vmp" in regPath:
+            print "[*] Find VMP Driver"
+            DriverObject = pykd.reg("rcx")
+            print "\t[-] Driver Object : 0x{:X}".format(DriverObject)
+            ImageBase =pykd.ptrPtr(DriverObject+0x18)    # DriverObject.DriverStart
+            print "\t[-] ImageBase Address : 0x{:X}".format(ImageBase)
+            VMPTracingSub.GetSectionInfo(ImageBase)
+            EntryPoint = ImageBase + VMPTracingSub.EntryPoint_Off
+            strEntryPoint = hex(EntryPoint).rstrip("L")
+            pykd.dbgCommand("ba e1 "+strEntryPoint)
+            pykd.go()
+            pykd.dbgCommand("bc 2")
+            return
+        pykd.go()
+
+```
+
+`DriverEntry`로 전달되는 파라미터 중 `RegistryPath`를 이용하여 타겟 드라이버를 식별합니다. 타겟 파일을 파싱하여 `VMPEntryPoint`에 하드웨어 브레이크 포인트를 설치하고 실행합니다.
+
+### [-] Tracer
+
+```python
+def Tracer():
+    global ImageBase
+    EndIopLoadDriver = pykd.getBp(1).getOffset()
+    pykd.dbgCommand("eb KdDebuggerEnabled 0")
+    count = 0
+    while(1):
+        ReturnLogPath = PathInform(LogPath[0])
+        JumpLogPath = PathInform(LogPath[1])
+        JumpRLogPath = PathInform(LogPath[2])
+        CallLogPath = PathInform(LogPath[3])
+
+        Disassem = pykd.disasm()
+        Instruction = Disassem.instruction()
+        CurrentOffset = pykd.reg("rip") - ImageBase
+        CurrentInstruction = pykd.reg("rip")
+        pCallStack = pykd.reg("rsp")
+
+        # IopLoadDriver+4c2, End driver load
+        if CurrentInstruction == EndIopLoadDriver:
+            break
+
+        # Another module
+        CurrentSection = VMPTracingSub.GetSectionName(CurrentInstruction)
+        if CurrentSection == "Not Found Section":
+            print "[*] Check Log.."
+            pykd.dbgCommand("pt")
+            continue
+
+        if "call" in Instruction:
+            CallLog = open(CallLogPath,'a+')
+            CurrentSection = VMPTracingSub.GetSectionName(CurrentInstruction)
+
+            # Call register
+            if "call    r" in Instruction:
+                ...
+                continue
+            # Call address
+            else:
+                ...
+                continue
+
+        if "ret" in Instruction:
+            ReturnLog = open(ReturnLogPath,'a+')
+            ...
+            continue
+
+        pykd.dbgCommand("th")
+        count+=1
+
+    return
+```
+
+트레이싱 로그를 남기기 위한 코드입니다. windbg의 `th` 명령을 이용하여 각 분기하는 부분에서 실행을 멈추도록 유도합니다. 그리고 해당 분기에 대한 명령어를 가져와 `call`, `ret` 등으로 분류하여 로그를 작성합니다.
+
+분명 여러분은 더 나은 코드를 작성할 수 있으며 원하는 조건을 작성하여 간추려 작성할 수 있습니다.
 
 
+
+## [0x05] Analysis
+
+먼저 위의 스크립트로 작성된 로그입니다.
+
+<img src="https://github.com/Shhoya/shhoya.github.io/blob/master/rsrc/vmp/vmp_03.png?raw=true">
+
+섹션의 이름과 해당 명령의 오프셋 등이 존재합니다. 해당 부분까지 로그를 출력하는데 굉장히 긴 시간이 필요합니다. 이러한 시간을 줄이기 위해서는 어느정도의 정적 분석이 동반되어야 합니다.
+
+예를 들어 위의 그림에서 마지막 `Call Instruction` 로그를 확인하면 아래와 같습니다.
+
+```
+[*] Call Instruction
+	[*] Current Section : .shh0ya1
+	[*] Current Instruction Offset : 2C6151
+	[-] Count : 30530
+
+[*] Current Instruction :fffff800`52816151 e85e7d0500      call    fffff800`5286deb4
+
+rax=fffff80051600000 rbx=ffffd90150f02590 rcx=ffff9780886e0180
+rdx=0000000000000000 rsi=ffffd9015768ee30 rdi=00000000c0000183
+rip=fffff80052816151 rsp=fffff88051547738 rbp=fffff88051547780
+ r8=0000000000000000  r9=ffffd90150f00260 r10=ffffd90151000160
+r11=0000000000000000 r12=ffffffff80003228 r13=fffff80052550000
+r14=0000000000000000 r15=fffff80052550000
+iopl=0         nv up ei ng nz na pe nc
+cs=0010  ss=0018  ds=002b  es=002b  fs=0053  gs=002b             efl=00040282
+fffff800`52816151 e85e7d0500      call    fffff800`5286deb4
+
+
+[*] Current Disassembly
+
+fffff800`52816151 e85e7d0500      call    fffff800`5286deb4
+fffff800`52816156 ac              lods    byte ptr [rsi]
+fffff800`52816157 52              push    rdx
+fffff800`52816158 68c5e2cf5a      push    5ACFE2C5h
+fffff800`5281615d e872a00200      call    fffff800`528401d4
+```
+
+본인은 어느정도의 경험을 통해 이 로그를 제외한 상단의 로그는 VMP의 초기화 코드임을 알 수 있습니다. 자 그럼 현재 위의 로그에서 opcode를 확인하면 해당 부분이 `vmtable` 임을 예상할 수 있습니다. 실제 해당 오프셋을 IDA로 확인해보면 아래와 같습니다.
+
+<img src="https://github.com/Shhoya/shhoya.github.io/blob/master/rsrc/vmp/vmp_04.png?raw=true">
+
+VMP로 인해 IDA는 위와 같이 명령을 해석하지 못합니다. 해당 부분을 아래와 같이 수정하여 코드를 정렬합니다.
+
+<img src="https://github.com/Shhoya/shhoya.github.io/blob/master/rsrc/vmp/vmp_05.gif?raw=true">
+
+위의 로그를 통해 하나의 `vmtable`을 찾았습니다. 해당 코드를 재정렬하여 본인이 만든 정적인 `vmtable`은 아래와 같습니다. 
+
+<img src="https://github.com/Shhoya/shhoya.github.io/blob/master/rsrc/vmp/vmp_06.png?raw=true">
+
+각 `vmpmacro`는 `Instruction Handler`를 통해 가상화가 적용되지 않은 함수나 또 다른 `vmptable`로 이동합니다. 시간은 걸리지만 정확하고 조건에 맞는 분석이 가능합니다!
+
+위와 같이 로그를 확인하면 아래와 같은 정의도 가능합니다.(물론 VMP 초기화 코드가 있기 때문에 `NtQuerySystemInformation`, `ExAllocatePool` 등을 제외하고..)
+
+<img src="https://github.com/Shhoya/shhoya.github.io/blob/master/rsrc/vmp/vmp_07.png?raw=true">
+
+경험으로 미루어 볼 때, 첫 `vmtable_00`의 경우 `NtQuerySystemInformation`이 다수 호출될 것으로 보입니다. 현재 스크립트에는 `call` 명령과 `ret` 명령의 로그만 작성되고 있습니다. VMP 초기화 코드에서 `Instruction Handler`는 `call <register>` 또는 `jmp <register>` 로 이루어진 경우가 많습니다.
+
+이러한 과정을 거치고 어느 순간 로그에 `.text` 섹션의 코드가 작성될 것 입니다. 해당 내용까지 읽어주셔서 감사합니다. 여기까지 다 읽어주셨다면 이러한 스크립트를 좀 더 활용할 수 있도록 팁을 알려드리겠습니다.
+
+`DriverEntry`는 `GsDriverEntry`에서 호출됩니다. 그리고 `GsDriverEntry`는 `INIT` 섹션에 존재하며 VMP로 패킹된 드라이버의 경우 `INIT` 섹션에는 `__security_init_cookie` 외 하나의 함수가 존재합니다. 바로 해당 함수가 `GsDriverEntry` 입니다. 
+
+즉 `VmpEntryPoint`의 불필요한 코드를 넘기고 `DriverEntry` 또는 타겟 함수의 `vmtable`에서 스크립트를 실행하는 것이 더욱 효율적입니다.
+
+{% include tip.html content="본인은 이러한 특징을 찾아내기 위해 스크립트를 매우 긴 시간 실행해봤습니다. 한번쯤은 도전해보는 것도 나쁘지 않다고 생각합니다. " %}
+
+
+
+## [0x06] Conclusion
+
+꽤 긴 내용의 글입니다. `pykd` 플러그인은 이러한 작업 외에도 매우 유용합니다. 예제로 있는 스크립트를 수정하여 사용하십시오. 코드의 난이도가 낮으므로 직접 맞는 조건에 맞춰 사용하고, `pykd`의 공식 문서를 참조하여 API를 활용하시길 바랍니다.
+
+긴 글 읽어주셔서 감사합니다.
 

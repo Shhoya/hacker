@@ -27,7 +27,7 @@ VMP나 Themida로 패킹된 파일을 분석할 때 중요한 것은 운입니�
 
 - `vmmacro` : 여러 개의 매크로 함수가 존재, 특정 패턴으로 이루어져 있음
 - `vmmacro_handler` : vmmacro를 호출하는 `push` 와 `call`명령어 세트
-- `vmtable` : vmmacro의 집합
+- `vmtable` : vmmacro_handler의 집합
 
 정확한 용어를 알지 못하므로 위와 같이 정의했습니다. 그럼 이전 챕터에서 만든 패킹 된 예제를 가지고 분석을 진행해보겠습니다.
 
