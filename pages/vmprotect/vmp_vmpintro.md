@@ -20,7 +20,7 @@ VMP뿐 아니라, Themida와 같은 상용 프로텍터들은 대부분 내용�
 - VMProtect Anti Debugging : VMP 에서 사용하는 안티 디버깅 기법에 대한 내용과 관련 플러그인 내용입니다.
 - VMP Analysis : VMP로 패킹되어 있는 파일에 대한 분석 내용입니다.
 
-
+{% include warning.html content="본 저자는 VMP로 보호된 프로그램 해제에 대한 막연한 질문 또는 의뢰를 받지 않습니다." %}
 
 ## [0x01] Requirements
 
