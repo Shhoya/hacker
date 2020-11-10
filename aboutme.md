@@ -37,7 +37,7 @@ toc: false
 
 - JANUBER CO., LTD / Security Solution Engineer, Malware Analysis (2016 ~ 2017)
 - CYBERONE CO.LTD / Pentester (2018 ~ 2019)
-- **WONDERPEOPLE, Inc / Game cheat prevention R&D, Pentester, SecOps Team(2019 ~ )**
+- **WONDERPEOPLE, Inc / Game cheat prevention R&D, Pentester, SecDev Team(2019 ~ )**
 
 
 
