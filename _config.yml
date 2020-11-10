@@ -109,6 +109,7 @@ sidebars:
 - mydoc_sidebar
 - product1_sidebar
 - product2_sidebar
+- windows_sidebar
 - other
 
 description: "Shh0ya github pages. Security research"

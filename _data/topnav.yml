@@ -18,6 +18,8 @@ topnav_dropdowns:
       folderitems:
         - title: Vulnerability&Bugs
           url: /vuln_introduction.html 
+        - title: Windows Internals
+          url: /windows_intro.html
         - title: Anti Kernel Debugging Bypass
           url: /antikernel_introduction.html
         - title: VMProtect Analysis
