@@ -21,6 +21,7 @@ toc: false
 - Bug analysis of capcom driver
 - Research and develop cheats using Unreal 3 FName and GObject
 - VMM(Hyper-V) Cheat research
+- Windows Kernel Patch Protection(PatchGuard) research
 - Windows Code Integrity & Kernel Debugging bypass research
 - VMProtect Code Virtualization research
 
