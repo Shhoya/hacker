@@ -91,5 +91,5 @@ End : nt_BaseAddress + OptionalHeader.SizeOfImage
 
 ## [0x01] Reference
 
-1. https://www.triplefault.io/2017/07/loading-kernel-symbols-vmm-debugging.html
-2. https://codemachine.com/article_x64kvas.html
+1. [Load GDBStub symbol](https://www.triplefault.io/2017/07/loading-kernel-symbols-vmm-debugging.html)
+2. [Windows Kernel Memory Layout](https://codemachine.com/article_x64kvas.html)
