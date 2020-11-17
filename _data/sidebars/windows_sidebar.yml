@@ -34,6 +34,17 @@ entries:
     - title: Kernel Patch Protection
       url: /windows_pgintro.html
       output: web, pdf
+    subfolders:
+    - title: PatchGuard Analysis Tips
+      output: web
+      subfolderitems:
+      
+      - title : PatchGuard Initialize Debugging
+        url : /windows_pgdbg.html
+        output: web
+      - title : PatchGuard Dump Analysis
+        url : /windows_pgdump.html
+        output: web
 
     - title: PatchGuard Initialize
       url: /windows_pginit.html
