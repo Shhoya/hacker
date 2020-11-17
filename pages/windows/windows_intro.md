@@ -16,5 +16,8 @@ folder: windows
 
 1. [Kernel Patch Protection(PatchGuard)](https://shhoya.github.io/windows_pgintro.html) 
    1. [PatchGuard Initialize](https://shhoya.github.io/windows_pginit.html)
-   2. [PatchGuard Analysis](https://shhoya.github.io/windows_pganalysis.html)
+   2. PatchGuard Analysis Tips
+      1. [PatchGuard Initialize Debugging](https://shhoya.github.io/windows_pgidbg.html)
+      2. [PatchGuard Dump Analysis](https://shhoya.github.io/windows_pgdump.html)
+   3. [PatchGuard Analysis](https://shhoya.github.io/windows_pganalysis.html)
 
