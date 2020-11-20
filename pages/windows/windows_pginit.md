@@ -47,19 +47,20 @@ folder: windows
 
 {% include tip.html content="lfence 명령은 Memory Barrier로 연산 순서에 대한 보장을 위해 사용됩니다."%}
 
-먼저 `InitSaveBootMode` 전역변수가 0인지를 비교합니다. 이는 안전모드에 대한 전역변수를 의미합니다.
-다음으로 `KdDebuggerNotPresent` 와 `KdPitchDebugger` 변수를 각 레지스터에 저장하고 OR 연산한 결과를 ecx에 저장한 후 부호를 반전(neg) 시킵니다.
+1. 먼저 `InitSaveBootMode` 전역변수가 0인지를 비교합니다. 이는 안전모드에 대한 전역변수를 의미합니다.
 
-`r8d - r8d - [Carry Flag]`(sbb) 명령을 수행합니다.
+2. 다음으로 `KdDebuggerNotPresent` 와 `KdPitchDebugger` 변수를 각 레지스터에 저장하고 OR 연산한 결과를 ecx에 저장한 후 부호를 반전(neg) 시킵니다.(해당 전역 변수들에 대해 더 알고 싶다면 블로그 내 [포스팅](https://shhoya.github.io/antikernel_kerneldebugging4.html)을 참조하십시오.)
 
-`KdDebuggerNotPresent`의 값과 `KdPitchDebugger` 값은 디버깅과 디버그 모드인가에 대해 영향을 주는 전역변수입니다.
-(해당 전역 변수들에 대해 더 알고 싶다면 블로그 내 [포스팅](https://shhoya.github.io/antikernel_kerneldebugging4.html)을 참조하십시오.)
+3. 그리고 `r8d - r8d - [Carry Flag]`(sbb) 명령을 수행합니다.
+   
 
 만약 **디버깅 중(FALSE)**이라는 가정하에 위의 명령들을 실행하면 `sbb r8d, r8d` 이전의 연산은 0일 것 입니다.
 
 `neg` 명령으로 부호반전을 하여도 0이기 때문에 `CF(Carry Flag)` 역시 0 입니다.
 
 `sbb` 명령에서도 동일한 값을 뺀 후 CF 값(0)을 빼기 때문에 `r8d`에는 0이 저장되고 아래 `add` 명령을 통해 `r8d`의 값은 0x11이 됩니다. 0을 11로 나누기 때문에 `eax`에는 0이 저장되고 정상적으로 리턴합니다.
+
+
 
 다음은 디버깅이 아닌 상황에 대한 연산입니다. `KdDebuggerNotPresent`와 `KdPitchDebugger`가 1인 경우 입니다.
 
