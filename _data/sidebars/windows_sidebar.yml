@@ -26,7 +26,16 @@ entries:
     - title: Windows Internals Introduction
       url: /windows_intro.html
       output: web, pdf
-
+      
+  - title: Piece Of Windows
+    output: web, pdf
+    folderitems:
+    
+    - title: Memory Descriptor List
+      url: /windows_MDL.html
+      output: web, pdf
+    
+    
   - title: Windows KPP(PatchGuard)
     output: web, pdf
     folderitems:
