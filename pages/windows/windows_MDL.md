@@ -20,8 +20,10 @@ CR0 내 WP 비트를 비활성화하는 방법도 있지만 MDL을 이용해보�
 
 먼저 `MDL`은 MSDN에서 아래와 같이 설명합니다.
 
-> 가상 메모리의 연속적인 주소가 실제 물리 메모리 공간에서 연속적일 필요가 없기 때문에, 연속성을 보장하지 않습니다.
-> 이에 OS는 MDL(Memory Descriptor List) 를 이용하여 가상 메모리의 물리 페이지 레이아웃을 설명합니다.
+```
+가상 메모리의 연속적인 주소가 실제 물리 메모리 공간에서 연속적일 필요가 없기 때문에, 연속성을 보장하지 않습니다.
+이에 OS는 MDL(Memory Descriptor List) 를 이용하여 가상 메모리의 물리 페이지 레이아웃을 설명합니다.
+```
 
 즉 `MDL`는 가상 메모리와 관련된 물리적 페이지를 추적합니다. 이러한 내용에서 Direct I/O의 개념을 빼놓을 수가 없습니다.(해당 내용에는 없으며 DMA, Direct I/O 등을 검색하세요)
 
@@ -215,7 +217,7 @@ ffffb680`afc2d0a0  48 8b 6c 24 58 48 8b c3-48 8b 5c 24 50 48 8b 74  H.l$XH..H.\$
 
 아래는 위의 내용을 토대로 그려본 그림입니다. 틀린 부분이 있다면 피드백 주시길 바랍니다.
 
-<img src="https://github.com/Shhoya/shhoya.github.io/blob/master/rsrc/windows/mdl.png?raw=true">
+[<img src="https://github.com/Shhoya/shhoya.github.io/blob/master/rsrc/windows/mdl.png?raw=true">](https://github.com/Shhoya/shhoya.github.io/blob/master/rsrc/windows/mdl.png?raw=true)
 
 ## [0x03] Shh0ya Kernel Hook
 
