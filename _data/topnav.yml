@@ -24,8 +24,8 @@ topnav_dropdowns:
           url: /antikernel_introduction.html
         - title: VMProtect Analysis
           url: /vmp_vmpintro.html
-        - title: Useful Custom API
-          url: /api_introduction.html
+#        - title: Useful Custom API
+#          url: /api_introduction.html
         - title: Documentation
           url: /document_introduction.html 
 
