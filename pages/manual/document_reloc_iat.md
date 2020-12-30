@@ -32,6 +32,7 @@ folder: manual
 ```
 
 해당 테이블의 목적은 재배치가 필요한 데이터를 표시하기 위함입니다. ASLR 이나 시스템 재시작 후에 변경되는 메모리 주소에 대한 범용성을 위함입니다.
+
 임의로 만든 콘솔 프로그램 내 Relocation Table을 확인하면 아래와 같이 확인할 수 있습니다.
 
 ![reloc](https://github.com/Shhoya/shhoya.github.io/blob/master/rsrc/manual/rel_0.png?raw=true)
@@ -50,6 +51,7 @@ typedef struct _IMAGE_BASE_RELOCATION
 ![reloc2](https://github.com/Shhoya/shhoya.github.io/blob/master/rsrc/manual/rel_1.png?raw=true)
 
 위의 샘플 파일 기준으로 파일 오프셋 0x2800 내 Relocation Directory가 존재하며, Virtual Address 는 0x2000, SizeOfBlock 은 0x002C 입니다.
+
 `Items` 필드는 Relocation이 필요한 데이터의 개수를 의미합니다.(개수를 구하는 내용은 잠시 후 얘기하겠습니다.)
 
 TypeOffset의 경우 2byte 씩 0x0000 으로 끝나는 배열의 형태를 지니고 있습니다. 또한 다음과 같은 구조로 이해할 수 있습니다.
@@ -99,13 +101,20 @@ struct
 ![reloc4](https://github.com/Shhoya/shhoya.github.io/blob/master/rsrc/manual/rel_3.png?raw=true)
 
 실제 메모리 상에서 재배치된 모습을 확인할 수 있습니다.
+
 그렇다면 실제로 재배치를 하려할 때, 여러 가지 수학적 공식을 사용할 수 있지만 가장 잘 알려진 방법은 Delta 값을 이용하는 것 입니다.
 
 - `Delta = 메모리 상의 ImageBase - Raw 데이터 상의 ImageBase`  
 
 이제 `Delta` 값과 고정 주소의 오프셋 값만 더 하면 끝입니다.
 
-많은 `Manual Mapping` 에 대한 예제에서 재배치 부분을 Copy & Paste 하는 경향이 있습니다. 실제로 확인하면 다른 값이 재배치 데이터에 저장되는 것을 목격할 수 있습니다. 이러한 경우는 x64 프로세스에서 빈번히 발생하는 것으로 보입니다. 그럼에도 정상 실행이 가능합니다. 그 이유는 우리가 아주 큰 코드를 매핑할 일이 거의 없었기 때문입니다.
+많은 `Manual Mapping` 에 대한 예제에서 재배치 부분을 Copy & Paste 하는 경향이 있습니다. 
+
+실제로 확인하면 다른 값이 재배치 데이터에 저장되는 것을 목격할 수 있습니다. 
+
+이러한 경우는 x64 프로세스에서 빈번히 발생하는 것으로 보입니다. 그럼에도 정상 실행이 가능합니다. 
+
+그 이유는 우리가 아주 큰 코드를 매핑할 일이 거의 없었기 때문입니다.
 
 정상적으로 Relocation Table을 사용하고 이에 대한 호출이 필요하다면 분명 큰 오류가 발생할 것 입니다. 주의해야 합니다.
 
@@ -162,21 +171,28 @@ typedef IMAGE_THUNK_DATA64 * PIMAGE_THUNK_DATA64;
 
 ![reloc6](https://github.com/Shhoya/shhoya.github.io/blob/master/rsrc/manual/rel_5.png?raw=true)
 
-번호 순서대로, `OriginalFirstThunk`, `TimeStamp`, `ForwarderChain`, `Name`, `FirstThunk` 입니다. `OriginalFirstThunk` 와 `FirstThunk` RVA 값을 따라가면 같은 데이터가 존재합니다. 말 그대로 `OriginalFirstThunk`는 IAT 수정 전의 원본 데이터를 의미하고, `FirstThunk` 는 수정 할 IAT를 의미합니다.
+번호 순서대로, `OriginalFirstThunk`, `TimeStamp`, `ForwarderChain`, `Name`, `FirstThunk` 입니다. `OriginalFirstThunk` 와 `FirstThunk` RVA 값을 따라가면 같은 데이터가 존재합니다. 
+
+말 그대로 `OriginalFirstThunk`는 IAT 수정 전의 원본 데이터를 의미하고, `FirstThunk` 는 수정 할 IAT를 의미합니다.
 
 먼저 Import 할 외부 라이브러리를 로드해야 합니다. `Import Descriptor` 의 `Name` 멤버를 사용하여 구할 수 있습니다.
+
 현재 `Name` 의 RVA 값은 0x2A30 입니다. 파일 내 오프셋으로 변환하면 0x1C30 이 됩니다.
 
 ![reloc7](https://github.com/Shhoya/shhoya.github.io/blob/master/rsrc/manual/rel_6.png?raw=true)
 
 해당 이름을 가지고 `LoadLibraryA` 함수를 이용하여 라이브러리를 로드합니다. 이제 로드 된 모듈에서 어떤 함수를 사용하려하는지와 해당 함수의 주소를 알아내야 합니다. 
+
 `OriginalFirstThunk` 의 RVA 값은 0x2890 입니다. 계산 시 0x1A90이 되며 아래와 같은 내용을 가지고 있습니다.
 
 ![reloc8](https://github.com/Shhoya/shhoya.github.io/blob/master/rsrc/manual/rel_7.png?raw=true)
 
 각 데이터들은 `IMAGE_THUNK_DATA` 로 이루어져 있으며 x64 이기 때문에 8바이트로 이루어져 있습니다.
+
 `IMAGE_THUNK_DATA` 내 멤버들을 확인하면 공용체로 각 데이터가 어떤 멤버를 의미하는지는 값을 통해서만 알아낼 수 있습니다.
+
 예를 들어, 현재 0x2E68 이라는 값은 `AddressOfData` 멤버로 해당 RVA 값에는 `IMAGE_IMPORT_BY_NAME` 구조체의 데이터가 존재합니다.
+
 실제로 확인해보면 아래와 같이 `IsDebuggerPresent` 함수를 사용하는 것을 알 수 있습니다.
 
 ![reloc9](https://github.com/Shhoya/shhoya.github.io/blob/master/rsrc/manual/rel_8.png?raw=true)
@@ -193,10 +209,14 @@ typedef IMAGE_THUNK_DATA64 * PIMAGE_THUNK_DATA64;
 ```
 
 즉 로더는 `Original IAT(OriginalFirstThunk` 에 있는 데이터를 읽고 이 데이터가 서수(Ordinal) 인지, `IMAGE_IMPORT_BY_NAME` 에 대한 오프셋인지 구분합니다.
+
 만약 서수인 경우, `GetProcAddress` 함수의 두 번째 파라미터로 `IMAGE_ORIDNAL64` 매크로를 이용하여 해당 함수를 Import 할 수 있게 됩니다.
+
 마찬가지로 이름의 경우에도 같습니다.
 
-이렇게 실제로 로드 된 모듈의 함수를 가져다 쓰기 위해 얻은 함수의 주소는 `IAT(FirstThunk)`에 기록 됩니다. 이는 실제로 로드된 프로세스에서 확인해보면 알 수 있습니다. 파일에서 확인한 것과 같이 다음과 같은 Import Descriptor를 지니고 있습니다.
+이렇게 실제로 로드 된 모듈의 함수를 가져다 쓰기 위해 얻은 함수의 주소는 `IAT(FirstThunk)`에 기록 됩니다. 이는 실제로 로드된 프로세스에서 확인해보면 알 수 있습니다. 
+
+파일에서 확인한 것과 같이 다음과 같은 Import Descriptor를 지니고 있습니다.
 
 ```
 ImageBase : 0x00007FF63EA20000
