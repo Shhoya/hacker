@@ -10,465 +10,9 @@ folder: manual
 
 ---
 
-## [0x00] IMAGE_DOS_HEADER
-주로 `e_lfanew` 멤버 또는 `e_magic` 멤버를 사용하는 일이 많습니다.
+## [0x00] PE Relocation
+기본적으로 Relocation Table 은 Data Directory 의 인덱스 6(상수 5)에 위치합니다.
 ```c++
-typedef struct _IMAGE_DOS_HEADER {      // DOS .EXE header
-    WORD   e_magic;                     // Magic number
-    WORD   e_cblp;                      // Bytes on last page of file
-    WORD   e_cp;                        // Pages in file
-    WORD   e_crlc;                      // Relocations
-    WORD   e_cparhdr;                   // Size of header in paragraphs
-    WORD   e_minalloc;                  // Minimum extra paragraphs needed
-    WORD   e_maxalloc;                  // Maximum extra paragraphs needed
-    WORD   e_ss;                        // Initial (relative) SS value
-    WORD   e_sp;                        // Initial SP value
-    WORD   e_csum;                      // Checksum
-    WORD   e_ip;                        // Initial IP value
-    WORD   e_cs;                        // Initial (relative) CS value
-    WORD   e_lfarlc;                    // File address of relocation table
-    WORD   e_ovno;                      // Overlay number
-    WORD   e_res[4];                    // Reserved words
-    WORD   e_oemid;                     // OEM identifier (for e_oeminfo)
-    WORD   e_oeminfo;                   // OEM information; e_oemid specific
-    WORD   e_res2[10];                  // Reserved words
-    LONG   e_lfanew;                    // File address of new exe header
-  } IMAGE_DOS_HEADER, *PIMAGE_DOS_HEADER;
-```
-
-
-## [0x01] IMAGE_NT_HEADERS
-
-```c++
-typedef struct _IMAGE_NT_HEADERS64 {
-    DWORD Signature;
-    IMAGE_FILE_HEADER FileHeader;
-    IMAGE_OPTIONAL_HEADER64 OptionalHeader;
-} IMAGE_NT_HEADERS64, *PIMAGE_NT_HEADERS64;
-
-typedef struct _IMAGE_NT_HEADERS {
-    DWORD Signature;
-    IMAGE_FILE_HEADER FileHeader;
-    IMAGE_OPTIONAL_HEADER32 OptionalHeader;
-} IMAGE_NT_HEADERS32, *PIMAGE_NT_HEADERS32;
-```
-
-- **`Signature`**
-
-  PE 이미지를 의미하는 식별 값입니다. 해당 바이트는 `PE\0\0(0x50450000)` 값을 가집니다.
-
-- **`FileHeader`**
-
-  파일의 헤더를 의미하는 `IMAGE_FILE_HEADER` 구조체입니다.
-
-- **`OptionalHeader`**
-
-  마찬가지로 파일 헤더지만 좀 더 세분화 된 내용들을 의미하는 멤버로 이루어진 `IMAGE_OPTIONAL_HEADER` 구조체입니다.
-
-## [0x02] IMAGE_FILE_HEADER
-
-COFF 헤더라고도 합니다.
-
-```c++
-typedef struct _IMAGE_FILE_HEADER {
-    WORD    Machine;
-    WORD    NumberOfSections;
-    DWORD   TimeDateStamp;
-    DWORD   PointerToSymbolTable;
-    DWORD   NumberOfSymbols;
-    WORD    SizeOfOptionalHeader;
-    WORD    Characteristics;
-} IMAGE_FILE_HEADER, *PIMAGE_FILE_HEADER;
-```
-
-
-
-- **`Machine`**
-
-  컴퓨터의 아키텍처 유형을 의미합니다. 해당 멤버는 아래와 같은 값을 가질 수 있습니다.
-
-  - `IMAGE_FILE_MACHINE_I386`  (0x014C) ; x86
-  - `IMAGE_FILE_MACHINE_IA64`  (0x0200) ; Intel Itanium
-  - `IMAGE_FILE_MACHINE_AMD64` (0x8664) ; x64
-
-
-
-- **`NumberOfSections`**
-
-  섹션의 수를 의미합니다. Windows 로더는 섹션의 수를 96개로 제한하고 있습니다.
-
-
-
-- **`TimeDateStamp`**
-
-  링커가 이미지를 생성한 날짜와 시간을 나타내며, 하위 32비트의 타임 스탬프로 구성됩니다.
-
-
-
-- **`PointerToSymbolTable`**
-
-  바이트 단위로 이루어진 심볼 테이블의 오프셋입니다.
-
-
-
-- **`NumberOfSymbols`**
-
-  심볼 테이블 내 심볼의 수 입니다.
-
-
-
-- **`SizeOfOptionalHeader`**
-
-  `OptionalHEader`의 크기입니다. 오브젝트 파일의 경우 반드시 이 값은 0 이어야 합니다.
-
-
-
-- **`Characteristics`**
-
-  이미지의 특성을 의미합니다. 아래와 같은 값을 가질 수 있습니다.
-
-  - `IMAGE_FILE_RELOCS_STRIPPED`(0x0001)  
-      - 재배치 정보가 제거되었음을 의미합니다. BaseAddress에 로드되며 사용 불가한 주소인 경우 오류가 발생합니다.
-  - `IMAGE_FILE_EXECUTABLE_IMAGE`(0x0002)
-      - 실행 가능한 파일을 의미합니다.
-
-  - `IMAGE_FILE_LINE_NUMBS_STRIPPED`(0x0004)
-      - 라인 숫자가 파일에서 제거되었음을 의미합니다.
-  - `IMAGE_FILE_LOCAL_SYSM_STRIPPED`(0x0008)
-      - 심볼 테이블이 파일에서 제거되었음을 의미합니다.
-  - `IMAGE_FILE_AGGRESIVE_WS_TRIM`(0x0010)
-      - 해당 값은 더 이상 사용되지 않습니다.
-  - `IMAGE_FILE_LARGE_ADDRESS_AWARE`(0x0020)
-      - 2GB 이상의 메모리 공간을 이용할 수 있음을 의미합니다.
-  - `IMAGE_FILE_BYTES_REVERSED_LO`(0x0x0080)
-      - 해당 값은 더 이상 사용되지 않습니다.
-  - `IMAGE_FILE_32BIT_MACHINE`(0x0100)
-      - 32비트를 지원합니다.
-  - `IMAGE_FILE_DEBUG_STRIPPED`(0x0200)
-      - 디버깅 정보가 제거되어 다른 파일에 별도로 저장되어 있음을 의미합니다.
-  - `IMAGE_FILE_REMOVABLE_RUN_FROM_SWAP`(0x0400)
-      - 만약 이미지가 이동식 저장 장치에 있는 경우, 복사하여 스왑 파일에서 실행해야 합니다.
-  - `IMAGE_FILE_NET_RUN_FROM_SWAP`(0x0800)
-      - 만약 이미지가 네트워크에 존재하는 경우 이미지를 복사하여 스왑 파일에서 실행해야 합니다.
-  - `IMAGE_FILE_SYSTEM`(0x1000)
-      - 시스템 파일입니다.
-  - `IMAGE_FILE_DLL`(0x2000)
-      - DLL 파일입니다. 실행 가능한 파일이지만 직접 실행은 불가능합니다.
-  - `IMAGE_FILE_UP_SYSTEM_ONLY`(0x4000)
-      - 해당 파일은 단일 프로세서 컴퓨터에서만 실행해야 합니다.
-  - `IMAGE_FILE_BYTES_REVERSED_HI`(0x8000)
-      - 더 이상 사용되지 않습니다.
-
-
-
-## [0x03] IMAGE_OPTIONAL_HEADER
-
-```c++
-typedef struct _IMAGE_OPTIONAL_HEADER {
-    WORD    Magic;
-    BYTE    MajorLinkerVersion;
-    BYTE    MinorLinkerVersion;
-    DWORD   SizeOfCode;
-    DWORD   SizeOfInitializedData;
-    DWORD   SizeOfUninitializedData;
-    DWORD   AddressOfEntryPoint;
-    DWORD   BaseOfCode;
-    DWORD   BaseOfData;
-    DWORD   ImageBase;
-    DWORD   SectionAlignment;
-    DWORD   FileAlignment;
-    WORD    MajorOperatingSystemVersion;
-    WORD    MinorOperatingSystemVersion;
-    WORD    MajorImageVersion;
-    WORD    MinorImageVersion;
-    WORD    MajorSubsystemVersion;
-    WORD    MinorSubsystemVersion;
-    DWORD   Win32VersionValue;
-    DWORD   SizeOfImage;
-    DWORD   SizeOfHeaders;
-    DWORD   CheckSum;
-    WORD    Subsystem;
-    WORD    DllCharacteristics;
-    DWORD   SizeOfStackReserve;
-    DWORD   SizeOfStackCommit;
-    DWORD   SizeOfHeapReserve;
-    DWORD   SizeOfHeapCommit;
-    DWORD   LoaderFlags;
-    DWORD   NumberOfRvaAndSizes;
-    IMAGE_DATA_DIRECTORY DataDirectory[IMAGE_NUMBEROF_DIRECTORY_ENTRIES];
-} IMAGE_OPTIONAL_HEADER32, *PIMAGE_OPTIONAL_HEADER32;
-
-typedef struct _IMAGE_OPTIONAL_HEADER64 {
-    WORD        Magic;
-    BYTE        MajorLinkerVersion;
-    BYTE        MinorLinkerVersion;
-    DWORD       SizeOfCode;
-    DWORD       SizeOfInitializedData;
-    DWORD       SizeOfUninitializedData;
-    DWORD       AddressOfEntryPoint;
-    DWORD       BaseOfCode;
-    ULONGLONG   ImageBase;
-    DWORD       SectionAlignment;
-    DWORD       FileAlignment;
-    WORD        MajorOperatingSystemVersion;
-    WORD        MinorOperatingSystemVersion;
-    WORD        MajorImageVersion;
-    WORD        MinorImageVersion;
-    WORD        MajorSubsystemVersion;
-    WORD        MinorSubsystemVersion;
-    DWORD       Win32VersionValue;
-    DWORD       SizeOfImage;
-    DWORD       SizeOfHeaders;
-    DWORD       CheckSum;
-    WORD        Subsystem;
-    WORD        DllCharacteristics;
-    ULONGLONG   SizeOfStackReserve;
-    ULONGLONG   SizeOfStackCommit;
-    ULONGLONG   SizeOfHeapReserve;
-    ULONGLONG   SizeOfHeapCommit;
-    DWORD       LoaderFlags;
-    DWORD       NumberOfRvaAndSizes;
-    IMAGE_DATA_DIRECTORY DataDirectory[IMAGE_NUMBEROF_DIRECTORY_ENTRIES];
-} IMAGE_OPTIONAL_HEADER64, *PIMAGE_OPTIONAL_HEADER64;
-```
-
-
-
-- **`Magic`**
-
-  이미지 파일의 상태를 의미합니다. 아래의 값을 가질 수 있습니다.
-
-  - `IMAGE_NT_OPTIONAL_HDR32_MAGIC`(0x010B)
-    - 실행 가능한 32-bit 애플리케이션
-  - `IMAGE_NT_OPTIONAL_HDR64_MAGIC`(0x020B)
-    - 실행 가능한 64-bit 애플리케이션
-  - `IMAGE_ROM_OPTIONAL_HDR_MAGIC`(0x0107)
-    - ROM 이미지 파일
-
-
-
-- **`MajorLinkerVersion`**
-
-  링커의 메이저 버전 숫자를 의미합니다.
-
-
-
-- **`MinorLinkerVersion`**
-
-  링커의 마이너 버전 숫자를 의미합니다.
-
-
-
-- **`SizeOfCode`**
-
-  코드 섹션의 크기를 의미하거나 코드 섹션이 여러 개인 경우 모든 코드 섹션의 합을 의미합니다.
-
-
-
-- **`SizeOfInitializedData`**
-
-  초기화 된 데이터 섹션의 크기 또는 여러 개인 경우 모든 초기화 된 데이터 섹션의 합을 의미합니다.
-
-
-
-- **`SizeOfUninitializedData`**
-
-  초기화 되지 않은 데이터 섹션의 크기 또는 여러 개인 경우 모든 초기화 되지 않은 데이터 섹션의 합을 의미합니다.
-
-
-
-- **`AddressOfEntryPoint`**
-
-  이미지 베이스 기준으로 진입점 함수에 대한 포인터를 의미합니다. 
-
-
-
-- **`BaseOfCode`**
-
-  이미지 베이스 기준으로 코드 섹션의 시작에 대한 포인터를 의미합니다.
-
-
-
-- **`BaseOfData`**
-
-  이미지 베이스 기준으로 데이터 섹션의 시작에 대한 포인터를 의미합니다.
-
-
-
-- **`ImageBase`**
-
-  이미지가 메모리에 로드 될 때 첫 바이트의 주소를 의미합니다.
-
-
-
-- **`SectionAlignment`**
-
-  메모리에 로드 되는 각 섹션의 최소 할당 단위를 의미합니다. 기본 값은 페이지 크기로 0x1000 을 가지며 이 값은 `FileAlignment` 멤버보다 크거나 같아야 합니다.
-
-
-
-- **`FileAlignment`** 
-
-  각 섹션 로우 데이터의 최소 할당 단위를 의미합니다. 기본 값은 0x200을 가집니다. `SectionAlignment` 멤버가 페이지 크기보다 작은 경우, `SectionAlignment` 값과 같아야 합니다.
-
-**메이저 버전과 마이너 버전은 생략합니다.**
-
-
-
-- **`SizeOfImage`**
-
-  모든 헤더를 포함한 이미지의 크기를 의미합니다. `SectionAlignment`의 배수 여야합니다.
-
-
-
-- **`SizeOfHeaders`**
-
-  헤더들 크기의 합입니다. `FileAlignment` 멤버의 값의 배수로 반올림됩니다.
-
-
-
-- **`Checksum`**
-
-  이미지 파일의 체크섬 값입니다. 유효성 검사에 사용됩니다.
-
-
-
-- **`Subsystem`**
-
-  해당 이미지를 실행하는 데 필요한 서브 시스템을 의미합니다. 아래와 같은 값으로 정의됩니다.
-
-| Value                                            | Meaning                                                      |
-| :----------------------------------------------- | :----------------------------------------------------------- |
-| **IMAGE_SUBSYSTEM_UNKNOWN**(0)                   | Unknown subsystem.                                           |
-| **IMAGE_SUBSYSTEM_NATIVE**(1)                    | No subsystem required (device drivers and native system processes). |
-| **IMAGE_SUBSYSTEM_WINDOWS_GUI**(2)               | Windows graphical user interface (GUI) subsystem.            |
-| **IMAGE_SUBSYSTEM_WINDOWS_CUI**(3)               | Windows character-mode user interface (CUI) subsystem.       |
-| **IMAGE_SUBSYSTEM_OS2_CUI**(5)                   | OS/2 CUI subsystem.                                          |
-| **IMAGE_SUBSYSTEM_POSIX_CUI**(7)                 | POSIX CUI subsystem.                                         |
-| **IMAGE_SUBSYSTEM_WINDOWS_CE_GUI**(9)            | Windows CE system.                                           |
-| **IMAGE_SUBSYSTEM_EFI_APPLICATION**(10)          | Extensible Firmware Interface (EFI) application.             |
-| **IMAGE_SUBSYSTEM_EFI_BOOT_SERVICE_DRIVER**(11)  | EFI driver with boot services.                               |
-| **IMAGE_SUBSYSTEM_EFI_RUNTIME_DRIVER**(12)       | EFI driver with run-time services.                           |
-| **IMAGE_SUBSYSTEM_EFI_ROM**(13)                  | EFI ROM image.                                               |
-| **IMAGE_SUBSYSTEM_XBOX**(14)                     | Xbox system.                                                 |
-| **IMAGE_SUBSYSTEM_WINDOWS_BOOT_APPLICATION**(16) | Boot application.                                            |
-
-
-
-- **`DllCharacteristics`**
-
-  이미지의 DLL 특성을 의미합니다. 아래와 같은 값으로 정의됩니다.
-
-| Value                                                      | Meaning                                                      |
-| :--------------------------------------------------------- | :----------------------------------------------------------- |
-| 0x0001                                                     | Reserved.                                                    |
-| 0x0002                                                     | Reserved.                                                    |
-| 0x0004                                                     | Reserved.                                                    |
-| 0x0008                                                     | Reserved.                                                    |
-| **IMAGE_DLLCHARACTERISTICS_DYNAMIC_BASE**0x0040)           | The DLL can be relocated at load time.                       |
-| **IMAGE_DLLCHARACTERISTICS_FORCE_INTEGRITY**(0x0080        | Code integrity checks are forced. If you set this flag and a section contains only uninitialized data, set the **PointerToRawData** member of [IMAGE_SECTION_HEADER](https://docs.microsoft.com/windows/desktop/api/winnt/ns-winnt-image_section_header) for that section to zero; otherwise, the image will fail to load because the digital signature cannot be verified. |
-| **IMAGE_DLLCHARACTERISTICS_NX_COMPAT**(0x0100)             | The image is compatible with data execution prevention (DEP). |
-| **IMAGE_DLLCHARACTERISTICS_NO_ISOLATION**(0x0200)          | The image is isolation aware, but should not be isolated.    |
-| **IMAGE_DLLCHARACTERISTICS_NO_SEH**(0x0400)                | The image does not use structured exception handling (SEH). No handlers can be called in this image. |
-| **IMAGE_DLLCHARACTERISTICS_NO_BIND**(0x0800)               | Do not bind the image.                                       |
-| 0x1000                                                     | Reserved.                                                    |
-| **IMAGE_DLLCHARACTERISTICS_WDM_DRIVER**(0x2000)            | A WDM driver.                                                |
-| 0x4000                                                     | Reserved.                                                    |
-| **IMAGE_DLLCHARACTERISTICS_TERMINAL_SERVER_AWARE**(0x8000) | The image is terminal server aware.                          |
-
-
-
-- **`SizeOfStackReserver`**
-
-  스택에 예약 할 바이트 수를 의미합니다. 로드 시 `SizeOfStackCommit` 멤버가 지정한 메모리만 커밋됩니다. 나머지는 예약 크기에 도달 할 때까지 한 번에 한 페이지 씩 사용할 수 있습니다.
-
-
-
-- **`SizeOfStackCommit`**
-
-  스택에 커밋 할 바이트 수입니다.
-
-
-
-- **`SizeOfHeapReserve`**
-
-  로컬 힙에 예약 할 바이트 수를 의미합니다. 마찬가지로 `SizeOfHeapCommit` 멤버가 지정한 메모리만 커밋됩니다.
-
-
-
-- **`SizeOfHeapCommit`**
-
-  힙에 커밋 할 바이트 수입니다.
-
-
-
-- **`LoaderFlags`**
-
-  사용되지 않습니다.
-
-
-
-- **`NumberOfRvaAndSizes`**
-
-  `OptionalHeader`의 나머지 디렉토리 항목(ex Export, Import, Resource 등)들의 수를 의미합니다. 
-
-
-
-- **`DataDirectory`**
-
-  데이터 디렉토리의 첫 번째 `IMAGE_DATA_DIRECTORY` 구조체에 대한 포인터입니다.
-
-
-
-## [0x04] IMAGE_DATA_DIRECTORY
-
-`ntimagebase.h` 내 존재합니다.
-
-```c++
-typedef struct _IMAGE_DATA_DIRECTORY {
-  DWORD VirtualAddress;
-  DWORD Size;
-} IMAGE_DATA_DIRECTORY, *PIMAGE_DATA_DIRECTORY;
-```
-
-
-
-- **`VirtualAddress`**
-
-  테이블의 상대 가상 주소를 의미합니다.
-
-
-
-- **`Size`**
-
-  테이블의 사이즈를 의미합니다.
-
-데이터 디렉토리 내 항목별 오프셋은 `OptionalHeader` 위치로부터 다음과 같은 오프셋으로 이루어져 있습니다.
-
-| Offset (PE/PE32+) | Description                                       |
-| :---------------- | :------------------------------------------------ |
-| 0x60/0x70         | Export table address and size                     |
-| 0x68/0x78         | Import table address and size                     |
-| 0x70/0x80         | Resource table address and size                   |
-| 0x78/0x88         | Exception table address and size                  |
-| 0x80/0x90         | Certificate table address and size                |
-| 0x88/0x98         | Base relocation table address and size            |
-| 0x90/0xA0         | Debugging information starting address and size   |
-| 0x98/0xA8         | Architecture-specific data address and size       |
-| 0xA0/0xB0         | Global pointer register relative virtual address  |
-| 0xA8/0xB8         | Thread local storage (TLS) table address and size |
-| 0xB0/0xC0         | Load configuration table address and size         |
-| 0xB8/0xC8         | Bound import table address and size               |
-| 0xC0/0xD0         | Import address table address and size             |
-| 0xC8/0xD8         | Delay import descriptor address and size          |
-| 0xD0/0xE0         | The CLR header address and size                   |
-| 0xD8/0xE8         | Reserved                                          |
-
-각 항목별 정의는 아래와 같습니다. `DataDirectory[n]` 형식과 같이 배열 형태로 존재합니다.
-
-```c++
-// Directory Entries
-
 #define IMAGE_DIRECTORY_ENTRY_EXPORT          0   // Export Directory
 #define IMAGE_DIRECTORY_ENTRY_IMPORT          1   // Import Directory
 #define IMAGE_DIRECTORY_ENTRY_RESOURCE        2   // Resource Directory
@@ -487,226 +31,190 @@ typedef struct _IMAGE_DATA_DIRECTORY {
 #define IMAGE_DIRECTORY_ENTRY_COM_DESCRIPTOR 14   // COM Runtime descriptor
 ```
 
-몇 가지 중요 항목들에 대한 자세한 내용을 알아보겠습니다.
+해당 테이블의 목적은 재배치가 필요한 데이터를 표시하기 위함입니다. ASLR 이나 시스템 재시작 후에 변경되는 메모리 주소에 대한 범용성을 위함입니다.
+임의로 만든 콘솔 프로그램 내 Relocation Table을 확인하면 아래와 같이 확인할 수 있습니다.
 
-### [-] IMAGE_EXPORT_DIRECTORY
+![reloc](https://github.com/Shhoya/shhoya.github.io/blob/master/rsrc/manual/rel_0.png?raw=true)
 
-주로 `Export Address Table`이라고도 부르는 Export 함수에 접근하기 위해 먼저 접근해야 하는 디렉토리입니다.
+`IMAGE_BASE_RELOCATION` 이라는 구조체로 이루어져 있으며 아래와 같은 구조로 되어 있습니다.
 
 ```c++
-typedef struct _IMAGE_EXPORT_DIRECTORY {
-    ULONG   Characteristics;
-    ULONG   TimeDateStamp;
-    USHORT  MajorVersion;
-    USHORT  MinorVersion;
-    ULONG   Name;
-    ULONG   Base;
-    ULONG   NumberOfFunctions;
-    ULONG   NumberOfNames;
-    ULONG   AddressOfFunctions;     // RVA from base of image
-    ULONG   AddressOfNames;         // RVA from base of image
-    ULONG   AddressOfNameOrdinals;  // RVA from base of image
-} IMAGE_EXPORT_DIRECTORY, *PIMAGE_EXPORT_DIRECTORY;
+typedef struct _IMAGE_BASE_RELOCATION
+{
+    DWORD VirtualAddress;
+    DWORD SizeOfBlock;
+    WORD TypeOffset[1];
+}IMAGE_BASE_RELOCATION;
 ```
 
-- **`Name`**
+![reloc2](https://github.com/Shhoya/shhoya.github.io/blob/master/rsrc/manual/rel_1.png?raw=true)
 
-  해당 라이브러리의 이름이 저장되어 있는 `RVA` 값을 의미합니다.
+위의 샘플 파일 기준으로 파일 오프셋 0x2800 내 Relocation Directory가 존재하며, Virtual Address 는 0x2000, SizeOfBlock 은 0x002C 입니다.
+`Items` 필드는 Relocation이 필요한 데이터의 개수를 의미합니다.(개수를 구하는 내용은 잠시 후 얘기하겠습니다.)
 
-- **`Base`**
+TypeOffset의 경우 2byte 씩 0x0000 으로 끝나는 배열의 형태를 지니고 있습니다. 또한 다음과 같은 구조로 이해할 수 있습니다.
 
-  `Ordinal`, 서수의 시작 값을 의미합니다. 0인 경우 0부터 서수가 시작됩니다. 이 값은 고정적이지 않습니다. 라이브러리마다 다른 값을 가지고 있습니다.
+```c++
+struct
+{
+    WORD Offset:12;
+    WORD Type:4;
+}TypeOffset;
+```
 
-- **`NumberOfFunctions`**
+상위 4bit 는 Type을 의미하며 나머지 12bit는 오프셋 정보를 담고 있습니다. 이러한 정보를 토대로 재배치가 필요한 데이터의 개수를 구할 수 있습니다.
 
-  Export 하는 함수들의 수를 의미합니다.
+총 Block의 사이즈에서 `IMAGE_BASE_RELOCATION` 사이즈만큼을 빼면 TypeOffset 만 사이즈만 남게되고 이를 `WORD` 사이즈로 나누면 재배치 필요 데이터 수를 구할 수 있습니다.
 
-- **`NumberOfNames`**
+`Count = (0x2C(SizeOfBlock) - sizeof(IMAGE_BASE_RELOCATION)) / sizeof(WORD)`
 
-  Export 하는 함수들의 이름 수를 의미합니다. 대부분 `NumberOfFunctions`와 동일하지만 그렇지 않은 경우도 존재합니다.
+위의 예제에서 첫 번째 TypeOffset 값은 `0xA1A0` 입니다. 상위 4bit가 Type이라고 했으니, `0xA` 가 타입이며 해당 의미는 헤더에 정의되어 있습니다.
 
-- **`AddressOfFunctions`**
+```c++
+#define IMAGE_REL_BASED_ABSOLUTE              0
+#define IMAGE_REL_BASED_HIGH                  1
+#define IMAGE_REL_BASED_LOW                   2
+#define IMAGE_REL_BASED_HIGHLOW               3
+#define IMAGE_REL_BASED_HIGHADJ               4
+#define IMAGE_REL_BASED_MACHINE_SPECIFIC_5    5
+#define IMAGE_REL_BASED_RESERVED              6
+#define IMAGE_REL_BASED_MACHINE_SPECIFIC_7    7
+#define IMAGE_REL_BASED_MACHINE_SPECIFIC_8    8
+#define IMAGE_REL_BASED_MACHINE_SPECIFIC_9    9
+#define IMAGE_REL_BASED_DIR64                 10
+```
 
-  Export하는 첫 번째 함수의 오프셋을 가지고 있는 포인터의 RVA 값을 의미합니다. 즉 `ImageBase + *(ImageBase+AddressOfFunctions) == Export 첫 번째 함수 주소` 가 됩니다.
+`IMAGE_REL_BASED_DIR64(0xA)` 는 해당 데이터에 8바이트를 재배치 해야 한다는 의미입니다. 여기서 **재배치가 필요하다는 것은 특정 주소의 데이터가 실제 메모리 상의 주소를 고려하지 않은 메모리 주소가 고정되어 있다는 의미입니다.**
 
-- **`AddressOfNames`**
+고정된 메모리 주소를 찾는 방법은 매우 쉽습니다. `IMAGE_BASE_RELOCATION.VirtualAddress` 와 `TypeOffset`의 Offset을 더 해주면 끝입니다. RVA 값이므로 파일 내에서 확인하기 위해 계산이 필요합니다.
 
-  Export하는 첫 번째 함수 이름의 오프셋을 가지고 있는 포인터의 RVA 값을 의미합니다. 마찬가지로 `ImageBase+ *(ImageBase+AddressOfNames) == Export 첫 번째 함수 이름`이 됩니다.
+- `Raw Offset = (0x2000 + (0xA1A0 & 0x0FFF)) - 0x2000(V.A in section header) + 0x1200(raw addr in Section header)`
 
-- **`AddressOfNameOrdinals`**
+위의 공식에 따르면 파일 내 오프셋은 0x13A0 입니다.
 
-  Name Ordinal에 대한 포인터입니다.
+![reloc3](https://github.com/Shhoya/shhoya.github.io/blob/master/rsrc/manual/rel_2.png?raw=true)
 
-{%include tip.html content="Ordinal, 서수는 인덱스라고 생각하면 이해하기 쉽습니다. 배열로 이루어져 있기 때문이기도 하고 이 서수 값으로 함수를 호출할 수 있습니다." %}
+실제로 해당 오프셋을 확인하면 이미지 베이스(0x0000000140000000) + 오프셋 0x17E8 값이 저장된 것을 확인할 수 있습니다. 메모리 상에서는 VA 값이기 때문에 0x21A0 오프셋에서 찾을 수 있습니다.
+
+![reloc4](https://github.com/Shhoya/shhoya.github.io/blob/master/rsrc/manual/rel_3.png?raw=true)
+
+실제 메모리 상에서 재배치된 모습을 확인할 수 있습니다.
+그렇다면 실제로 재배치를 하려할 때, 여러 가지 수학적 공식을 사용할 수 있지만 가장 잘 알려진 방법은 Delta 값을 이용하는 것 입니다.
+
+- `Delta = 메모리 상의 ImageBase - Raw 데이터 상의 ImageBase`  
+
+이제 `Delta` 값과 고정 주소의 오프셋 값만 더 하면 끝입니다.
+
+많은 `Manual Mapping` 에 대한 예제에서 재배치 부분을 Copy & Paste 하는 경향이 있습니다. 실제로 확인하면 다른 값이 재배치 데이터에 저장되는 것을 목격할 수 있습니다. 이러한 경우는 x64 프로세스에서 빈번히 발생하는 것으로 보입니다. 그럼에도 정상 실행이 가능합니다. 그 이유는 우리가 아주 큰 코드를 매핑할 일이 거의 없었기 때문입니다.
+
+정상적으로 Relocation Table을 사용하고 이에 대한 호출이 필요하다면 분명 큰 오류가 발생할 것 입니다. 주의해야 합니다.
+
+대부분의 예제는 4바이트 주소 값을 읽고 Delta와 더합니다.
 
 
 
-### [-] IMAGE_IMPORT_DESCRIPTOR & IMPORT_BY_NAME
+## [0x01] Fix IAT
+
+이미지(PE)를 로드할 때 Import Descriptor(IMAGE_IMPORT_DESCRIPTOR) 를 이용하여 해당하는 함수의 주소를 IAT에 적절하게 변경하여 사용합니다.
+우리가 알아야 할 구조체는 세 가지 입니다.
 
 ```c++
 typedef struct _IMAGE_IMPORT_DESCRIPTOR {
     union {
-        ULONG   Characteristics;            // 0 for terminating null import descriptor
-        ULONG   OriginalFirstThunk;         // RVA to original unbound IAT (PIMAGE_THUNK_DATA)
+        DWORD   Characteristics;            // 0 for terminating null import descriptor
+        DWORD   OriginalFirstThunk;         // RVA to original unbound IAT (PIMAGE_THUNK_DATA)
     } DUMMYUNIONNAME;
-    ULONG   TimeDateStamp;                  // 0 if not bound,
+    DWORD   TimeDateStamp;                  // 0 if not bound,
                                             // -1 if bound, and real date\time stamp
                                             //     in IMAGE_DIRECTORY_ENTRY_BOUND_IMPORT (new BIND)
                                             // O.W. date/time stamp of DLL bound to (Old BIND)
 
-    ULONG   ForwarderChain;                 // -1 if no forwarders
-    ULONG   Name;
-    ULONG   FirstThunk;                     // RVA to IAT (if bound this IAT has actual addresses)
+    DWORD   ForwarderChain;                 // -1 if no forwarders
+    DWORD   Name;
+    DWORD   FirstThunk;                     // RVA to IAT (if bound this IAT has actual addresses)
 } IMAGE_IMPORT_DESCRIPTOR;
+typedef IMAGE_IMPORT_DESCRIPTOR UNALIGNED *PIMAGE_IMPORT_DESCRIPTOR;
+
 
 typedef struct _IMAGE_IMPORT_BY_NAME {
     WORD    Hint;
     CHAR   Name[1];
 } IMAGE_IMPORT_BY_NAME, *PIMAGE_IMPORT_BY_NAME;
+
+typedef struct _IMAGE_THUNK_DATA64 {
+    union {
+        ULONGLONG ForwarderString;  // PBYTE 
+        ULONGLONG Function;         // PDWORD
+        ULONGLONG Ordinal;
+        ULONGLONG AddressOfData;    // PIMAGE_IMPORT_BY_NAME
+    } u1;
+} IMAGE_THUNK_DATA64;
+typedef IMAGE_THUNK_DATA64 * PIMAGE_THUNK_DATA64;
 ```
 
-- **`Characteristics`**
+각 필드에 대한 내용은 [여기](https://shhoya.github.io/document_pe.html#--image_import_descriptor--import_by_name) 에서 확인 가능합니다. 바로 IAT 수정 과정을 살펴보겠습니다.
 
-  특성을 지칭합니다. 다만 현재 정보가 존재하지 않습니다.
+먼저 아래와 같은 `Import Directory` 예제를 기준으로 확인하겠습니다.
 
-- **`OriginalFirstThunk`**
+![reloc5](https://github.com/Shhoya/shhoya.github.io/blob/master/rsrc/manual/rel_4.png?raw=true)
 
-  `IMAGE_IMPORT_BY_NAME` 구조체 포인터의 값이 저장되어 있습니다. 이를 Import Name Table이라고 부르기도 합니다. `ImageBase + *(ImageBase + OriginalFirstThunk) == Import 첫 번째 함수 이름`이 됩니다.
+먼저 로더는 `OptionalHeader.DataDirectory[1]` 을 참조하여 `IMAGE_IMPORT_DESCRIPTOR` 구조를 찾습니다.
 
-- **`TimeDataStamp`**
+![reloc6](https://github.com/Shhoya/shhoya.github.io/blob/master/rsrc/manual/rel_5.png?raw=true)
 
-  마찬가지로 타임 스탬프를 의미합니다.
+번호 순서대로, `OriginalFirstThunk`, `TimeStamp`, `ForwarderChain`, `Name`, `FirstThunk` 입니다. `OriginalFirstThunk` 와 `FirstThunk` RVA 값을 따라가면 같은 데이터가 존재합니다. 말 그대로 `OriginalFirstThunk`는 IAT 수정 전의 원본 데이터를 의미하고, `FirstThunk` 는 수정 할 IAT를 의미합니다.
 
-- **`ForwarderChain`**
+먼저 Import 할 외부 라이브러리를 로드해야 합니다. `Import Descriptor` 의 `Name` 멤버를 사용하여 구할 수 있습니다.
+현재 `Name` 의 RVA 값은 0x2A30 입니다. 파일 내 오프셋으로 변환하면 0x1C30 이 됩니다.
 
-  Import 함수 목록에서 첫 번째 forwarder의 32비트 인덱스를 의미합니다.
+![reloc7](https://github.com/Shhoya/shhoya.github.io/blob/master/rsrc/manual/rel_6.png?raw=true)
 
-- **`Name`**
+해당 이름을 가지고 `LoadLibraryA` 함수를 이용하여 라이브러리를 로드합니다. 이제 로드 된 모듈에서 어떤 함수를 사용하려하는지와 해당 함수의 주소를 알아내야 합니다. 
+`OriginalFirstThunk` 의 RVA 값은 0x2890 입니다. 계산 시 0x1A90이 되며 아래와 같은 내용을 가지고 있습니다.
 
-  Export 하는 라이브러리(Import 되는)의 이름이 저장되는 주소의 RVA 값입니다.
+![reloc8](https://github.com/Shhoya/shhoya.github.io/blob/master/rsrc/manual/rel_7.png?raw=true)
 
-- **`FirstThunk`**
+각 데이터들은 `IMAGE_THUNK_DATA` 로 이루어져 있으며 x64 이기 때문에 8바이트로 이루어져 있습니다.
+`IMAGE_THUNK_DATA` 내 멤버들을 확인하면 공용체로 각 데이터가 어떤 멤버를 의미하는지는 값을 통해서만 알아낼 수 있습니다.
+예를 들어, 현재 0x2E68 이라는 값은 `AddressOfData` 멤버로 해당 RVA 값에는 `IMAGE_IMPORT_BY_NAME` 구조체의 데이터가 존재합니다.
+실제로 확인해보면 아래와 같이 `IsDebuggerPresent` 함수를 사용하는 것을 알 수 있습니다.
 
-  흔히 알고 있는 `IAT`를 의미합니다. 
+![reloc9](https://github.com/Shhoya/shhoya.github.io/blob/master/rsrc/manual/rel_8.png?raw=true)
 
-
-
-## [0x05] IMAGE_SECTION_HEADER
+이를 구분하기 위해 MS에서는 몇 가지 매크로를 정의해두었습니다.
 
 ```c++
-#define IMAGE_SIZEOF_SHORT_NAME              8
-
-typedef struct _IMAGE_SECTION_HEADER {
-    UCHAR   Name[IMAGE_SIZEOF_SHORT_NAME];
-    union {
-            ULONG   PhysicalAddress;
-            ULONG   VirtualSize;
-    } Misc;
-    ULONG   VirtualAddress;
-    ULONG   SizeOfRawData;
-    ULONG   PointerToRawData;
-    ULONG   PointerToRelocations;
-    ULONG   PointerToLinenumbers;
-    USHORT  NumberOfRelocations;
-    USHORT  NumberOfLinenumbers;
-    ULONG   Characteristics;
-} IMAGE_SECTION_HEADER, *PIMAGE_SECTION_HEADER;
+#define IMAGE_ORDINAL_FLAG64 0x8000000000000000
+#define IMAGE_ORDINAL_FLAG32 0x80000000
+#define IMAGE_ORDINAL64(Ordinal) (Ordinal & 0xffff)
+#define IMAGE_ORDINAL32(Ordinal) (Ordinal & 0xffff)
+#define IMAGE_SNAP_BY_ORDINAL64(Ordinal) ((Ordinal & IMAGE_ORDINAL_FLAG64) != 0)
+#define IMAGE_SNAP_BY_ORDINAL32(Ordinal) ((Ordinal & IMAGE_ORDINAL_FLAG32) != 0)
 ```
 
-- **`Name`**
+즉 로더는 `Original IAT(OriginalFirstThunk` 에 있는 데이터를 읽고 이 데이터가 서수(Ordinal) 인지, `IMAGE_IMPORT_BY_NAME` 에 대한 오프셋인지 구분합니다.
+만약 서수인 경우, `GetProcAddress` 함수의 두 번째 파라미터로 `IMAGE_ORIDNAL64` 매크로를 이용하여 해당 함수를 Import 할 수 있게 됩니다.
+마찬가지로 이름의 경우에도 같습니다.
 
-  섹션의 이름을 의미합니다.(.text, .data ...)
+이렇게 실제로 로드 된 모듈의 함수를 가져다 쓰기 위해 얻은 함수의 주소는 `IAT(FirstThunk)`에 기록 됩니다. 이는 실제로 로드된 프로세스에서 확인해보면 알 수 있습니다. 파일에서 확인한 것과 같이 다음과 같은 Import Descriptor를 지니고 있습니다.
 
-- **`Misc`**
+```
+ImageBase : 0x00007FF63EA20000
+OriginalFirstThunk : 0x2890
+TimeStamp : 0x0000
+ForwarderChain : 0x0000
+Name : 0x2A30
+FirstThunk : 0x2000
+```
 
-  PhysicalAddress와 VirtualSize로 이루어진 공용체입니다. 실제 자주 사용하는 멤버는 VirtualSize로 `SizeOfRawData`보다 큰 경우 0으로 채워집니다. 말 그대로 메모리에 할당되는 섹션의 크기를 의미합니다.
+아래는 `OriginalFirstThunk` 의 데이터 입니다. 파일과 동일합니다.
 
-- **`VirtualAddress`**
+![reloc10](https://github.com/Shhoya/shhoya.github.io/blob/master/rsrc/manual/rel_9.png?raw=true)
 
-  메모리 내 섹션 시작 주소의 RVA 값을 의미합니다.
+다음은 `FirstThunk` 의 데이터 입니다. 실제로 Import 되는 함수의 주소들로 수정 된 것을 확인할 수 있습니다.
 
-- **`SizeOfRawData`**
+![reloc11](https://github.com/Shhoya/shhoya.github.io/blob/master/rsrc/manual/rel_10.png?raw=true)
 
-  파일 내에서 해당 섹션의 크기를 의미합니다. `VirtualSize`의 경우 `SectionAlignment`를 최소 단위로 하기 때문에 해당 멤버와 차이가 나게 됩니다. 마찬가지로 해당 멤버는 `FileAlignment` 값의 배수가 됩니다.
+## [0x02] Conclusion
 
-- **`PointerToRawData`**
-
-  파일 내에서 해당 섹션 시작 주소의 RVA 값을 의미합니다. 역시 `FileAlignment` 값의 배수가 됩니다.
-
-- **`PointerToRelocations`**
-
-  섹션의 재배치 엔트리의 시작 부분에 대한 포인터 입니다. 재배치가 필요하지 않으면 0입니다.
-
-- **`PointerToLineNumber`**
-
-  섹션의 줄 번호 엔트리의 시작 부분에 대한 포인터 입니다. COFF 줄 번호가 존재하지 않으면 0입니다.
-
-- **`NumberOfRelocations`**
-
-  섹션의 재배치 엔트리의 수입니다. 실행 가능 이미지의 경우 0입니다.
-
-- **`NumberOfLineNumbers`**
-
-  섹션의 줄 번호 엔트리의 수입니다. 실행 가능 이미지의 경우 0입니다.
-
-- **`Characteristics`**
-
-  이미지의 특성에 대한 내용입니다. 아래와 같은 값을 가질 수 있습니다.
-
-  | Flag                                                    | Meaning                                                      |
-  | :------------------------------------------------------ | :----------------------------------------------------------- |
-  | 0x00000000                                              | Reserved.                                                    |
-  | 0x00000001                                              | Reserved.                                                    |
-  | 0x00000002                                              | Reserved.                                                    |
-  | 0x00000004                                              | Reserved.                                                    |
-  | **IMAGE_SCN_TYPE_NO_PAD** <br />(0x00000008)            | The section should not be padded to the next boundary. This flag is obsolete and is replaced by IMAGE_SCN_ALIGN_1BYTES. |
-  | 0x00000010                                              | Reserved.                                                    |
-  | **IMAGE_SCN_CNT_CODE** <br />(0x00000020)               | The section contains executable code.                        |
-  | **IMAGE_SCN_CNT_INITIALIZED_DATA** <br />(0x00000040)   | The section contains initialized data.                       |
-  | **IMAGE_SCN_CNT_UNINITIALIZED_DATA** <br />(0x00000080) | The section contains uninitialized data.                     |
-  | **IMAGE_SCN_LNK_OTHER** <br />(0x00000100)              | Reserved.                                                    |
-  | **IMAGE_SCN_LNK_INFO** <br />(0x00000200)               | The section contains comments or other information. This is valid only for object files. |
-  | 0x00000400                                              | Reserved.                                                    |
-  | **IMAGE_SCN_LNK_REMOVE**<br />(0x00000800)              | The section will not become part of the image. This is valid only for object files. |
-  | **IMAGE_SCN_LNK_COMDAT** <br />(0x00001000)             | The section contains COMDAT data. This is valid only for object files. |
-  | 0x00002000                                              | Reserved.                                                    |
-  | **IMAGE_SCN_NO_DEFER_SPEC_EXC** <br />(0x00004000)      | Reset speculative exceptions handling bits in the TLB entries for this section. |
-  | **IMAGE_SCN_GPREL** <br />(0x00008000)                  | The section contains data referenced through the global pointer. |
-  | 0x00010000                                              | Reserved.                                                    |
-  | **IMAGE_SCN_MEM_PURGEABLE** <br />(0x00020000)          | Reserved.                                                    |
-  | **IMAGE_SCN_MEM_LOCKED** <br />(0x00040000)             | Reserved.                                                    |
-  | **IMAGE_SCN_MEM_PRELOAD** <br />(0x00080000)            | Reserved.                                                    |
-  | **IMAGE_SCN_ALIGN_1BYTES** <br />(0x00100000)           | Align data on a 1-byte boundary. This is valid only for object files. |
-  | **IMAGE_SCN_ALIGN_2BYTES** <br />(0x00200000)           | Align data on a 2-byte boundary. This is valid only for object files. |
-  | **IMAGE_SCN_ALIGN_4BYTES** <br />(0x00300000)           | Align data on a 4-byte boundary. This is valid only for object files. |
-  | **IMAGE_SCN_ALIGN_8BYTES** <br />(0x00400000)           | Align data on a 8-byte boundary. This is valid only for object files. |
-  | **IMAGE_SCN_ALIGN_16BYTES** <br />(0x00500000)          | Align data on a 16-byte boundary. This is valid only for object files. |
-  | **IMAGE_SCN_ALIGN_32BYTES** <br />(0x00600000)          | Align data on a 32-byte boundary. This is valid only for object files. |
-  | **IMAGE_SCN_ALIGN_64BYTES** <br />(0x00700000)          | Align data on a 64-byte boundary. This is valid only for object files. |
-  | **IMAGE_SCN_ALIGN_128BYTES** <br />(0x00800000)         | Align data on a 128-byte boundary. This is valid only for object files. |
-  | **IMAGE_SCN_ALIGN_256BYTES** <br />(0x00900000)         | Align data on a 256-byte boundary. This is valid only for object files. |
-  | **IMAGE_SCN_ALIGN_512BYTES** <br />(0x00A00000)         | Align data on a 512-byte boundary. This is valid only for object files. |
-  | **IMAGE_SCN_ALIGN_1024BYTES** <br />(0x00B00000)        | Align data on a 1024-byte boundary. This is valid only for object files. |
-  | **IMAGE_SCN_ALIGN_2048BYTES** <br />(0x00C00000)        | Align data on a 2048-byte boundary. This is valid only for object files. |
-  | **IMAGE_SCN_ALIGN_4096BYTES** <br />(0x00D00000)        | Align data on a 4096-byte boundary. This is valid only for object files. |
-  | **IMAGE_SCN_ALIGN_8192BYTES** <br />(0x00E00000)        | Align data on a 8192-byte boundary. This is valid only for object files. |
-  | **IMAGE_SCN_LNK_NRELOC_OVFL** (0x01000000)              | The section contains extended relocations. The count of relocations for the section exceeds the 16 bits that is reserved for it in the section header. If the **NumberOfRelocations** field in the section header is 0xffff, the actual relocation count is stored in the **VirtualAddress** field of the first relocation. It is an error if IMAGE_SCN_LNK_NRELOC_OVFL is set and there are fewer than 0xffff relocations in the section. |
-  | **IMAGE_SCN_MEM_DISCARDABLE** <br />(0x02000000)        | The section can be discarded as needed.                      |
-  | **IMAGE_SCN_MEM_NOT_CACHED** <br />(0x04000000)         | The section cannot be cached.                                |
-  | **IMAGE_SCN_MEM_NOT_PAGED** <br />(0x08000000)          | The section cannot be paged.                                 |
-  | **IMAGE_SCN_MEM_SHARED** <br />(0x10000000)             | The section can be shared in memory.                         |
-  | **IMAGE_SCN_MEM_EXECUTE** <br />(0x20000000)            | The section can be executed as code.                         |
-  | **IMAGE_SCN_MEM_READ** <br />(0x40000000)               | The section can be read.                                     |
-  | **IMAGE_SCN_MEM_WRITE** <br />(0x80000000)              | The section can be written to.                               |
-
-
-
-## [0x06] Conclusion
-
-이전 블로그에서 정리한 내용에 약간 좀 더 설명을 보태 작성하였습니다. 실제 이런 PE를 활용한 각종 내용들은 여기 PE Header Inside 섹션 내에 정리해보겠습니다.
-
-
-
-## [0x07] Reference
-
-1. [https://docs.microsoft.com/en-us/windows/win32/debug/pe-format](https://docs.microsoft.com/en-us/windows/win32/debug/pe-format)
+현재 연구 중인 내용에 필요한 내용이라 정리해보았습니다. 위의 내용들을 명확히 이해하면 PE 커스텀 로더 개발이나 인젝션 기법 중 하나인 `Manual Mapping` 에도 활용이 가능합니다. 
