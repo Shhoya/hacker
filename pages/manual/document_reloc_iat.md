@@ -31,7 +31,7 @@ folder: manual
 #define IMAGE_DIRECTORY_ENTRY_COM_DESCRIPTOR 14   // COM Runtime descriptor
 ```
 
-해당 테이블의 목적은 재배치가 필요한 데이터를 표시하기 위함입니다. ASLR 이나 시스템 재시작 후에 변경되는 메모리 주소에 대한 범용성을 위함입니다.
+해당 테이블의 목적은 재배치가 필요한 데이터를 표시하여 ASLR 이나 시스템 재시작 후에 변경되는 메모리 주소에 대한 범용성을 위함입니다.
 
 임의로 만든 콘솔 프로그램 내 Relocation Table을 확인하면 아래와 같이 확인할 수 있습니다.
 
