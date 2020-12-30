@@ -28,7 +28,7 @@ entries:
       output: web
 
       subfolders:
-        - title: PE Header Inside
+        - title: PE Inside
           output: web
           subfolderitems:
             
@@ -37,6 +37,9 @@ entries:
             output: web
           - title: PE Header
             url: /document_pe.html
+            output: web
+          - title: PE Relocation & Fix IAT
+            url: /document_reloc_iat.html
             output: web
         
         - title: C and C++ Programming
