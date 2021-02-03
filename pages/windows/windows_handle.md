@@ -221,15 +221,12 @@ Object: ffffb986186a7040  Type: (ffffb986186c4e80) Process
 ```
 
 단계별로 설명하겠습니다.
-
 먼저 `ObjectTable(HANDLE_TABLE)` 을 확인합니다. 해당 `ObjectTable` 에는 `TableCode` 필드가 존재합니다. `0xffffffff'fffffffc` 로 AND 연산을 하는 이유는 최하위 2비트를 지우기 위함입니다.
-
 이를 통해 `HANDLE_TABLE_ENTRY` 의 시작 주소를 얻을 수 있습니다.
 
 <img src="https://s3.us-west-2.amazonaws.com/secure.notion-static.com/a3e0aba9-710d-40c4-bf8d-1ec4b8fb0b24/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAT73L2G45O3KS52Y5%2F20210203%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20210203T174648Z&X-Amz-Expires=86400&X-Amz-Signature=e72f2501412485a3e52fa7c851b1a94fcc6a5cd8a3a4124482a2a7f0b9c68d37&X-Amz-SignedHeaders=host&response-content-disposition=filename%20%3D%22Untitled.png%22">
 
 물론 시작 주소이기 때문에 확인해보면 `0x10` 만큼 떨어진 위치부터 엔트리가 시작됩니다.
-
 좀더 정확한 핸들의 `HANDLE_TABLE_ENTRY` 를 얻기 위해서 `ExpLookupHandleTableEntry` 함수를 확인합니다.
 
 ```c
@@ -251,9 +248,7 @@ _HANDLE_TABLE_ENTRY *__fastcall ExpLookupHandleTableEntry(_HANDLE_TABLE *HandleT
 ```
 
 핸들 값도 마찬가지로 4의 배수인데 하위 2비트를 지우는건 어떤 상황인지 궁금합니다.
-
 어쨋든, 위의 내용을 토대로 볼 때 `HANDLE_TABLE` 의 `TableCode` 를 3으로 AND 연산하여 1인 경우와 1보다 큰 경우, 0인 경우로 리턴하는 값이 다른 것을 확인할 수 있습니다.
-
 위의 내용을 토대로 간단히 실습을 해보면 아래와 같이 정확한 `HANDLE_TABLE_ENTRY` 주소를 얻을 수 있습니다.
 
 ```
@@ -292,9 +287,7 @@ Object: ffffb9861f214bc0  Type: (ffffb986186e0da0) IoCompletion
 ```
 
 위와 같은 구조로 되어 있을 때, `notepad` 프로세스의 0x10 핸들의 `HANDLE_TABLE_ENTRY` 를 구해보겠습니다.
-
 위의 정보에서 `Entry` 가 `HANDLE_TABLE_ENTRY` 이며, 계산으로 정확한 엔트리를 구할 수 있는지 확인합니다.
-
 먼저 `notepad` 의 `ObjectTable` 을 확인합니다.
 
 ```
@@ -344,7 +337,6 @@ Object: ffffb9861f214bc0  Type: (ffffb986186e0da0) IoCompletion
 ```
 
 계산한 값과 `Entry` 의 값이 일치하는 것을 확인할 수 있습니다.
-
 그럼 좀 더 정확하게 오브젝트를 확인해보겠습니다.
 
 ```
@@ -424,7 +416,6 @@ Object: ffffb9861f214bc0  Type: (ffffb986186e0da0) IoCompletion
 ```
 
 정확히 일치하는 것을 볼 수 있습니다.
-
 해당 공식은 `ExQueryProcessHandleInformation` 에서 찾을 수 있습니다.
 
 ```c
@@ -541,7 +532,6 @@ PAGE:0000000140682137 C3                                      retn
 ```
 
 이제 `nt!ObGetObjectType` 의 연산을 참조하여 오브젝트 유형을 구해보도록 하겠습니다.
-
 먼저 오브젝트 헤더(`ffffb986186a7010`) 의 하위 1바이트를 제거하고, 마지막 1바이트 값과 `OBJECT_HEADER.TypeIndex` 값을 XOR 연산합니다.
 
 ```
