@@ -38,6 +38,10 @@ entries:
     - title: Find Hidden process
       url: /windows_hidden.html
       output: web, pdf
+     
+    - title: Handle Table&Object
+      url: /windows_hwndobject.html
+      output: web, pdf
     
     
   - title: Windows KPP(PatchGuard)
