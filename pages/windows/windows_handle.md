@@ -524,7 +524,9 @@ __int64 __fastcall ObGetObjectType(__int64 Object)
 {
   return ObTypeIndexTable[ObHeaderCookie ^ *(Object - 0x18) ^ ((Object - 0x30) >> 8)];
 }
-PAGE:0000000140682110                         ObGetObjectType proc near               ; DATA XREF: .pdata:0000000140101AB4↑o
+```
+
+```PAGE:0000000140682110                         ObGetObjectType proc near               ; DATA XREF: .pdata:0000000140101AB4↑o
 PAGE:0000000140682110 48 8D 41 D0                             lea     rax, [rcx-30h]
 PAGE:0000000140682114 0F B6 49 E8                             movzx   ecx, byte ptr [rcx-18h]
 PAGE:0000000140682118 48 C1 E8 08                             shr     rax, 8
