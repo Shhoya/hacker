@@ -79,7 +79,7 @@ ntdll!_EPROCESS
 
 `ObpKernelHandleTable` 의 살펴보면 `ObInitSystem` 루틴에서 `ExCreateHandleTable` 을 통해 초기화 됩니다.
 
-<img src="https://s3.us-west-2.amazonaws.com/secure.notion-static.com/c60f2908-718a-4e02-a665-4d2db534179c/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAT73L2G45O3KS52Y5%2F20210203%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20210203T174719Z&X-Amz-Expires=86400&X-Amz-Signature=8ffe8da03aa1fbceabff5b6facbbba7a15965c92729aa41246f829828848e725&X-Amz-SignedHeaders=host&response-content-disposition=filename%20%3D%22Untitled.png%22">
+<img src="https://github.com/Shhoya/shhoya.github.io/blob/master/rsrc/windows/handle_00.png?raw=true">
 
 즉, 커널 핸들 테이블의 기준이 `System` 프로세스의 `ObjectTable` 으로 이해할 수 있습니다. 또한 특이한 점은, `ObpKernelHandleTable`의 경우 `QuotaProcess` 가 비어있습니다. 그 외에는 모두 존재합니다.
 
@@ -224,7 +224,7 @@ Object: ffffb986186a7040  Type: (ffffb986186c4e80) Process
 먼저 `ObjectTable(HANDLE_TABLE)` 을 확인합니다. 해당 `ObjectTable` 에는 `TableCode` 필드가 존재합니다. `0xffffffff'fffffffc` 로 AND 연산을 하는 이유는 최하위 2비트를 지우기 위함입니다.
 이를 통해 `HANDLE_TABLE_ENTRY` 의 시작 주소를 얻을 수 있습니다.
 
-<img src="https://s3.us-west-2.amazonaws.com/secure.notion-static.com/a3e0aba9-710d-40c4-bf8d-1ec4b8fb0b24/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAT73L2G45O3KS52Y5%2F20210203%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20210203T174648Z&X-Amz-Expires=86400&X-Amz-Signature=e72f2501412485a3e52fa7c851b1a94fcc6a5cd8a3a4124482a2a7f0b9c68d37&X-Amz-SignedHeaders=host&response-content-disposition=filename%20%3D%22Untitled.png%22">
+<img src="https://github.com/Shhoya/shhoya.github.io/blob/master/rsrc/windows/handle_01.png?raw=true">
 
 물론 시작 주소이기 때문에 확인해보면 `0x10` 만큼 떨어진 위치부터 엔트리가 시작됩니다.
 좀더 정확한 핸들의 `HANDLE_TABLE_ENTRY` 를 얻기 위해서 `ExpLookupHandleTableEntry` 함수를 확인합니다.

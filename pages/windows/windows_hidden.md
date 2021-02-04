@@ -39,11 +39,11 @@ Guest OS : Windows 7, 6.1(7601 Service pack 1)
 
 먼저 제작한 정적 분석 도구를 통해 해당 `hidetoolz` 바이너리를 열어보면 숨겨져 있는 이미지가 존재하는 것을 확인할 수 있습니다.(해당 도구가 아니라도 `HxD` 와 같은 바이너리 편집 도구로 확인 가능합니다.)
 
-<img src="https://s3.us-west-2.amazonaws.com/secure.notion-static.com/55fa52ca-6853-429f-84b6-56c476d2b004/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAT73L2G45O3KS52Y5%2F20210202%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20210202T151925Z&X-Amz-Expires=86400&X-Amz-Signature=838db3440c0c39319e409775d34109153b36d5df15cf3c5a5371cbe5caaca3fe&X-Amz-SignedHeaders=host&response-content-disposition=filename%20%3D%22Untitled.png%22">
+[<img src="https://github.com/Shhoya/shhoya.github.io/blob/master/rsrc/windows/hidden_00.png?raw=true">
 
 분석 대상 드라이버는 숨겨진 파일 중 가장 큰(320kb) 파일로 정보는 아래와 같습니다.
 
-<img src="https://s3.us-west-2.amazonaws.com/secure.notion-static.com/0f55bab9-a9bd-4856-b077-572f0f06265c/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAT73L2G45O3KS52Y5%2F20210202%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20210202T151955Z&X-Amz-Expires=86400&X-Amz-Signature=0e3c42bb0c3a59a2c1fd9b26fc4004e5113a932017c70186d9473a26b2239779&X-Amz-SignedHeaders=host&response-content-disposition=filename%20%3D%22Untitled.png%22">
+<img src="https://github.com/Shhoya/shhoya.github.io/blob/master/rsrc/windows/hidden_01.png?raw=true">
 
 마찬가지로 파일이 숨겨져있지만, 해당 파일은 87kb의 같은 파일입니다.
 
@@ -178,7 +178,7 @@ LABEL_25:
 
 다음은 해당 전역변수(`dwTargetVersion`)가 참조되는 주소들 입니다.
 
-<img src="https://s3.us-west-2.amazonaws.com/secure.notion-static.com/d78aa36b-25a6-4327-b07d-41dc587a46dd/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAT73L2G45O3KS52Y5%2F20210202%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20210202T152039Z&X-Amz-Expires=86400&X-Amz-Signature=aefe2081d46c7cf2feb92c1cd5b3bf85ef9e313c5e188c942aa814cbdd29e06c&X-Amz-SignedHeaders=host&response-content-disposition=filename%20%3D%22Untitled.png%22">
+<img src="https://github.com/Shhoya/shhoya.github.io/blob/master/rsrc/windows/hidden_02.png?raw=true">
 
 네이밍 되어 있지 않은 세 개의 함수(`sub_1400093B4`, `sub_1400097B8`, `sub_14000AA5C`)에서 참조되는 것을 확인할 수 있습니다.
 
@@ -423,7 +423,7 @@ kd> dx -id 0,0,fffffa8030f2a040 -r1 (*((ntkrnlmp!_LIST_ENTRY *)0xfffffa8032de8c8
 
 은닉 시도 후 아래와 같이 프로세스를 찾을 수 없게 된 것을 확인할 수 있습니다.
 
-<img src="https://s3.us-west-2.amazonaws.com/secure.notion-static.com/d302ebea-9a7b-47e2-92cc-aa94473ce89e/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAT73L2G45O3KS52Y5%2F20210202%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20210202T152121Z&X-Amz-Expires=86400&X-Amz-Signature=01d965c94c49110f5e857244d554342cf14f18d9961974387017cfffc95bbad8&X-Amz-SignedHeaders=host&response-content-disposition=filename%20%3D%22Untitled.png%22">
+<img src="https://github.com/Shhoya/shhoya.github.io/blob/master/rsrc/windows/hidden_03.png?raw=true">
 
 당연히 다음과 같이 프로세스 연결 리스트가 모두 자기 자신을 가리키도록 변조된 것도 확인 가능합니다.
 
@@ -438,7 +438,7 @@ kd> dx -id 0,0,fffffa8030f2a040 -r1 (*((ntkrnlmp!_LIST_ENTRY *)0xfffffa8032de8c8
 
 해당 부분은 아무런 문제가 되지 않습니다. 잘 알려진 기법인 만큼 탐지할 수 있는 방법도 많이 알려져 있습니다. 다만 다음의 상황은 조금 달랐습니다.
 
-<img src="https://s3.us-west-2.amazonaws.com/secure.notion-static.com/465f92f7-586c-49ff-8bc2-2e3bbc07cda8/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAT73L2G45O3KS52Y5%2F20210202%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20210202T152140Z&X-Amz-Expires=86400&X-Amz-Signature=3eeaa0925af1142817b85c4f22e162734ae366ebf5216655a217a2eeeb69f95d&X-Amz-SignedHeaders=host&response-content-disposition=filename%20%3D%22Untitled.png%22">
+<img src="https://github.com/Shhoya/shhoya.github.io/blob/master/rsrc/windows/hidden_04.png?raw=true">
 
 위의 그림을 설명하자면, `ActiveProcessLinks` 의 오프셋을 찾지 못하는 경우 프로세스 은닉의 대안으로 프로세스의 이름을 부모 프로세스인 `explorer.exe` 변경하였습니다.
 
@@ -469,7 +469,7 @@ Peb.ImagePathName
 
 아래와 같이 `WKE` 에서 프로세스 목록을 확인할 수 있습니다.
 
-<img src="https://s3.us-west-2.amazonaws.com/secure.notion-static.com/53cfa734-408e-4b56-b21a-7c30749c3514/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAT73L2G45O3KS52Y5%2F20210202%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20210202T152204Z&X-Amz-Expires=86400&X-Amz-Signature=3286bfac598ece961aed08172347959b902d24aac58d128620f1145ffe86efe5&X-Amz-SignedHeaders=host&response-content-disposition=filename%20%3D%22Untitled.png%22">
+<img src="https://github.com/Shhoya/shhoya.github.io/blob/master/rsrc/windows/hidden_05.png?raw=true">
 
 현재 보이지 않지만, `HideToolz` 가 두 가지 방식(DKOM, Fake) 모두 탐지하고 있습니다.
 
@@ -671,9 +671,9 @@ VOID FindFakeProcess(PFUNCTION_POINTER pFunction, ULONG Count)
 
 다음은 `HideToolz` 를 이용하여 프로세스명 속임수와 프로세스 은닉을 탐지하는 내용입니다.
 
-<img src="https://s3.us-west-2.amazonaws.com/secure.notion-static.com/8e08c0a1-3bf2-4e43-95eb-af42264321e0/test2.gif?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAT73L2G45O3KS52Y5%2F20210202%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20210202T152232Z&X-Amz-Expires=86400&X-Amz-Signature=3b77e1b4763215b3da047189f31bb2a194f34e5ab39aa04db261e7899aa27a9a&X-Amz-SignedHeaders=host&response-content-disposition=filename%20%3D%22test2.gif%22">
+<img src="https://github.com/Shhoya/shhoya.github.io/blob/master/rsrc/windows/hidden_06.gif?raw=true">
 
-<img src="https://s3.us-west-2.amazonaws.com/secure.notion-static.com/626c6ae1-4ff3-424e-8cd8-7b5f0569a0c6/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAT73L2G45O3KS52Y5%2F20210202%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20210202T152248Z&X-Amz-Expires=86400&X-Amz-Signature=3205b28ce710fb74d2a0ea4a2b04578b0d761dff41ac7b3cb905fbc143b0c959&X-Amz-SignedHeaders=host&response-content-disposition=filename%20%3D%22Untitled.png%22">
+<img src="https://github.com/Shhoya/shhoya.github.io/blob/master/rsrc/windows/hidden_07.png?raw=true">
 
 ## [0x06] Conclusion
 
