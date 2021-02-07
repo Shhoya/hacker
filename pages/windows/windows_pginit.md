@@ -222,4 +222,194 @@ fffff807`4e850010 0f0d09          prefetchw [rcx]
 
 ## [0x02] KiFilterFiberContext
 
-작성중
+이제 `KiFilterFiberContext` 가 어떻게 동작하는지 확인합니다.
+
+```c
+_BOOL8 __fastcall PG_KiFilterFiberContext(__int64 a1)
+{
+  // [COLLAPSED LOCAL DECLARATIONS. PRESS KEYPAD CTRL-"+" TO EXPAND]
+
+  v2 = KdDisableDebugger();
+  KeKeepData(PG_KiFilterFiberContext);
+  _disable();
+  if ( !KdDebuggerNotPresent )
+  {
+    while ( 1 )
+      ;
+  }
+  _enable();
+  v3 = __rdtsc();
+  v4 = (__ROR8__(v3, 3) ^ v3) * 0x7010008004002001ui64;
+  v46 = *(&v4 + 1);
+  v5 = (v4 ^ *(&v4 + 1)) % 0xA;
+  if ( !Src && !a1 && !__31 )
+  {
+    if ( PsIntegrityCheckEnabled )
+    {
+      ObjectAttributes.Length = 0x30;
+      ObjectAttributes.ObjectName = &Callback_542875F90F9B47F497B64BA219CACF69;
+      ObjectAttributes.RootDirectory = 0i64;
+      ObjectAttributes.Attributes = 0x40;
+      *&ObjectAttributes.SecurityDescriptor = 0i64;
+      if ( ExCreateCallback(&CallbackObject, &ObjectAttributes, 0, 0) >= 0 )
+      {
+        ExNotifyCallback(CallbackObject, sub_1401A9D20, &__28);
+        ObfDereferenceObject(CallbackObject);
+        if ( __28 )
+          __31 = 1;
+        ExInitializeNPagedLookasideList(&Lookaside, 0i64, 0i64, 0x200u, 0xAF0ui64, 'tnIK', 0);
+      }
+    }
+  }
+```
+
+`IDA` 를 이용하여 디컴파일을 진행하면 `ObjectName` 부분이 `TV`라고 되어있습니다. 이 부분은 잘못 해석한 것입니다. `OBJECT_ATTRIBUTES` 구조체의 `ObjectName`은 `PUNICODE_STRING` 으로 구성되어 있습니다. `TV(0x54 0x56)` 은 `UNICODE_STRING`의 `Length`와 `MaxLength` 를 의미하며 버퍼는 8 바이트 떨어진 위치에 존재합니다.
+
+즉 콜백의 이름은 `\\Callback\\542875F90F9B47F497B64BA219CACF69` 으로 되어있습니다.
+
+`ExCreateCallback`을 이용하여  `542875F90F9B47F497B64BA219CACF69` 콜백 오브젝트를 Open 하는 것을 확인할 수 있습니다.
+
+```c
+if ( ExCreateCallback(&CallbackObject, &ObjectAttributes, 0, 0) >= 0 )
+
+{
+
+ExNotifyCallback(CallbackObject, sub_1401A9D20, &__28);
+
+ObfDereferenceObject(CallbackObject);
+
+if ( __28 )
+
+__31 = 1;
+
+ExInitializeNPagedLookasideList(&Lookaside, 0i64, 0i64, 0x200u, 0xAF0ui64, 'tnIK', 0);
+
+}
+```
+
+`ExNotifyCallback`에서 약간의 시간을 소모했습니다. MSDN에서는 전달된 콜백 오브젝트에 등록된 모든 콜백 루틴을 호출한다고 되어있습니다.
+
+왜 그런 위험한 모험을 하는가? 했지만 `ReactOS` 에 있는 소스코드를 보고 약간은 이해했습니다.(https://doxygen.reactos.org/d1/d6e/ntoskrnl_2ex_2callback_8c_source.html)
+
+소스 코드를 확인해보면 `LIST_ENTRY` 를 통해 링크를 타고 등록 된 모든 콜백 루틴에 동일한 파라미터를 전달하여 호출하는 것을 볼 수 있습니다.
+
+`Lock` 에 대한 처리 등이 자연스럽기 때문에 분명 필요한 기능이긴 할 것 같습니다. 아래는 `ExCreate, NotifyCallback` 루틴의 원형입니다.
+
+```c
+NTSTATUS ExCreateCallback(
+  PCALLBACK_OBJECT   *CallbackObject,
+  POBJECT_ATTRIBUTES ObjectAttributes,
+  BOOLEAN            Create,
+  BOOLEAN            AllowMultipleCallbacks
+);
+
+void ExNotifyCallback(
+  PVOID CallbackObject,
+  PVOID Argument1,
+  PVOID Argument2
+);
+```
+
+여기서 의심스럽게 봐야 할 부분이 있었습니다. 분명 해당 콜백 오브젝트를 생성(등록) 하는 `ExRegisterCallback` 루틴이 있지만 해당 콜백을 등록하는 루틴을 찾을 수 없었습니다. 즉 어디선가 이미 콜백 오브젝트를 등록했다고 볼 수 있습니다.
+
+또한 `KiFilterFiberContext` 의 중간쯤에는 `KeExpandKernelStackAndCallout` 루틴을 볼 수 있습니다.
+
+```c
+NTSTATUS
+KeExpandKernelStackAndCallout (
+    _In_ PEXPAND_STACK_CALLOUT Callout,
+    _In_opt_ PVOID Parameter,
+    _In_ SIZE_T Size
+    );
+```
+
+`MSDN` 에서 찾아보면 해당 루틴은 스택 공간을 보장하여 루틴을 호출할 수 있다고 되어 있습니다.
+
+이 루틴을 호출하며 전달되는 첫 번째 파라미터(`ExpandedStackCall Pointer`)가 바로 `KiInitializePatchGuard` 라고 잘 알려진 패치가드의 핵심 루틴입니다.
+
+{% include tip.html content="Windows 10, 1909 기준으로 해당 루틴은 KiInitalizePatchGuard 의 상위 루틴입니다. 해당 루틴 안에서 KiInitializePatchGuard 를 호출합니다."%}
+
+```c
+// KiFilterFiberContext
+v12 = KeExpandKernelStackAndCallout(PG_Initialize_Caller, v30, 0xC000i64);
+// KiFilterFiberContext
+
+__int64 __fastcall PG_Initialize_Caller(__int64 a1)
+{
+  __int64 result; // rax
+
+  result = PG_KiInitializePatchGuard(*a1, *(a1 + 4), *(a1 + 8), *(a1 + 16), *(a1 + 24));
+  *(a1 + 28) = result;
+  return result;
+}
+```
+
+### [-] KiVerifyXcpt15
+
+`KiFilterFiberContext` 말고도 `KiInitializePatchGuard` 를 호출하는 다른 로직이 존재합니다. 바로 `KiVerifyXcpt15` 루틴입니다.
+
+해당 루틴은 `KiVerifyXcptRoutine` 라고 하는 함수 포인터의 3번째(1909 기준) 위치에 존재합니다.
+
+`KiVerifyScopesExecute` 루틴에 의해 `KiVerifyXcptRoutine` 내 함수들이 모두 호출 됩니다.
+
+```c
+__int64 KiVerifyScopesExecute()
+{
+  // [COLLAPSED LOCAL DECLARATIONS. PRESS KEYPAD CTRL-"+" TO EXPAND]
+
+  v10 = 0;
+  v8 = 0i64;
+  v9 = 0;
+  v0 = KiVerifyPass;
+  v6 = 0xFEFFFFFFFFFFFFFFui64;
+  v7 = 0i64;
+  if ( !KiVerifyPass )
+  {
+    BugCheckParameter4 = v8;
+    goto LABEL_10;
+  }
+  do
+  {
+    KiVerifyXcptRoutinePointer = KiVerifyXcptRoutines;
+    LODWORD(v7) = (v0 & 1) == 0;
+    v2 = 0;
+    do
+    {
+      XcptPointer = *KiVerifyXcptRoutinePointer;
+      *(&v7 + 4) = 0i64;
+      (XcptPointer)(&v6);
+      if ( !DWORD2(v7) )
+        KeBugCheckEx(0x14Du, v2, v0, SDWORD1(v7), 0i64);
+      ++v2;
+      ++KiVerifyXcptRoutinePointer;
+      BugCheckParameter4 = __ROL8__(SDWORD1(v7) ^ v8, BYTE4(v7) & 0x3F);
+      v8 = BugCheckParameter4;
+    }
+    while ( KiVerifyXcptRoutinePointer < &qword_140A51148 );
+    --v0;
+  }
+  while ( v0 );
+  if ( BugCheckParameter4 != 0x7493D5224FA9E69Ai64 )
+LABEL_10:
+    KeBugCheckEx(0x14Du, 0xFFFFFFFFui64, 0i64, 0x7493D5224FA9E69Aui64, BugCheckParameter4);
+  KiVerifyPdata(PsNtosImageBase);
+  return KiVerifyPdata(PsHalImageBase);
+```
+
+마찬가지로 `KeInitSystem` 에서 `KeExpandKernelStackAndCallout` 루틴을 이용해 호출되는 것을 확인할 수 있습니다.
+
+<img src="https://github.com/Shhoya/shhoya.github.io/blob/master/rsrc/windows/pginit_01.png?raw=true">
+
+`KiVerifyXcpt15` 의 경우 예외 처리기를 통해 호출하므로 그래프 뷰로 보면 좀 더 명확하게 확인할 수 있습니다.
+
+<img src="https://github.com/Shhoya/shhoya.github.io/blob/master/rsrc/windows/pginit_02.png?raw=true">
+
+지금까지 `KPP` 의 초기화되는 큰 그림을 보면 아래와 같습니다.
+
+<img src="https://github.com/Shhoya/shhoya.github.io/blob/master/rsrc/windows/pginit_03.png?raw=true">
+
+(모든 분석이 완료되면 고화질 PDF로 업로드 예정입니다. 위의 과정들을 단순화 시켜놓은 그림입니다.)
+
+## [0x03] KiInitializePatchGuard
+
+(작성 중)
