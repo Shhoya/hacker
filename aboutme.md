@@ -18,11 +18,10 @@ toc: false
 
 - Anti-Cheat Driver Analysis
 - Hooking Library(detours, minhook, easyhook, infinityhook) 
-- Bug analysis of capcom driver
-- Research and develop cheats using Unreal 3 FName and GObject
+- Research and develop cheats using Unreal 3,4 FName and GObject
 - VMM(Hyper-V) Cheat research
 - Windows Kernel Patch Protection(PatchGuard) research
-- Windows Code Integrity & Kernel Debugging bypass research
+- Windows Code Integrity & Kernel Anti Debugging bypass research
 - VMProtect Code Virtualization research
 
 
