@@ -81,15 +81,50 @@ End : nt_BaseAddress + OptionalHeader.SizeOfImage
 
 그 다음 `GDBStub` 설정 포스팅에서 설명한대로 심볼을 해당 주소에 로드합니다!([Link](https://shhoya.github.io/gdbstub.html#0x03-load-symbol))
 
-그리고 F8(Step Over) 명령을 통해 예외 핸들링에서 `Yes(pass to app)` 을 클릭 한 후, 원하는 위치에 브레이크 포인트를 설치하고 실행하면 됩니다
+그리고 F8(Step Over) 명령을 통해 예외 핸들링에서 `Yes(pass to app)` 을 클릭 한 후, 원하는 위치에 브레이크 포인트를 설치하고 실행하면 됩니다.(pass to app 진행 시 그냥 실행된다면 discard 로 처리할 수 있습니다.)
 
 패치가드의 주요 루틴 중 하나인 `KiFilterFiberContext` 에서 브레이크 포인트가 동작한 모습입니다!
 
 <img src="https://github.com/Shhoya/shhoya.github.io/blob/master/rsrc/windows/pgpre_03.png?raw=true">
 
+## [0x01] Update_2021
 
+`IDA` 의 버전에 따라 사용하는 API가 다릅니다. `idaapi` 에서 `SendDbgCommand` 와 `DbgWord` 의 경우 다음과 같이 변경됩니다.
 
-## [0x01] Reference
+```c
+SendDbgCommand == send_dbg_command
+DbgWord == read_dbg_word
+```
+
+`Windows 7` 에서도 마찬가지로 `idtr` 을 이용하여 `ntoskrnl` 베이스 주소를 획득할 수 있습니다.
+
+```python
+#Windows 7 
+def page_align(address):
+    return(address&~(0x1000-1))
+
+monitor_result = send_dbg_command("r idtr")
+base_pos = monitor_result.find("base=")
+limit_pos = monitor_result.rfind(" limit")
+idt_base = monitor_result[base_pos+5:limit_pos]
+
+idt_base = int(idt_base, 16)
+OffsetLow = read_dbg_word(idt_base + 0)
+OffsetMiddle = read_dbg_word(idt_base + 6)
+OffsetHigh = read_dbg_word(idt_base + 8)
+
+HandlerAddress = (OffsetHigh << 32) + (OffsetMiddle << 16) + OffsetLow
+HandlerAddress = HandlerAddress|0xFFFF000000000000
+DosHeader = page_align(HandlerAddress)
+while(True):
+    e_magic = read_dbg_word(DosHeader+0)
+    if e_magic == 0x5A4D:
+        print("Base Address : %X"%DosHeader)
+		break
+    DosHeader -=0x1000
+```
+
+## [0x02] Reference
 
 1. [Load GDBStub symbol](https://www.triplefault.io/2017/07/loading-kernel-symbols-vmm-debugging.html)
 2. [Windows Kernel Memory Layout](https://codemachine.com/article_x64kvas.html)
