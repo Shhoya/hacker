@@ -13,7 +13,9 @@ folder: windows
 
 현재까지 많은 패치가드에 대한 연구가 진행되어 왔습니다. 가장 최근 문헌들과 과거 문헌들을 확인하며 분석하였습니다.
 
-- Target OS : Windows 10, 1909(18363)
+- Target OS : Windows 10, 1909(18363), Windows 7, 6.1(7601)
+
+분석 OS가 나누어진 이유는 과거 패치가드 우회에 대한 문서를 참조하기 때문입니다. 작성자는 분석 도중 "그래서 어떻게 우회를 해야 하지?" 라는 의문에 빠졌고, 이에 대한 해결책으로 과거의 문헌을 참조하기로 했습니다.
 
 ## [0x01] Initialization Patch Guard
 
@@ -47,7 +49,7 @@ folder: windows
 
 {% include tip.html content="lfence 명령은 Memory Barrier로 연산 순서에 대한 보장을 위해 사용됩니다."%}
 
-1. 먼저 `InitSaveBootMode` 전역변수가 0인지를 비교합니다. 이는 안전모드에 대한 전역변수를 의미합니다.
+1. 먼저 `InitSafeBootMode` 전역변수가 0인지를 비교합니다. 이는 안전모드에 대한 전역변수를 의미합니다.
 
 2. 다음으로 `KdDebuggerNotPresent` 와 `KdPitchDebugger` 변수를 각 레지스터에 저장하고 OR 연산한 결과를 ecx에 저장한 후 부호를 반전(neg) 시킵니다.(해당 전역 변수들에 대해 더 알고 싶다면 블로그 내 [포스팅](https://shhoya.github.io/antikernel_kerneldebugging4.html)을 참조하십시오.)
 
@@ -141,7 +143,7 @@ fffff801`200282f2 c3              ret
 
 ### [-] ExpLicenseWatchInitWorker
 
-이 루틴은 `KeInitAmd64SpecificState` 보다 부트 프로세스에서 먼저 실행됩니다. 다음은 콜 스택입니다.
+이 루틴을 통해 KiFilterFiberContext 가 호출될 확률은 매우 적습니다. 먼저 콜 스택입니다.
 
 ```
 3: kd> k
@@ -155,32 +157,29 @@ fffff801`200282f2 c3              ret
 06 fffff307`a4006c60 00000000`00000000 nt!KiStartSystemThread+0x28
 ```
 
-해당 루틴의 의사코드는 다음과 같습니다.
+해당 루틴의 의사코드는 다음과 같습니다. 매우 적은 확률이라 하는 이유는 rdtsc 를 이용하여 0x64로 MOD 연산한 값이 3보다 클 때 다음 루틴이 실행되는데 이 확률이 문헌에서는 4% 밖에 되지 않는다고 합니다.
 
 ```c++
-__int64 __fastcall ExpLicenseWatchInitWorker(__int64 a1, __int64 a2, __int64 a3, __int64 a4)
+__int64 ExpLicenseWatchInitWorker()
 {
   // [COLLAPSED LOCAL DECLARATIONS. PRESS KEYPAD CTRL-"+" TO EXPAND]
 
   _mm_lfence();
-  KPRCB = KiProcessorBlock;
-  KiServiceTablesLocked = KiProcessorBlock->HalReserved[6];
-  KiProcessorBlock->HalReserved[6] = 0i64;
-  pKiFilterFiberContext = KPRCB->HalReserved[5]; // KiFilterFiberContext
+  KPRCB = KiProcessorBlock[0];
+  KiServiceTablesLocked = KiProcessorBlock[0]->HalReserved[6];
+  KiProcessorBlock[0]->HalReserved[6] = 0i64;
+  PG_KiFilterFiberContext = KPRCB->HalReserved[5];
   KPRCB->HalReserved[5] = 0i64;
-  LOBYTE(a4) = (InitSafeBootMode != 0) | (MEMORY[0xFFFFF780000002D4] >> 1);
-  v7 = __rdtsc();
-  v8 = v7 >> 3;
-  v9 = (v7 >> 3) / 0x64;
-  result = (100 * v9);
-  v11 = (v8 - result);
-  if ( v11 > 3 )
-    LOBYTE(a4) = (MEMORY[0xFFFFF780000002D4] >> 1) | 1;
-  if ( !a4 )                                    // Check Debugger
+  v3 = (InitSafeBootMode != 0) | (KUSER_SHARED_DATA.KdDebuggerEnabled >> 1);
+  v4 = __rdtsc() >> 3;
+  result = 0x64 * (v4 / 0x64);
+  if ( v4 % 0x64 > 3 )
+    v3 = (KUSER_SHARED_DATA.KdDebuggerEnabled >> 1) | 1;
+  if ( !v3 )
   {
-    result = pKiFilterFiberContext(KiServiceTablesLocked, v9, v11, a4);
+    result = PG_KiFilterFiberContext(KiServiceTablesLocked);
     if ( result != 1 )
-      KeBugCheckEx(0x9Au, 'BBBB', 0xC000026Aui64, 0i64, 0i64);
+      KeBugCheckEx(SYSTEM_LICENSE_VIOLATION, 0x42424242ui64, STATUS_LICENSE_VIOLATION, 0i64, 0i64);
   }
   return result;
 }
@@ -412,4 +411,81 @@ LABEL_10:
 
 ## [0x03] KiInitializePatchGuard
 
-(작성 중)
+`KiInitializePatchGuard` 루틴을 확인하면 엄청난 크기의 루틴을  확인할 수 있습니다.
+
+실제로 패치가드와 관련된 함수들을 찾는데 이러한 함수의 크기를 이용합니다.
+
+<img src="https://github.com/Shhoya/shhoya.github.io/blob/master/rsrc/windows/pginit_04.png?raw=true">
+
+`FsRtlmdlReadCompleteDevEx` 의 경우 `FsRtlUninitializeSmallMcb` 에 의해 호출되는 경우가 존재합니다. `FsRtlUninitializeSmallMcb` 은 `KiInitializePatchGuard` 루틴에서만 참조되므로 마찬가지로 패치가드와 관련된 루틴이 확실합니다.
+
+위의 명명된 `pg_5428...._param` 의 경우 `KiFilterFiberContext` 에서 등록한 콜백 함수의 파라미터 입니다. 역시 패치가드와 관련이 있습니다.
+
+매우 거대한 함수이므로 `IDA` 의 헥스레이 옵션을 조정하여 의사코드를 만들 경우 꽤 오랜 시간이 소요됩니다.
+
+## [0x04] Initialize PatchGuard Context
+
+가장 중요한 핵심 요소인 `PGContext` 에 대해 알아보겠습니다. 과거 많은 보안 연구원 및 해커들은 패치가드에 대해 분석하였고, 패치가드에서 사용되는 핵심 요소인 거대한 구조를 `PG Context` 라고 명명하여 부르기 시작하였습니다.
+
+위에서 설명한 초기화 과정이 중요한 이유는, `KiInitializePatchGuard` 루틴이 바로 이 `PG Context` 를 초기화 하는 루틴이기 때문입니다.
+
+`KiInitializePatchGuard` 루틴을 잘 살펴보면 아래와 유사한 패턴들을 자주 볼 수 있습니다.
+
+```
+// KiInitializePatchGuard
+
+0F 31                                   rdtsc
+48 C1 E2 20                             shl     rdx, 20h
+49 B8 01 20 00 04 80 00 10 70           mov     r8, 7010008004002001h
+48 0B C2                                or      rax, rdx
+BB 05 00 00 00                          mov     ebx, 5
+48 8B C8                                mov     rcx, rax
+48 C1 C8 03                             ror     rax, 3
+48 33 C8                                xor     rcx, rax
+49 8B C0                                mov     rax, r8
+48 F7 E1                                mul     rcx
+48 8B CA                                mov     rcx, rdx
+48 89 94 24 60 05 00 00                 mov     [rsp+2468h+var_1F08], rdx
+48 33 C8                                xor     rcx, rax
+48 B8 A3 8B 2E BA E8 A2 8B 2E           mov     rax, 2E8BA2E8BA2E8BA3h
+48 F7 E1                                mul     rcx
+48 D1 EA                                shr     rdx, 1
+48 6B C2 0B                             imul    rax, rdx, 0Bh
+48 2B C8                                sub     rcx, rax
+3B CB                                   cmp     ecx, ebx
+0F 87 B7 00 00 00                       ja      loc_1409D3258
+0F 84 97 00 00 00                       jz      loc_1409D323E
+85 C9                                   test    ecx, ecx
+74 79                                   jz      short loc_1409D3224
+83 E9 01                                sub     ecx, 1
+74 5B                                   jz      short loc_1409D320B
+83 E9 01                                sub     ecx, 1
+74 3C                                   jz      short loc_1409D31F1
+83 F9 01                                cmp     ecx, 1
+74 1A                                   jz      short loc_1409D31D4
+C7 84 24 0C 01 00 00 94 64 07 67        mov     [rsp+2468h+var_235C], 67076494h
+8B BC 24 0C 01 00 00                    mov     edi, [rsp+2468h+var_235C]
+C1 C7 04                                rol     edi, 4
+E9 97 01 00 00                          jmp     loc_1409D336B
+```
+
+`rdtsc` 명령을 이용하여 시드로 사용하여 복잡한 연산을 진행합니다. 해당 패턴은 주로  패치가드에서 사용되는 메모리의 풀 태그를 결정하는데 사용됩니다. 메모리 상에서 내부 데이터 구조를 찾기 어렵게 하기 위한 방법 중 하나입니다.
+
+`KiInitializePatchGuard` 루틴은 매우 복잡하게 이루어져 있습니다. 예로 `KiInitializePatchGuard` 함수에서 `KeBugCheckEx` 를 통해 초기화 실패를 알리는 루틴은 다음과 같습니다.
+
+```c
+KeBugCheckEx(__ROR4__(0x4000004F, 222), 0xFui64, BugCheckParameter2[0], 0x140000000ui64, v48);
+```
+
+`Rotate` 연산을 통해 버그 코드를 전달할 정도로 신경을 많이 쓴 것을 볼 수 있습니다. 실제로 연산해서 확인하면 `0x13D` 이며, `CRITICAL_INITIALIZATION_FAILURE` 로 BSOD 가 발생하게 될 것으로 보입니다.
+
+```c
+//
+// MessageId: CRITICAL_INITIALIZATION_FAILURE
+//
+// MessageText:
+//
+//  CRITICAL_INITIALIZATION_FAILURE
+//
+#define CRITICAL_INITIALIZATION_FAILURE  ((ULONG)0x0000013DL)
+```
