@@ -2,7 +2,7 @@
 
 entries:
 - title: sidebar
-  product: Documentation
+  product: Information
   version: 0.8
   folders:
 
@@ -42,13 +42,13 @@ entries:
             url: /document_reloc_iat.html
             output: web
         
-        - title: C and C++ Programming
-          output: web
-          subfolderitems:
-            
-          - title: Introduction
-            url: /document_programming_intro.html
-            output: web
+#        - title: C and C++ Programming
+#          output: web
+#          subfolderitems:
+#            
+#          - title: Introduction
+#            url: /document_programming_intro.html
+#            output: web
 
 
 #  - title: Tag archives
