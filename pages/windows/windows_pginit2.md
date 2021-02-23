@@ -1,11 +1,11 @@
 ---
 title: PatchGuard Initialize -2-
 keywords: documentation, technique, reversing, kernel, windows
-date: 2020-11-10
+date: 2021-02-23
 tags: [Windows, Reversing, Vulnerability, Kernel]
 summary: "Windows PG Initialize"
 sidebar: windows_sidebar
-permalink: windows_pginit.html
+permalink: windows_pginit2.html
 folder: windows
 ---
 
