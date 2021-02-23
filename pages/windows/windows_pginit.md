@@ -1,5 +1,5 @@
 ---
-title: PatchGuard Initialize
+title: PatchGuard Initialize -1-
 keywords: documentation, technique, reversing, kernel, windows
 date: 2020-11-10
 tags: [Windows, Reversing, Vulnerability, Kernel]
@@ -421,71 +421,4 @@ LABEL_10:
 
 위의 명명된 `pg_5428...._param` 의 경우 `KiFilterFiberContext` 에서 등록한 콜백 함수의 파라미터 입니다. 역시 패치가드와 관련이 있습니다.
 
-매우 거대한 함수이므로 `IDA` 의 헥스레이 옵션을 조정하여 의사코드를 만들 경우 꽤 오랜 시간이 소요됩니다.
-
-## [0x04] Initialize PatchGuard Context
-
-가장 중요한 핵심 요소인 `PGContext` 에 대해 알아보겠습니다. 과거 많은 보안 연구원 및 해커들은 패치가드에 대해 분석하였고, 패치가드에서 사용되는 핵심 요소인 거대한 구조를 `PG Context` 라고 명명하여 부르기 시작하였습니다.
-
-위에서 설명한 초기화 과정이 중요한 이유는, `KiInitializePatchGuard` 루틴이 바로 이 `PG Context` 를 초기화 하는 루틴이기 때문입니다.
-
-`KiInitializePatchGuard` 루틴을 잘 살펴보면 아래와 유사한 패턴들을 자주 볼 수 있습니다.
-
-```
-// KiInitializePatchGuard
-
-0F 31                                   rdtsc
-48 C1 E2 20                             shl     rdx, 20h
-49 B8 01 20 00 04 80 00 10 70           mov     r8, 7010008004002001h
-48 0B C2                                or      rax, rdx
-BB 05 00 00 00                          mov     ebx, 5
-48 8B C8                                mov     rcx, rax
-48 C1 C8 03                             ror     rax, 3
-48 33 C8                                xor     rcx, rax
-49 8B C0                                mov     rax, r8
-48 F7 E1                                mul     rcx
-48 8B CA                                mov     rcx, rdx
-48 89 94 24 60 05 00 00                 mov     [rsp+2468h+var_1F08], rdx
-48 33 C8                                xor     rcx, rax
-48 B8 A3 8B 2E BA E8 A2 8B 2E           mov     rax, 2E8BA2E8BA2E8BA3h
-48 F7 E1                                mul     rcx
-48 D1 EA                                shr     rdx, 1
-48 6B C2 0B                             imul    rax, rdx, 0Bh
-48 2B C8                                sub     rcx, rax
-3B CB                                   cmp     ecx, ebx
-0F 87 B7 00 00 00                       ja      loc_1409D3258
-0F 84 97 00 00 00                       jz      loc_1409D323E
-85 C9                                   test    ecx, ecx
-74 79                                   jz      short loc_1409D3224
-83 E9 01                                sub     ecx, 1
-74 5B                                   jz      short loc_1409D320B
-83 E9 01                                sub     ecx, 1
-74 3C                                   jz      short loc_1409D31F1
-83 F9 01                                cmp     ecx, 1
-74 1A                                   jz      short loc_1409D31D4
-C7 84 24 0C 01 00 00 94 64 07 67        mov     [rsp+2468h+var_235C], 67076494h
-8B BC 24 0C 01 00 00                    mov     edi, [rsp+2468h+var_235C]
-C1 C7 04                                rol     edi, 4
-E9 97 01 00 00                          jmp     loc_1409D336B
-```
-
-`rdtsc` 명령을 이용하여 시드로 사용하여 복잡한 연산을 진행합니다. 해당 패턴은 주로  패치가드에서 사용되는 메모리의 풀 태그를 결정하는데 사용됩니다. 메모리 상에서 내부 데이터 구조를 찾기 어렵게 하기 위한 방법 중 하나입니다.
-
-`KiInitializePatchGuard` 루틴은 매우 복잡하게 이루어져 있습니다. 예로 `KiInitializePatchGuard` 함수에서 `KeBugCheckEx` 를 통해 초기화 실패를 알리는 루틴은 다음과 같습니다.
-
-```c
-KeBugCheckEx(__ROR4__(0x4000004F, 222), 0xFui64, BugCheckParameter2[0], 0x140000000ui64, v48);
-```
-
-`Rotate` 연산을 통해 버그 코드를 전달할 정도로 신경을 많이 쓴 것을 볼 수 있습니다. 실제로 연산해서 확인하면 `0x13D` 이며, `CRITICAL_INITIALIZATION_FAILURE` 로 BSOD 가 발생하게 될 것으로 보입니다.
-
-```c
-//
-// MessageId: CRITICAL_INITIALIZATION_FAILURE
-//
-// MessageText:
-//
-//  CRITICAL_INITIALIZATION_FAILURE
-//
-#define CRITICAL_INITIALIZATION_FAILURE  ((ULONG)0x0000013DL)
-```
+매우 거대한 함수이므로 `IDA` 의 헥스레이 옵션을 조정하여 의사코드를 만들 경우 꽤 오랜 시간이 소요됩니다. 이 후, 실제 `KiInitializePatchGuard` 루틴에 대해서는 파트를 나눠 진행합니다. 다음 파트에서 확인할 수 있습니다.

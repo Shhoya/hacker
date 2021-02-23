@@ -64,12 +64,12 @@ entries:
             url : /windows_pgdump.html
             output: web
 
-    - title: PatchGuard Initialize
+    - title: PatchGuard Initialize(1)
       url: /windows_pginit.html
       output: web, pdf
     
-    - title: PatchGuard Analysis
-      url: /windows_pganalysis.html
+    - title: PatchGuard Initialize(2)
+      url: /windows_pginit2.html
       output: web, pdf
 
 
