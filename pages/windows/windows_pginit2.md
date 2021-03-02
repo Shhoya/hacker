@@ -367,4 +367,169 @@ PgContext = v194 + v193;                      // First PgContext
 
 최근 연구된 패치가드 문서에서 `PgContext`의 사이즈를 `0xAA0` 이라 정의한 부분을 확인했습니다.  개인적인 의견으로는 `PgContext` 의 `Tail` 부분이 아닐까 생각합니다. 어떤 데이터 구조에서 `HEAD`와 `TAIL` 부분은 있으니 충분히 가능성 있다고 봅니다.
 
-(작성중)
+## [0x02] Parameters
+
+`Windows 8.1 Kernel Patch Protection Analysis` 문서에 의하면 `KiInitializePatchGuard` 에 다섯개의 파라미터를 전달한다고 되어 있습니다.
+
+해당 부분을 확인하기 위해 `KiInitializePatchGuardStub` 부터 디버깅하였습니다.
+
+<img src="https://github.com/Shhoya/shhoya.github.io/blob/master/rsrc/windows/pginit2_00.png?raw=true">
+
+위의 그림을 확인하면 전달되는 파라미터 값을 아래와 같이 확인할 수 있습니다.
+
+```
+rcx = 0x09
+rdx = 0x03
+r8  = 0x02
+r9  = 0x00
+[rsp+20h] = 0x01
+```
+
+### [-] 1st Parameter
+
+먼저 첫 번째 파라미터(`rcx`) 는 `PGContext`를 확인하기 위해 생성되는 `DPC` 루틴의 인덱스를 의미한다고 되어있습니다. 이 의미는 `Windows` 에서 사용 가능한 `DPC Routines` 를 의미합니다.
+
+```
+// 예외 핸들러를 이용한 호출 방식
+ExpTimerDpcRoutine
+IopTimerDispatch
+IopIrpStackProfilerTimer
+PopThermalZoneDpc
+CmpEnableLazyFlushDpcRoutine
+CmpLazyFlushDpcRoutine
+KiBalanceSetManagerDeferredRoutine
+ExpTimeRefreshDpcRoutine
+ExpTimeZoneDpcRoutine
+ExpCenturyDpcRoutine
+
+// 예외 핸들러를 이용하지 않는 방식
+KiTimerDispatch(임의의 풀에 할당)
+KiDpcDispatch(PGContext 내에 할당)
+```
+
+예외 핸들러를 이용하는 10 개의 DPC 루틴은 일반적인 시스템 DPC 루틴이지만, 비정규 주소(`Non-Canonical Address`)를 가진 `DeferredContext(DPC Routine에 사용되는 파라미터)`를 전달 받으면 해당하는 `KiCustomAccessRoutine` 함수를 호출합니다. `Windows 10, 1909` 기준으로 10개의 `KiCustomAccessRoutine` 이 존재합니다.
+
+아래는 해당하는 `KiCustomAccessRoutine` 입니다.
+
+```
+ExpTimerDpcRoutine
+- KiCustomAccessRoutine0 (+ FsRtlTruncateSmallMcb)
+
+IopTimerDispatch
+- KiCustomAccessRoutine1
+
+IopIrpStackProfilerTimer
+- KiCustomAccessRoutine2
+
+PopThermalZoneDpc
+- KiCustomAccessRoutine3
+
+CmpEnableLazyFlushDpcRoutine
+- KiCustomAccessRoutine4
+
+CmpLazyFlushDpcRoutine
+- KiCustomAccessRoutine5
+
+KiBalanceSetManagerDeferredRoutine
+- KiCustomAccessRoutine6
+
+ExpTimeRefreshDpcRoutine
+- KiCustomAccessRoutine7
+
+ExpTimeZoneDpcRoutine
+- KiCustomAccessRoutine8
+
+ExpCenturyDpcRoutine
+- KiCustomAccessRoutine9
+```
+
+### [-] 2nd Parameter
+
+두 번째 파라미터는 `KiInitializePatchGuard` 내에서 생성된 DPC 오브젝트를 실행하는데 사용되는 방식을 의미하는 열거된 형태의 값입니다.
+
+```
+KeSetCoalescableTimer = 0,
+Prcb.AcpiReserved = 1,
+Prcb.HalReserved = 2,
+PsCreateSystemThread = 3,
+KeInsertQueueApc = 4,
+KiBalanceSetManagerPeriodicDpc = 5
+```
+
+문서 내 해당 메소드 별 내용이 존재하지만 현재는 내가 이해하지 못했으므로 작성하지 않았습니다.
+
+### [-] 3rd Parameter
+
+알 수 없는 값으로 1 또는 2를 가집니다. 다만 해당 파라미터를  `idiv` 명령으로 어떤 의미있는 데이터로 변환합니다.
+
+### [-] 4th Parameter
+
+`KI_FILTER_FIBER_PARAM` 구조체를 의미합니다. 해당 구조체는 `KiFilterFiberContext` 을 호출하는 다양한 방법 중 `ExpLicenseWatchInitWorker` 에 의해 호출될 때 전달되는 작은 구조체 입니다.
+
+### [-] 5th Parameter
+
+NT 커널 함수 체크섬을 다시 계산해야 하는가에 대한 여부를 나타내는 `Boolean` 형 값입니다.
+
+두 번째 파라미터에서 해당하는 메소드를 설명하지 않는 이유는 아래와 같습니다.
+
+현재 디버깅 중인 내용을 봤을 때, 메소드는 `PsCreateSystemThread` 를 사용하게 됩니다. 문서를 확인했을 때 해당하는 메소드는 반드시 `KI_FILTER_FIBER_PARAM` 구조를 전달받아야 한다고 되어 있지만, 실제 디버깅 중인 4번째 파라미터는 0의 값을 가지고 있기 때문입니다.
+
+다른 메소드가 추가되었을 수 있기 때문에 불확실한 정보는 전달하지 않겠습니다.
+
+먼저 디버깅 시 확인한 파라미터에서 DPC 루틴의 인덱스를 의미한다는 첫 번째 파라미터가 `9`로 확인되었습니다.
+
+```
+MEMORY:FFFFF8030B9E92B3 mov     eax, [rsp+2470h]                ; Get first param
+MEMORY:FFFFF8030B9E92BA mov     edx, 5
+MEMORY:FFFFF8030B9E92BF cmp     eax, edx
+MEMORY:FFFFF8030B9E92C1 jbe     loc_FFFFF8030B9E998F
+MEMORY:FFFFF8030B9E92C7 lea     rdi, KiTimerDispatch
+MEMORY:FFFFF8030B9E92CE
+MEMORY:FFFFF8030B9E92CE loc_FFFFF8030B9E92CE:                   ; CODE XREF: KiInitializePatchGuard+16AD3↓j
+MEMORY:FFFFF8030B9E92CE cmp     eax, 6
+MEMORY:FFFFF8030B9E92D1 jz      loc_FFFFF8030B9E9D65
+MEMORY:FFFFF8030B9E92D7 cmp     eax, 7
+MEMORY:FFFFF8030B9E92DA jz      loc_FFFFF8030B9E9D57
+MEMORY:FFFFF8030B9E92E0 cmp     eax, 8
+MEMORY:FFFFF8030B9E92E3 jz      loc_FFFFF8030B9E9D49
+MEMORY:FFFFF8030B9E92E9 cmp     eax, 9
+MEMORY:FFFFF8030B9E92EC jz      loc_FFFFF8030B9E9D3B    ; <= this
+
+loc_FFFFF8030B9E998F:
+MEMORY:FFFFF8030B9E998F jz      loc_FFFFF8030B9E9DA6
+MEMORY:FFFFF8030B9E9995 test    eax, eax
+MEMORY:FFFFF8030B9E9997 jz      loc_FFFFF8030B9E9D98
+MEMORY:FFFFF8030B9E999D sub     eax, 1
+MEMORY:FFFFF8030B9E99A0 jz      loc_FFFFF8030B9E9D8A
+MEMORY:FFFFF8030B9E99A6 sub     eax, 1
+MEMORY:FFFFF8030B9E99A9 jz      loc_FFFFF8030B9E9D7C
+MEMORY:FFFFF8030B9E99AF cmp     eax, 1
+MEMORY:FFFFF8030B9E99B2 jz      loc_FFFFF8030B9E9D6E
+MEMORY:FFFFF8030B9E99B8 lea     rcx, ExpCenturyDpcRoutine
+MEMORY:FFFFF8030B9E99BF mov     eax, offset unk_FB006943
+MEMORY:FFFFF8030B9E99C4 jmp     loc_FFFFF8030B9E9DB2
+
+loc_FFFFF8030B9E9D3B:                ; <= this  
+MEMORY:FFFFF8030B9E9D3B lea     rcx, PopThermalZoneDpc
+MEMORY:FFFFF8030B9E9D42 mov     eax, offset unk_80007078
+MEMORY:FFFFF8030B9E9D47 jmp     short loc_FFFFF8030B9E9DB2
+```
+
+먼저 첫 번째 파라미터를 가져와 5보다 작은 경우 `sub` 명령을 이용해 비교하여 특정 루틴들로 이동하여 해당하는 루틴을 가져옵니다.
+
+현재에 해당하는 `9` 의 경우 `PopThermalZoneDpc` 루틴을 이용하는 걸로 확인됩니다. 해당 코드를 토대로 인덱스는 다음과 같습니다.
+
+```
+CmpEnableLazyFlushDpcRoutine = 0
+CmpLazyFlushDpcRoutine = 1
+ExpTimeRefreshDpcRoutine = 2
+ExpTimeZoneDpcRoutine = 3 
+ExpCenturyDpcRoutine = 4
+ExpTimerDpcRoutine = 5
+IopTimerDispatch = 6
+IopIrpStackProfilerTimer = 7
+KiBalanceSetManagerDeferredRoutine = 8
+PopThermalZoneDpc = 9
+```
+
+(작성 중)
