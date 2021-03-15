@@ -24,6 +24,8 @@ topnav_dropdowns:
           url: /antikernel_introduction.html
         - title: VMProtect Analysis
           url: /vmp_vmpintro.html
+        - title: Unreal Engine Dump
+          url: /ue_intro.html
 #        - title: Useful Custom API
 #          url: /api_introduction.html
         - title: Information

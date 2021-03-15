@@ -1,0 +1,38 @@
+# This is your sidebar TOC. The sidebar code loops through sections here and provides the appropriate formatting.
+
+entries:
+- title: sidebar
+  product: Unreal Engine Inside
+  version: 0.9
+  folders:
+
+  - title:
+    output: pdf
+    type: frontmatter
+    folderitems:
+    - title:
+      url: /titlepage.html
+      output: pdf
+      type: frontmatter
+    - title:
+      url: /tocpage.html
+      output: pdf
+      type: frontmatter
+
+  - title: Overview
+    output: web, pdf
+    folderitems:
+
+    - title: Unreal Engine Inside Introduction
+      url: /ue_intro.html
+      output: web, pdf
+      
+  - title: Unreal Engine Dumper
+    output: web, pdf
+    folderitems:
+    
+    - title: FName & Gobjects
+      url: /ue_namenobjects.html
+      output: web, pdf
+    
+ 
