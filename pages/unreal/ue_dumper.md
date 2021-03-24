@@ -145,4 +145,226 @@ DWORD FNameEntry::GetNameDump()
 
 ## [0x03] Object Dump
 
-(작성 중)
+Object Dump 의 경우에도 마찬가지로 언리얼 엔진 내 소스코드를 활용하면 쉽게 구현할 수 있습니다.
+
+먼저 우리는 `FUObjectArray` 타입의 `GUObjectArray` 라는 심볼릭 변수가 있다는 것을 알고 있습니다.  이 점을 이용하여 먼저 해당하는 패턴을 찾고 활용해야 합니다.
+
+다음은 언리얼 엔진 소스코드를 참조하여 만든 클래스들의 미니멀 버전입니다.
+
+```cpp
+struct UObject {
+	PVOID VTable;
+	EObjectFlags ObjectFlags;
+	DWORD InternalIndex;
+	UObject* ClassPrivate;
+	FName NamePrivate;
+	UObject* OuterPrivate;
+
+	std::string GetFullName(FNamePool* NamePoolData);
+	std::string GetNameByIndex(FNamePool* NamePoolData, DWORD NameIndex, bool bClass);
+	DWORD GetNameIndex();
+};
+
+struct FUObjectItem {
+	UObject* Object;
+	DWORD Flags;
+	DWORD ClusterRootIndex;
+	DWORD SerialNumber;
+	DWORD Reserved;
+};
+
+typedef struct FChunkedFixedUObjectArray {
+	enum
+	{
+		NumElementsPerChunk = 64 * 1024,
+	};
+
+	FUObjectItem** Objects;
+	FUObjectItem* PreAllocatedObjects;
+	DWORD MaxElements;
+	DWORD NumElements;
+	DWORD MaxChunks;
+	DWORD NumChunks;
+
+	DWORD GetObjectNum();
+	DWORD GetObjectChunk();
+	UObject* GetObjectPtr(DWORD index);
+	BOOLEAN IsValidIndex(int index);
+}TUObjectArray;
+
+struct FUObjectArray {
+	DWORD ObjFirstGCIndex;
+	DWORD ObjLastNonGcIndex;
+	DWORD MaxObjectsNotConsideredByGC;
+	BOOLEAN OpenForDisregardForGC;
+	TUObjectArray ObjObjects;
+};
+
+// Object dump
+BOOLEAN Dumper::ObjectDump()
+{
+	... // 생략
+	TUObjectArray ObjObjects = Read<TUObjectArray>(&DumperData.ObjectData->ObjObjects);
+	... // 생략
+}
+```
+
+교육용이기 때문에 정석대로 진행하지만, 실제로 `ObjObjects` 에 대한 패턴을 구해 단번에 접근도 가능합니다.
+
+## [0x04] Object Dump Tutorial
+
+현재는 `GUObjectArray->ObjObjects.Objects` 와 같이 접근하고 있지만 앞에 한 단계를 생략 가능합니다. 이전 챕터에서 `ReClass` 를 이용하여 본 내용은 아래와 같습니다.
+
+![https://github.com/Shhoya/shhoya.github.io/blob/master/rsrc/windows/ue_01.png?raw=true](https://github.com/Shhoya/shhoya.github.io/blob/master/rsrc/windows/ue_01.png?raw=true)
+
+모든 오브젝트에 대한 덤프를 생성하기 위해선 `Objects` 내 존재하는 모든 오브젝트들에 대한 순회가 필요합니다.
+
+```cpp
+DWORD FChunkedFixedUObjectArray::GetObjectNum()
+{
+	return this->NumElements;
+}
+
+UObject* FChunkedFixedUObjectArray::GetObjectPtr(DWORD index)
+{
+	DWORD ChunkIndex = index / NumElementsPerChunk;
+	DWORD WithinChunkIndex = index % NumElementsPerChunk;
+	
+	if (!IsValidIndex(index)) { ErrLog("Invalid object index\\n"); return nullptr; }
+	if (!(ChunkIndex < this->NumChunks)) { ErrLog("Invalid chunk index\\n"); return nullptr; }
+	FUObjectItem* Chunk = Read<FUObjectItem*>(&this->Objects[ChunkIndex]);
+	FUObjectItem* Object = Read<FUObjectItem*>(Chunk+WithinChunkIndex);
+
+	return (UObject*)Object;
+	
+}
+
+BOOLEAN Dumper::ObjectDump()
+{
+	... // 생략
+	for (int i = 0; i < ObjObjects.GetObjectNum(); i++)
+		{
+			char szBuff[256] = { 0, };
+			UObject* pObject = ObjObjects.GetObjectPtr(i);
+			UObject Object = Read<UObject>(pObject);
+			if (Object == nullptr) { continue; }
+			std::string ObjectFullName = Object.GetFullName(DumperData.FNameData);
+			... // 생략
+			ObjectCount++;
+		}
+	... // 생략
+}
+```
+
+마찬가지로 엔진 내 소스코드를 참조하여 작성한 코드입니다(`UObjectArray.h` 내 `GetObjectPtr`). 우선 위와 같은 방식으로 `TUObjectArray.NumElements` 의 값을 구해 모든 오브젝트의 수량을 확인하고, 오브젝트 순회가 가능합니다.
+
+남은 단계는 해당 오브젝트가 어떠한 종류인지, 어떠한 이름을 가졌는지에 대해 확인하는 것 입니다.
+
+위의 코드에서는 `GetFullName` 이라는 함수를 이용합니다.
+
+```cpp
+std::string UObject::GetNameByIndex(FNamePool* NamePoolData, DWORD NameIndex, bool bClass)
+{
+	std::string Name;
+
+	FNameEntry* BlockEntry = NULL;
+	FNameEntry* pNameEntry = NULL;
+	FNameEntry NameEntry = { 0, };
+
+	DWORD Length = 0;
+	DWORD BlockIdx = NameIndex >> 0x10;
+	DWORD Offset = NameIndex & 0xFFFF;
+
+	BlockEntry = Read<FNameEntry*>(&NamePoolData->Entries.Blocks[BlockIdx]);
+	pNameEntry = (FNameEntry*)((DWORD64)BlockEntry + 2 * Offset);
+
+	NameEntry = Read<FNameEntry>(pNameEntry);
+	Length = NameEntry.GetLength();
+
+	ReadProcessMemory(
+		Memory::ProcessHandle,
+		(PVOID)((DWORD64)this + alignof(FNameEntryHeader)),
+		NameEntry.AnsiName,
+		Length,
+		NULL
+	);
+	... // 생략
+
+	return Name;
+}
+
+std::string UObject::GetFullName(FNamePool* NamePoolData)
+{
+	
+	UObject* ClassObj = this->ClassPrivate;
+	UObject* OuterObj = this->OuterPrivate;
+	
+	DWORD NameIndex = Read<DWORD>(&ClassObj->NamePrivate.ComparisonIndex);
+	ClassString = GetNameByIndex(NamePoolData, NameIndex, true);
+
+	while (TRUE)
+	{
+		if (OuterObj)
+		{
+			NameIndex = Read<DWORD>(&OuterObj->NamePrivate.ComparisonIndex);
+			TempString = this->GetNameByIndex(NamePoolData, NameIndex, false) + "." + TempString;
+			OuterObj = Read<UObject*>(&OuterObj->OuterPrivate);
+		}
+		else 
+		{
+			OuterString = TempString;
+			break;
+		}
+	}
+
+	NameIndex = this->NamePrivate.ComparisonIndex.Value;
+	ObjString = this->GetNameByIndex(NamePoolData, NameIndex, false);
+
+	return ClassString + " " + OuterString + ObjString;
+}
+```
+
+간단히 살펴보면 실제 오브젝트의 이름을 구하는 함수는 `GetNameByIndex` 이며, 오브젝트 트레버스 코드에서 전달받은 오브젝트의 풀 네임을 찾습니다.
+
+`FName.ComparisonIndex` 가 바로 오브젝트 이름의 인덱스이고, 위에서 작성한 Name Dump 를 통해 나온 인덱스와 일치합니다.
+
+`ComparisonIndex` 를 이용하여 `FNamePool.Blocks` 의 인덱스 값을 구해 Name Pool 에서의 오브젝트 이름을 구해오면 끝입니다.
+
+```cpp
+DWORD BlockIdx = NameIndex >> 0x10;
+DWORD Offset = NameIndex & 0xFFFF;
+```
+
+위의 코드가 바로 해당 내용입니다. 단순히 인덱스를 최대 값과 연산하여, 다음 블록을 가리키게 합니다. 예를 들어 `ComparisonIndex` 가 `65536` 이면 `Blocks[1]` 의 첫 번째 문자열을 가리키게 됩니다.
+
+마지막으로 중요한건 함수의 이름과 같이 풀 네임을 가져오려 합니다. 이는 `SDK Generator` 작성 시에도 이용됩니다.
+
+```cpp
+UObject* ClassObj = this->ClassPrivate;
+UObject* OuterObj = this->OuterPrivate;
+```
+
+위의 코드가 오브젝트의 풀 네임을 가져오기 위한 포인터 입니다. 실제로 덤프를 생성하면 아래와 같이 해당 오브젝트의 풀 네임을 획득할 수 있습니다.
+
+```cpp
+[000000] [0x1D5BC1D9DE0] Package CoreUObject
+[000001] [0x1D5BB0E1A80] Class CoreUObject.Object
+[000002] [0x1D5BC1D95C0] Package Engine
+...
+[000009] [0x1D5BB0ED780] Class Paper2D.MaterialExpressionSpriteTextureSampler
+[000010] [0x1D5BB0ED0C0] Class Engine.Actor
+[000011] [0x1D5BB0EE500] Class Engine.Pawn
+[000012] [0x1D5BB0EC100] Class Engine.Character
+[000013] [0x1D5BB0EE080] Class Paper2D.PaperCharacter
+...
+```
+
+<img src="https://github.com/Shhoya/shhoya.github.io/blob/master/rsrc/windows/ue_04.png?raw=true">
+
+## [0x05] Conclusion
+
+버전 별 약간의 구조적인 차이는 있지만 언리얼 엔진 소스코드는 매우 친절합니다. `FName` , `GObject` 의 기본적인 내용을 숙지하면 버전과는 상관없이 덤프를 생성할 수 있습니다.
+
+오브젝트 덤프만으로도 활용도가 매우 높습니다. 특정 오브젝트가 이러한 이름을 가졌다라는 정보만으로도 수 많은 시도를 할 수 있습니다.
+
+해당 문서는 완성본이 아니며, 추후 업데이트 될 예정입니다. 부족한 부분에 대한 피드백이나 궁금한 내용은 연락주세요
