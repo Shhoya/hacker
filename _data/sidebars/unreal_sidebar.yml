@@ -38,5 +38,9 @@ entries:
     - title: Unreal Engine 4 Dumper
       url: /ue_dumper.html
       output: web, pdf
+     
+    - title: Unreal Engine 4 SDK Generator
+      url: /ue_generator.html
+      output: web, pdf
     
  
