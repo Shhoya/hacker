@@ -122,5 +122,6 @@ I/O 시스템이 I/O 요청을 처리할 때 필요한 정보를 저장하는 �
 ## [0x06] Reference
 
 1. [MSDN I/O](https://docs.microsoft.com/en-us/windows-hardware/drivers/kernel/handling-irps)
-2. [MSDN Driver Stacks]([]())
-3. [MSDN Device nodes & device stacks]([]())
+2. [MSDN Driver Stacks](https://docs.microsoft.com/en-us/windows-hardware/drivers/gettingstarted/driver-stacks)
+3. [MSDN Device nodes & device stacks](https://docs.microsoft.com/en-us/windows-hardware/drivers/gettingstarted/device-nodes-and-device-stacks)
+
