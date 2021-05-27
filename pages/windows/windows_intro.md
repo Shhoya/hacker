@@ -16,11 +16,11 @@ folder: windows
 ## [0x01] KPP
 
 1. [Kernel Patch Protection(PatchGuard)](https://shhoya.github.io/windows_pgintro.html) 
-   1. [PatchGuard Initialize](https://shhoya.github.io/windows_pginit.html)
-   2. PatchGuard Analysis Tips
-      1. [PatchGuard Initialize Debugging](https://shhoya.github.io/windows_pgdbg.html)
-      2. [PatchGuard Dump Analysis](https://shhoya.github.io/windows_pgdump.html)
-   3. [PatchGuard Analysis](https://shhoya.github.io/windows_pganalysis.html)
+2. PatchGuard Analysis Tips
+   1. [PatchGuard Initialize Debugging](https://shhoya.github.io/windows_pgdbg.html)
+   2. [PatchGuard Dump Analysis](https://shhoya.github.io/windows_pgdump.html)
+3. [PatchGuard Initialize(1)](https://shhoya.github.io/windows_pginit.html)
+4. [PatchGuard Initialize(2)](https://shhoya.github.io/windows_pginit2.html)
 
 ## [0x02] Piece Of Windows
 
