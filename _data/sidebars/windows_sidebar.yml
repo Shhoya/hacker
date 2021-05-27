@@ -42,10 +42,22 @@ entries:
     - title: Handle Table&Object
       url: /windows_hwndobject.html
       output: web, pdf
-      
-    - title: I/O Request Packet
-      url: /windows_irp.html
-      output: web, pdf
+    
+        subfolders:
+            - title: I/O Request Packet
+              output: web
+              subfolderitems:
+              
+              - title: I/O Request Packet
+                url: /windows_irp.html
+                output: web, pdf
+              - title : I/O Control Code
+                url : /windows_ioctl.html
+                output: web
+              - title : I/O Transfer Example
+                url : /windows_iotransfer.html
+                output: web
+    
     
     
   - title: Windows KPP(PatchGuard)
