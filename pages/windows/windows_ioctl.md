@@ -5,7 +5,7 @@ date: 2021-05-27
 tags: [Windows, Reversing, Kernel]
 summary: "I/O Control Code"
 sidebar: windows_sidebar
-permalink: windows_ioctl.html
+permalink: windows_ioctlcode.html
 folder: windows
 ---
 

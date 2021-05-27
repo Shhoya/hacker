@@ -52,7 +52,7 @@ entries:
             url: /windows_irp.html
             output: web, pdf
           - title : I/O Control Code
-            url : /windows_ioctl.html
+            url : /windows_ioctlcode.html
             output: web
           - title : I/O Transfer Example
             url : /windows_iotransfer.html
