@@ -25,6 +25,12 @@ folder: windows
 ## [0x02] Piece Of Windows
 
 1. [Memory Descriptor List](https://shhoya.github.io/windows_MDL.html)
+2. [Find Hidden Process](https://shhoya.github.io/windows_hidden.html)
+3. [Handle Table&Object](https://shhoya.github.io/windows_hwndobject.html)
+4. I/O Request Packet
+   1. [I/O Request Packet](https://shhoya.github.io/windows_irp.html)
+   2. [I/O Control Code](https://shhoya.github.io/windows_ioctlcode.html)
+   3. [I/O Transfer Example](https://shhoya.github.io/windows_iotransfer.html)
 
 
 
