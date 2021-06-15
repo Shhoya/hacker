@@ -58,6 +58,9 @@ entries:
             url : /windows_iotransfer.html
             output: web
     
+    - title: Debugging Process
+      url: /windows_dbgprocess.html
+      output: web, pdf
     
     
   - title: Windows KPP(PatchGuard)
